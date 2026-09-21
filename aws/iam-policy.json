@@ -2,10 +2,10 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "ListLearniKAEntries",
+      "Sid": "ListLearniKalEntries",
       "Effect": "Allow",
       "Action": "s3:ListBucket",
-      "Resource": "arn:aws:s3:::learnika-s3-bucket",
+      "Resource": "arn:aws:s3:::learnikal-s3-bucket",
       "Condition": {
         "StringLike": {
           "s3:prefix": "learning/entries/*"
@@ -13,28 +13,22 @@
       }
     },
     {
-      "Sid": "ReadWriteLearniKAEntries",
+      "Sid": "ReadWriteLearniKalEntries",
       "Effect": "Allow",
       "Action": [
         "s3:GetObject",
         "s3:PutObject"
       ],
-      "Resource": "arn:aws:s3:::learnika-s3-bucket/learning/entries/*"
+      "Resource": "arn:aws:s3:::learnikal-s3-bucket/learning/entries/*"
     },
     {
-      "Sid": "ReadWriteLearniKADocuments",
+      "Sid": "ReadWriteLearniKalDocuments",
       "Effect": "Allow",
       "Action": [
         "s3:GetObject",
         "s3:PutObject"
       ],
-      "Resource": "arn:aws:s3:::learnika-s3-bucket/learning/documents/*"
-    },
-    {
-      "Sid": "ReadLearniKALegacyDocumentsForMigration",
-      "Effect": "Allow",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::learnika-s3-bucket/releases/*"
+      "Resource": "arn:aws:s3:::learnikal-s3-bucket/learning/documents/*"
     }
   ]
 }

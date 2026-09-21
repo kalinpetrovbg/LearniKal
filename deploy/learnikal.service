@@ -1,0 +1,17 @@
+[Unit]
+Description=LearniKal FastAPI service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/opt/learnikal
+EnvironmentFile=/etc/learnikal/learnikal.env
+ExecStart=/opt/learnikal/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

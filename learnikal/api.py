@@ -13,11 +13,11 @@ from .models import Document, Entry, EntryInput, EntryPage
 from .storage import DOCUMENTS, ConflictError, NotFoundError, S3Store, StorageError
 
 
-app = FastAPI(title="LearniKA API", version="0.2.0")
+app = FastAPI(title="LearniKal API", version="0.2.0")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
-    expected = os.getenv("LEARNIKA_API_KEY")
+    expected = os.getenv("LEARNIKAL_API_KEY")
     if not expected:
         raise HTTPException(status_code=503, detail="API key is not configured")
     if not x_api_key or not hmac.compare_digest(x_api_key, expected):
@@ -32,7 +32,7 @@ def get_s3_client():
 
 
 def get_store(client=Depends(get_s3_client)) -> S3Store:
-    bucket = os.getenv("LEARNIKA_S3_BUCKET")
+    bucket = os.getenv("LEARNIKAL_S3_BUCKET")
     if not bucket:
         raise HTTPException(status_code=503, detail="S3 bucket is not configured")
     return S3Store(client, bucket)

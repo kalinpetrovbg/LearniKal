@@ -1,11 +1,11 @@
-# LearniKA API
+# LearniKal API
 
-LearniKA is a FastAPI service for recording learning questions and answers. This first stage stores individual records and the five existing Markdown reference documents in a private S3 bucket. PostgreSQL, a generated question bank, and a user interface are later stages.
+LearniKal is a FastAPI service for recording learning questions and answers. This first stage stores individual records and the five existing Markdown reference documents in a private S3 bucket. PostgreSQL, a generated question bank, and a user interface are later stages.
 
 ## Structure
 
 ```text
-learnika/                 API, validation, and S3 storage
+learnikal/                API, validation, and S3 storage
 tests/                    API tests with a fake S3 client
 aws/iam-policy.json       scoped EC2 role permissions
 deploy/                   Amazon Linux 2023 setup and systemd unit
@@ -15,18 +15,18 @@ main.py                   ASGI entry point
 GitHub holds code and deployment configuration. S3 holds learning data only:
 
 ```text
-s3://learnika-s3-bucket/learning/documents/<filename>.md
-s3://learnika-s3-bucket/learning/entries/<technology>/<uuid>.json
+s3://learnikal-s3-bucket/learning/documents/<filename>.md
+s3://learnikal-s3-bucket/learning/entries/<technology>/<uuid>.json
 ```
 
-The original documents under `releases/` remain untouched until migration is verified. See [the EC2 guide](deploy/amazon-linux-2023.md).
+The bucket uses `learning/documents/` for the reference documents and `learning/entries/` for saved records. See [the EC2 guide](deploy/amazon-linux-2023.md).
 
 ## Run locally
 
 Use Python 3.11 or newer in a virtual environment, install `requirements.txt`, and set:
 
-- `LEARNIKA_API_KEY`: a long random secret, sent by clients in `X-API-Key`.
-- `LEARNIKA_S3_BUCKET`: `learnika-s3-bucket`.
+- `LEARNIKAL_API_KEY`: a long random secret, sent by clients in `X-API-Key`.
+- `LEARNIKAL_S3_BUCKET`: `learnikal-s3-bucket`.
 - `AWS_DEFAULT_REGION`: `eu-north-1`.
 
 AWS credentials follow the standard boto3 credential chain. Do not commit credentials or API keys. Start with `uvicorn main:app --host 127.0.0.1 --port 8000`; open `/docs` for interactive API documentation. All routes except `/health` require the API key. Run tests with `python -m unittest discover -s tests`.

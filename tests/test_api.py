@@ -6,7 +6,7 @@ from uuid import uuid4
 from botocore.exceptions import ClientError
 from fastapi.testclient import TestClient
 
-from learnika.api import app, get_s3_client
+from learnikal.api import app, get_s3_client
 
 
 class FakeS3:
@@ -35,10 +35,10 @@ class FakeS3:
 
 class ApiTests(unittest.TestCase):
     def setUp(self):
-        self.previous_env = {key: os.environ.get(key) for key in ("LEARNIKA_API_KEY", "LEARNIKA_S3_BUCKET")}
+        self.previous_env = {key: os.environ.get(key) for key in ("LEARNIKAL_API_KEY", "LEARNIKAL_S3_BUCKET")}
         os.environ.update({
-            "LEARNIKA_API_KEY": "test-secret",
-            "LEARNIKA_S3_BUCKET": "test-bucket",
+            "LEARNIKAL_API_KEY": "test-secret",
+            "LEARNIKAL_S3_BUCKET": "test-bucket",
         })
         self.s3 = FakeS3()
         self.s3.objects[("test-bucket", "learning/documents/learning_handoff.md")] = "Следващ въпрос: Kafka ordering".encode("utf-8")
