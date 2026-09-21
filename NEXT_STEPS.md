@@ -1,16 +1,20 @@
 # LearniKal Next Steps
 
-This file tracks the immediate next steps after the successful EC2 deployment and S3 write/read verification.
+This file tracks the next steps after the successful public HTTPS deployment and automated GitHub Actions deployment.
 
 ## Current state
 
 - GitHub repository is `LearniKal`.
+- Public API domain is `https://api.learnikal.com`.
+- Swagger UI is available at `https://api.learnikal.com/docs#/`.
 - EC2 service `learnikal.service` is active.
 - Runtime paths are clean:
   - `/opt/learnikal`
   - `/etc/learnikal/learnikal.env`
 - S3 bucket is `learnikal-s3-bucket`.
-- API has been verified locally on EC2:
+- `LEARNIKAL_API_KEY` is configured and intentionally kept as the project API key.
+- GitHub Actions deploys every push to `main` over SSH to EC2.
+- API has been verified locally and publicly:
   - `GET /health` returns `{"status":"ok"}`.
   - `GET /documents` works with `X-API-Key`.
   - `GET /documents/handoff` reads from S3.
@@ -18,71 +22,7 @@ This file tracks the immediate next steps after the successful EC2 deployment an
   - `GET /entries/{technology}/{entry_id}` reads the saved entry.
   - `GET /entries?technology=kafka` lists saved entries.
 
-## 1. Replace the temporary API key
-
-The current key is suitable only for testing. Before exposing the API publicly, replace it with a random secret.
-
-On EC2:
-
-```bash
-openssl rand -hex 32
-sudo nano /etc/learnikal/learnikal.env
-sudo systemctl restart learnikal
-curl -fsS http://127.0.0.1:8000/health
-```
-
-Update `LEARNIKAL_API_KEY` with the generated value. Do not commit the key to GitHub.
-
-Done when:
-
-- `/health` still works after restart.
-- Protected routes only work with the new key.
-
-## 2. Add public access through Nginx
-
-Keep the FastAPI service bound to `127.0.0.1:8000`. Expose only Nginx on port `80` and proxy requests to the local API.
-
-On EC2:
-
-```bash
-sudo dnf install -y nginx
-sudo systemctl enable --now nginx
-sudo nano /etc/nginx/conf.d/learnikal.conf
-```
-
-Suggested config:
-
-```nginx
-server {
-    listen 80;
-    server_name _;
-
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Then:
-
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-In the EC2 Security Group, allow inbound HTTP TCP 80. Prefer restricting the source to the user's IP while testing.
-
-Done when:
-
-- `http://EC2_PUBLIC_IP/health` returns `{"status":"ok"}`.
-- `http://EC2_PUBLIC_IP/documents` works with the API key.
-- Port `8000` remains closed publicly.
-
-## 3. Add a small entry-saving helper
+## 1. Add a small entry-saving helper
 
 Avoid manual `curl` for normal learning sessions. Add a small local helper script or CLI command that sends entries to the API with:
 
@@ -92,13 +32,15 @@ Avoid manual `curl` for normal learning sessions. Add a small local helper scrip
 - evaluation
 - next_question
 
+The helper should read configuration from environment variables or a local ignored config file, not from committed source code.
+
 Done when:
 
 - A learning entry can be saved without manually writing JSON.
 - The helper returns the created `entry_id`.
 - The saved entry can be read back from `/entries/{technology}/{entry_id}`.
 
-## 4. Build a simple UI
+## 2. Build a simple UI
 
 After the API is stable, add a minimal web UI for daily use:
 
@@ -111,9 +53,26 @@ After the API is stable, add a minimal web UI for daily use:
 Done when:
 
 - The UI can perform the same read/write operations already proven through the API.
-- API key handling is not exposed carelessly in public client code.
+- The UI keeps API access simple and aligned with the current `LEARNIKAL_API_KEY` setup.
 
-## 5. Consider PostgreSQL later
+## 3. Improve learning workflow shape
+
+Before adding a database, refine the saved entry format around the real study workflow:
+
+- topic or technology
+- question
+- answer
+- evaluation
+- next question
+- optional tags
+- optional source document reference
+
+Done when:
+
+- Saved entries are consistent enough to support review sessions later.
+- The API remains simple and easy to operate.
+
+## 4. Consider PostgreSQL later
 
 S3 is enough for the first working prototype and append-style records. PostgreSQL becomes useful when the project needs richer querying and learning analytics:
 
@@ -125,26 +84,3 @@ S3 is enough for the first working prototype and append-style records. PostgreSQ
 - stronger consistency constraints
 
 Do not add PostgreSQL until the API and core learning workflow are proven useful.
-## 6. Automate deploys with GitHub Actions
-
-A GitHub Actions workflow deploys every push to `main` over SSH to the EC2 instance. Configure these repository secrets in GitHub before relying on it:
-
-- `EC2_HOST`: the EC2 public host or IP address.
-- `EC2_USER`: usually `ec2-user`.
-- `EC2_SSH_KEY`: the private SSH key allowed to connect to the instance.
-- `EC2_SSH_PORT`: optional; defaults to `22`.
-
-The workflow runs:
-
-```bash
-cd /opt/learnikal
-git pull --ff-only origin main
-.venv/bin/python -m pip install -r requirements.txt
-sudo systemctl restart learnikal
-curl -fsS http://127.0.0.1:8000/health
-```
-
-Done when:
-
-- A push to `main` completes the `Deploy API` workflow successfully.
-- `https://api.learnikal.com/health` returns `{"status":"ok"}` after the workflow finishes.
