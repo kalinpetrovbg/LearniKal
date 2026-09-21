@@ -125,3 +125,26 @@ S3 is enough for the first working prototype and append-style records. PostgreSQ
 - stronger consistency constraints
 
 Do not add PostgreSQL until the API and core learning workflow are proven useful.
+## 6. Automate deploys with GitHub Actions
+
+A GitHub Actions workflow deploys every push to `main` over SSH to the EC2 instance. Configure these repository secrets in GitHub before relying on it:
+
+- `EC2_HOST`: the EC2 public host or IP address.
+- `EC2_USER`: usually `ec2-user`.
+- `EC2_SSH_KEY`: the private SSH key allowed to connect to the instance.
+- `EC2_SSH_PORT`: optional; defaults to `22`.
+
+The workflow runs:
+
+```bash
+cd /opt/learnikal
+git pull --ff-only origin main
+.venv/bin/python -m pip install -r requirements.txt
+sudo systemctl restart learnikal
+curl -fsS http://127.0.0.1:8000/health
+```
+
+Done when:
+
+- A push to `main` completes the `Deploy API` workflow successfully.
+- `https://api.learnikal.com/health` returns `{"status":"ok"}` after the workflow finishes.
