@@ -1,5 +1,4 @@
 import re
-from uuid import UUID
 
 import psycopg
 from psycopg.rows import dict_row
@@ -92,16 +91,27 @@ class PostgresStore:
                     "ON CONFLICT (slug) DO UPDATE SET slug = EXCLUDED.slug RETURNING id",
                     (entry.technology,),
                 ).fetchone()
-                inserted = conn.execute(
-                    """INSERT INTO learning_entries
-                       (id, user_id, topic_id, question, answer, evaluation, next_question,
-                        difficulty, score, created_at)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                       ON CONFLICT (id) DO NOTHING RETURNING id""",
-                    (entry.entry_id, user_id, topic["id"], entry.question, entry.answer,
-                     Jsonb(entry.evaluation.model_dump()) if entry.evaluation else None,
-                     entry.next_question, entry.difficulty, entry.score, entry.created_at),
-                ).fetchone()
+                values = (user_id, topic["id"], entry.question, entry.answer,
+                          Jsonb(entry.evaluation.model_dump()) if entry.evaluation else None,
+                          entry.next_question, entry.difficulty, entry.score, entry.created_at)
+                if entry.entry_id:
+                    inserted = conn.execute(
+                        """INSERT INTO learning_entries
+                           (id, user_id, topic_id, question, answer, evaluation, next_question,
+                            difficulty, score, created_at)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                           ON CONFLICT (id) DO NOTHING RETURNING id""",
+                        (entry.entry_id, *values),
+                    ).fetchone()
+                else:
+                    inserted = conn.execute(
+                        """INSERT INTO learning_entries
+                           (user_id, topic_id, question, answer, evaluation, next_question,
+                            difficulty, score, created_at)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                           RETURNING id""",
+                        values,
+                    ).fetchone()
                 if inserted is None:
                     existing = self._get_entry(conn, user_id, entry.technology, entry.entry_id)
                     if existing.model_dump(exclude={"created_at"}) != entry.model_dump(exclude={"created_at"}):
@@ -114,7 +124,7 @@ class PostgresStore:
                        next_question = EXCLUDED.next_question, updated_at = now()""",
                     (user_id, topic["id"] if entry.next_question else None, entry.next_question),
                 )
-                return entry
+                return Entry(**entry.model_dump(exclude={"entry_id"}), entry_id=inserted["id"])
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
@@ -129,7 +139,7 @@ class PostgresStore:
             raise NotFoundError
         return self._entry(row)
 
-    def get_entry(self, technology: str, entry_id: UUID) -> Entry:
+    def get_entry(self, technology: str, entry_id: int) -> Entry:
         try:
             with self._connect() as conn:
                 return self._get_entry(conn, self._user_id(conn), technology, entry_id)

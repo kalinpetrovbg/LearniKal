@@ -1,6 +1,5 @@
 import os
 import unittest
-from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
@@ -30,6 +29,8 @@ class FakeStore:
         return "Следващ въпрос: Kafka ordering"
 
     def save_entry(self, entry):
+        if not entry.entry_id:
+            entry = entry.model_copy(update={"entry_id": len(self.entries) + 1})
         old = self.entries.get(entry.entry_id)
         if old and old.model_dump(exclude={"created_at"}) != entry.model_dump(exclude={"created_at"}):
             raise ConflictError
@@ -85,7 +86,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.get("/documents/unknown", headers=self.headers).status_code, 404)
 
     def test_create_read_list_and_idempotent_retry(self):
-        entry_id = str(uuid4())
+        entry_id = 123
         payload = {
             "entry_id": entry_id, "technology": "KAFKA",
             "question": "How should events be partitioned?", "answer": "By order_id.",
@@ -108,12 +109,22 @@ class ApiTests(unittest.TestCase):
         )
         self.assertEqual(changed.status_code, 409)
 
+    def test_generated_entry_id_is_integer(self):
+        payload = {
+            "technology": "postgresql",
+            "question": "Q",
+            "answer": "A",
+        }
+        created = self.client.post("/entries", json=payload, headers=self.headers)
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.json()["entry_id"], 1)
+
     def test_invalid_input_and_missing_entry(self):
         payload = {"technology": "kafka", "question": "Q", "answer": "A"}
         self.assertEqual(self.client.post("/entries", json={**payload, "score": 6}, headers=self.headers).status_code, 422)
         self.assertEqual(self.client.post("/entries", json={**payload, "difficulty": "extreme"}, headers=self.headers).status_code, 422)
         self.assertEqual(self.client.post("/entries", json={**payload, "answer": "  "}, headers=self.headers).status_code, 422)
-        self.assertEqual(self.client.get(f"/entries/kafka/{uuid4()}", headers=self.headers).status_code, 404)
+        self.assertEqual(self.client.get("/entries/kafka/999", headers=self.headers).status_code, 404)
 
 
 if __name__ == "__main__":

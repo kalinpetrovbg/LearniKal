@@ -2,7 +2,6 @@ import hmac
 import os
 from datetime import datetime, timezone
 from typing import Annotated
-from uuid import UUID, uuid4
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
@@ -73,7 +72,7 @@ def get_document(name: str, store: PostgresStore = Depends(get_store)) -> Docume
 def create_entry(payload: EntryInput, store: PostgresStore = Depends(get_store)) -> Entry:
     entry = Entry(
         **payload.model_dump(exclude={"entry_id"}),
-        entry_id=payload.entry_id or uuid4(),
+        entry_id=payload.entry_id,
         created_at=datetime.now(timezone.utc),
     )
     return store.save_entry(entry)
@@ -82,7 +81,7 @@ def create_entry(payload: EntryInput, store: PostgresStore = Depends(get_store))
 @app.get("/entries/{technology}/{entry_id}", response_model=Entry, dependencies=[Depends(require_api_key)])
 def get_entry(
     technology: Annotated[str, Path(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")],
-    entry_id: UUID,
+    entry_id: Annotated[int, Path(ge=1)],
     store: PostgresStore = Depends(get_store),
 ) -> Entry:
     return store.get_entry(technology.lower(), entry_id)

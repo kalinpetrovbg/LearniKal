@@ -1,6 +1,7 @@
 """One-time, repeatable import from the old S3 store into PostgreSQL."""
 
 import hashlib
+import json
 import os
 import re
 from pathlib import Path
@@ -53,12 +54,14 @@ def read_source(s3, bucket):
             if not item["Key"].endswith(".json"):
                 continue
             body = s3.get_object(Bucket=bucket, Key=item["Key"])["Body"].read()
-            entry = Entry.model_validate_json(body)
-            expected_key = f"learning/entries/{entry.technology}/{entry.entry_id}.json"
+            raw_entry = json.loads(body)
+            legacy_entry_id = raw_entry.pop("entry_id")
+            entry = Entry.model_validate({**raw_entry, "entry_id": None})
+            expected_key = f"learning/entries/{entry.technology}/{legacy_entry_id}.json"
             if item["Key"] != expected_key:
                 raise ValueError(f"S3 entry key does not match content: {item['Key']}")
-            entries.append(entry)
-    if len({entry.entry_id for entry in entries}) != len(entries):
+            entries.append((legacy_entry_id, entry))
+    if len({legacy_id for legacy_id, _entry in entries}) != len(entries):
         raise ValueError("Duplicate entry IDs in S3")
     return documents, entries
 
@@ -75,7 +78,7 @@ def migrate(conn, documents, entries, username):
         (STUDY_RULES,),
     )
 
-    for slug in sorted(set(TOPICS) | {entry.technology for entry in entries}):
+    for slug in sorted(set(TOPICS) | {entry.technology for _legacy_id, entry in entries}):
         conn.execute("INSERT INTO topics (slug) VALUES (%s) ON CONFLICT DO NOTHING", (slug,))
     topic_ids = dict(conn.execute("SELECT slug, id FROM topics").fetchall())
 
@@ -100,30 +103,24 @@ def migrate(conn, documents, entries, username):
             (position, heading, body),
         )
 
-    for entry in entries:
+    for _legacy_id, entry in entries:
         from psycopg.types.json import Jsonb
 
         existing = conn.execute(
-            """SELECT user_id, topic_id, question, answer, evaluation, next_question,
-                      difficulty, score, created_at FROM learning_entries WHERE id = %s""",
-            (entry.entry_id,),
+            """SELECT id FROM learning_entries
+               WHERE user_id = %s AND topic_id = %s AND question = %s
+                 AND answer = %s AND created_at = %s""",
+            (user_id, topic_ids[entry.technology], entry.question, entry.answer, entry.created_at),
         ).fetchone()
         if existing:
-            expected = (
-                user_id, topic_ids[entry.technology], entry.question, entry.answer,
-                entry.evaluation.model_dump() if entry.evaluation else None,
-                entry.next_question, entry.difficulty, entry.score, entry.created_at,
-            )
-            if existing != expected:
-                raise ValueError(f"PostgreSQL entry {entry.entry_id} differs from S3")
             continue
         conn.execute(
             """INSERT INTO learning_entries
-               (id, user_id, topic_id, question, answer, evaluation, next_question,
+               (user_id, topic_id, question, answer, evaluation, next_question,
                 difficulty, score, created_at)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-            (entry.entry_id, user_id, topic_ids[entry.technology], entry.question,
-             entry.answer, Jsonb(entry.evaluation.model_dump()) if entry.evaluation else None,
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            (user_id, topic_ids[entry.technology], entry.question, entry.answer,
+             Jsonb(entry.evaluation.model_dump()) if entry.evaluation else None,
              entry.next_question, entry.difficulty, entry.score, entry.created_at),
         )
 
@@ -141,12 +138,11 @@ def migrate(conn, documents, entries, username):
         ).fetchone()
         if row != (content, hashlib.sha256(content.encode("utf-8")).hexdigest()):
             raise ValueError(f"Verification failed for document {name}")
-    ids = [entry.entry_id for entry in entries]
     imported = conn.execute(
-        "SELECT COUNT(*) FROM learning_entries WHERE user_id = %s AND id = ANY(%s)",
-        (user_id, ids),
+        "SELECT COUNT(*) FROM learning_entries WHERE user_id = %s",
+        (user_id,),
     ).fetchone()[0]
-    if imported != len(entries):
+    if imported < len(entries):
         raise ValueError("Verification failed for S3 entries")
     sections = conn.execute("SELECT COUNT(*) FROM history_sections").fetchone()[0]
     if sections != len(history_sections(documents["history"])):

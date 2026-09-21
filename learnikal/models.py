@@ -1,5 +1,4 @@
 from datetime import datetime
-from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -18,7 +17,7 @@ class EntryInput(BaseModel):
     next_question: str | None = None
     difficulty: str | None = Field(default=None, pattern=r"^(low|medium|high)$")
     score: int | None = Field(default=None, ge=0, le=5)
-    entry_id: UUID | None = None
+    entry_id: int | None = Field(default=None, ge=1)
 
     @field_validator("technology")
     @classmethod
@@ -34,7 +33,6 @@ class EntryInput(BaseModel):
 
 
 class Entry(EntryInput):
-    entry_id: UUID
     created_at: datetime
 
 
