@@ -5,7 +5,6 @@ import json
 import os
 import re
 from pathlib import Path
-from uuid import uuid4
 
 import boto3
 import psycopg
@@ -69,8 +68,8 @@ def read_source(s3, bucket):
 def migrate(conn, documents, entries, username):
     conn.execute(Path(__file__).with_name("schema.sql").read_text(encoding="utf-8"))
     conn.execute(
-        "INSERT INTO users (id, username) VALUES (%s, %s) ON CONFLICT (username) DO NOTHING",
-        (uuid4(), username),
+        "INSERT INTO users (username) VALUES (%s) ON CONFLICT (username) DO NOTHING",
+        (username,),
     )
     user_id = conn.execute("SELECT id FROM users WHERE username = %s", (username,)).fetchone()[0]
     conn.execute(
