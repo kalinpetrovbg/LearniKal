@@ -32,4 +32,12 @@ jobs:
             git pull --ff-only origin main
             .venv/bin/python -m pip install -r requirements.txt
             sudo systemctl restart learnikal
-            curl -fsS http://127.0.0.1:8000/health
+            sudo systemctl status learnikal --no-pager
+            for attempt in {1..10}; do
+              if curl -fsS http://127.0.0.1:8000/health; then
+                exit 0
+              fi
+              sleep 2
+            done
+            sudo journalctl -u learnikal -n 80 --no-pager
+            exit 1
