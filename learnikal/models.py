@@ -16,6 +16,8 @@ class EntryInput(BaseModel):
     answer: str = Field(min_length=1, max_length=50000)
     evaluation: Evaluation | None = None
     next_question: str | None = None
+    difficulty: str | None = Field(default=None, pattern=r"^(low|medium|high)$")
+    score: int | None = Field(default=None, ge=0, le=5)
     entry_id: UUID | None = None
 
     @field_validator("technology")
@@ -44,3 +46,17 @@ class EntryPage(BaseModel):
 class Document(BaseModel):
     name: str
     content: str
+
+
+class StartContext(BaseModel):
+    instructions: str
+    knowledge_summary: str | None
+    suggested_technology: str | None
+    next_question: str | None
+    topic_progress: list["TopicProgress"] = Field(default_factory=list)
+
+
+class TopicProgress(BaseModel):
+    technology: str
+    answer_count: int
+    average_score: float | None

@@ -4,16 +4,14 @@ from datetime import datetime, timezone
 from typing import Annotated
 from uuid import UUID, uuid4
 
-import boto3
-from botocore.exceptions import BotoCoreError
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
-from .models import Document, Entry, EntryInput, EntryPage
-from .storage import DOCUMENTS, ConflictError, NotFoundError, S3Store, StorageError
+from .models import Document, Entry, EntryInput, EntryPage, StartContext
+from .postgres import DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError
 
 
-app = FastAPI(title="LearniKal API", version="0.2.0")
+app = FastAPI(title="LearniKal API", version="0.3.0")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -24,18 +22,11 @@ def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
         raise HTTPException(status_code=401, detail="Invalid API key")
 
 
-def get_s3_client():
-    try:
-        return boto3.client("s3")
-    except BotoCoreError as exc:
-        raise HTTPException(status_code=503, detail="S3 client is not configured") from exc
-
-
-def get_store(client=Depends(get_s3_client)) -> S3Store:
-    bucket = os.getenv("LEARNIKAL_S3_BUCKET")
-    if not bucket:
-        raise HTTPException(status_code=503, detail="S3 bucket is not configured")
-    return S3Store(client, bucket)
+def get_store() -> PostgresStore:
+    dsn = os.getenv("LEARNIKAL_DATABASE_URL")
+    if not dsn:
+        raise HTTPException(status_code=503, detail="PostgreSQL is not configured")
+    return PostgresStore(dsn, os.getenv("LEARNIKAL_USERNAME", "kalin"))
 
 
 @app.exception_handler(NotFoundError)
@@ -50,12 +41,18 @@ async def conflict_handler(_request, _exc):
 
 @app.exception_handler(StorageError)
 async def storage_error_handler(_request, _exc):
-    return JSONResponse(status_code=502, content={"detail": "S3 operation failed"})
+    return JSONResponse(status_code=503, content={"detail": "PostgreSQL is unavailable"})
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
+def health(store: PostgresStore = Depends(get_store)) -> dict[str, str]:
+    store.ping()
     return {"status": "ok"}
+
+
+@app.get("/start", response_model=StartContext, dependencies=[Depends(require_api_key)])
+def start(store: PostgresStore = Depends(get_store)) -> StartContext:
+    return store.start()
 
 
 @app.get("/documents", dependencies=[Depends(require_api_key)])
@@ -64,14 +61,14 @@ def list_documents() -> list[str]:
 
 
 @app.get("/documents/{name}", response_model=Document, dependencies=[Depends(require_api_key)])
-def get_document(name: str, store: S3Store = Depends(get_store)) -> Document:
+def get_document(name: str, store: PostgresStore = Depends(get_store)) -> Document:
     if name not in DOCUMENTS:
         raise HTTPException(status_code=404, detail="Document not found")
     return Document(name=name, content=store.get_document(name))
 
 
 @app.post("/entries", response_model=Entry, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_api_key)])
-def create_entry(payload: EntryInput, store: S3Store = Depends(get_store)) -> Entry:
+def create_entry(payload: EntryInput, store: PostgresStore = Depends(get_store)) -> Entry:
     entry = Entry(
         **payload.model_dump(exclude={"entry_id"}),
         entry_id=payload.entry_id or uuid4(),
@@ -84,7 +81,7 @@ def create_entry(payload: EntryInput, store: S3Store = Depends(get_store)) -> En
 def get_entry(
     technology: Annotated[str, Path(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")],
     entry_id: UUID,
-    store: S3Store = Depends(get_store),
+    store: PostgresStore = Depends(get_store),
 ) -> Entry:
     return store.get_entry(technology.lower(), entry_id)
 
@@ -93,7 +90,7 @@ def get_entry(
 def list_entries(
     technology: Annotated[str, Query(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")],
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    cursor: str | None = None,
-    store: S3Store = Depends(get_store),
+    cursor: Annotated[int, Query(ge=0)] = 0,
+    store: PostgresStore = Depends(get_store),
 ) -> EntryPage:
     return store.list_entries(technology.lower(), limit, cursor)

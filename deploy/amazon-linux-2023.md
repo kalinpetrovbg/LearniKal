@@ -26,7 +26,7 @@ python3.11 -m venv .venv
 
 Do not change the system `/usr/bin/python3`.
 
-Generate a secret on EC2 with `openssl rand -hex 32`. Create `/etc/learnikal/learnikal.env` owned by root with mode `600`, replacing the placeholder with the generated value:
+Create `/etc/learnikal/learnikal.env` owned by root with mode `600`, and keep the existing API key value:
 
 ```bash
 sudo install -o root -g root -m 600 /dev/null /etc/learnikal/learnikal.env
@@ -34,7 +34,7 @@ sudo nano /etc/learnikal/learnikal.env
 ```
 
 ```ini
-LEARNIKAL_API_KEY=REPLACE_WITH_RANDOM_SECRET
+LEARNIKAL_API_KEY=YOUR_EXISTING_KEY
 LEARNIKAL_S3_BUCKET=learnikal-s3-bucket
 AWS_DEFAULT_REGION=eu-north-1
 ```

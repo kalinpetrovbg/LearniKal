@@ -1,57 +1,38 @@
 # LearniKal API
 
-LearniKal is a FastAPI service for recording learning questions and answers. This first stage stores individual records and the five existing Markdown reference documents in a private S3 bucket. PostgreSQL, a generated question bank, and a user interface are later stages.
+FastAPI service for Team Lead learning sessions. PostgreSQL holds the learning
+documents, historical sections, answers, and per-user state. Technologies share
+one relational model and are treated equally.
 
-## Structure
+## Current migration stage
 
-```text
-learnikal/                API, validation, and S3 storage
-tests/                    API tests with a fake S3 client
-aws/iam-policy.json       scoped EC2 role permissions
-deploy/                   Amazon Linux 2023 setup and systemd unit
-main.py                   ASGI entry point
-```
-
-GitHub holds code and deployment configuration. S3 holds learning data only:
-
-```text
-s3://learnikal-s3-bucket/learning/documents/<filename>.md
-s3://learnikal-s3-bucket/learning/entries/<technology>/<uuid>.json
-```
-
-The bucket uses `learning/documents/` for the reference documents and `learning/entries/` for saved records. See [the EC2 guide](deploy/amazon-linux-2023.md).
-
-## Run locally
-
-Use Python 3.11 or newer in a virtual environment, install `requirements.txt`, and set:
-
-- `LEARNIKAL_API_KEY`: a long random secret, sent by clients in `X-API-Key`.
-- `LEARNIKAL_S3_BUCKET`: `learnikal-s3-bucket`.
-- `AWS_DEFAULT_REGION`: `eu-north-1`.
-
-AWS credentials follow the standard boto3 credential chain. Do not commit credentials or API keys. Start with `uvicorn main:app --host 127.0.0.1 --port 8000`; open `/docs` for interactive API documentation. All routes except `/health` require the API key. Run tests with `python -m unittest discover -s tests`.
+The live EC2 deployment still uses S3. This checkout contains the PostgreSQL
+cutover code; do not deploy it until the RDS database has been created and
+imported. Follow [the RDS setup guide](deploy/postgres.md).
 
 ## API
 
-- `GET /documents` lists the five allowed document names.
-- `GET /documents/{name}` reads `plan`, `knowledge`, `handoff`, `history`, or `patterns` from S3.
-- `POST /entries` saves a question and answer. `technology`, `question`, and `answer` are required. `evaluation`, `next_question`, and `entry_id` are optional. Reuse an `entry_id` UUID for idempotent retries.
-- `GET /entries?technology=kafka` lists saved records, with `limit` and `cursor` pagination.
-- `GET /entries/{technology}/{entry_id}` reads one record.
+- GET /health checks the PostgreSQL connection.
+- GET /start returns study rules, imported knowledge, per-topic progress, a
+  suggested technology, and an optional pending question.
+- GET /documents and GET /documents/{name} read imported source documents from
+  PostgreSQL.
+- POST /entries saves an answer and evaluation. An entry_id can be reused for
+  an idempotent retry. Optional difficulty is low, medium, or high; optional
+  score is 0 through 5. Missing scores stay null.
+- GET /entries?technology=kafka lists answers, with limit and numeric cursor.
+- GET /entries/{technology}/{entry_id} reads one answer.
 
-Example request to `POST /entries`:
+All routes except /health use the existing X-API-Key header. The key is read
+from LEARNIKAL_API_KEY. The current single-user name is read from
+LEARNIKAL_USERNAME (default: kalin); callers cannot choose another user.
+LEARNIKAL_DATABASE_URL provides the PostgreSQL connection string.
 
-```json
-{
-  "technology": "KAFKA",
-  "question": "How would you choose the message key for order events?",
-  "answer": "Use order_id so events for one order go to one partition.",
-  "evaluation": {
-    "demonstrated_independently": "Preserved per-order ordering",
-    "clarified_with_help": null,
-    "remaining_unverified": "Hot partition risk"
-  }
-}
-```
+## Local checks
 
-Keep Block Public Access on for the bucket. The initial API key is suitable for a single-user prototype; deploy HTTPS and stronger authentication before exposing the service to other laptops.
+Install requirements.txt in a virtual environment and run:
+
+    python -m unittest discover -s tests
+
+The unit tests use a fake store. A live PostgreSQL connection and S3 import
+must be checked separately during cutover.
