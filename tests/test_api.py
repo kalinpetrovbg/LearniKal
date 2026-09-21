@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
-from learnikal.api import app, get_store
+from learnikal.api import app, get_store, require_api_key
 from learnikal.models import EntryPage, StartContext
 from learnikal.postgres import ConflictError, NotFoundError
 
@@ -72,6 +72,11 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["suggested_technology"], "kafka")
         self.assertIn("равнопоставени", response.json()["instructions"])
+
+    def test_non_ascii_wrong_key_is_unauthorized(self):
+        with self.assertRaises(Exception) as caught:
+            require_api_key("грешен")
+        self.assertEqual(caught.exception.status_code, 401)
 
     def test_documents_are_allowlisted(self):
         response = self.client.get("/documents/handoff", headers=self.headers)

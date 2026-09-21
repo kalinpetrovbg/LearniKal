@@ -18,7 +18,9 @@ def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
     expected = os.getenv("LEARNIKAL_API_KEY")
     if not expected:
         raise HTTPException(status_code=503, detail="API key is not configured")
-    if not x_api_key or not hmac.compare_digest(x_api_key, expected):
+    if not x_api_key or not hmac.compare_digest(
+        x_api_key.encode("utf-8"), expected.encode("utf-8")
+    ):
         raise HTTPException(status_code=401, detail="Invalid API key")
 
 
