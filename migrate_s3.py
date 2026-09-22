@@ -67,11 +67,10 @@ def read_source(s3, bucket):
 
 def migrate(conn, documents, entries, username):
     conn.execute(Path(__file__).with_name("schema.sql").read_text(encoding="utf-8"))
-    conn.execute(
-        "INSERT INTO users (username) VALUES (%s) ON CONFLICT (username) DO NOTHING",
-        (username,),
-    )
-    user_id = conn.execute("SELECT id FROM users WHERE username = %s", (username,)).fetchone()[0]
+    user = conn.execute("SELECT id FROM users WHERE username = %s", (username,)).fetchone()
+    if user is None:
+        raise ValueError(f"User {username!r} must be created before importing S3 data")
+    user_id = user[0]
     conn.execute(
         "INSERT INTO learning_policy (id, instructions) VALUES (true, %s) ON CONFLICT (id) DO NOTHING",
         (STUDY_RULES,),
