@@ -45,8 +45,7 @@ class FakeStore:
             raise TopicConflictError
         topic_id = len(self.topics) + 1
         now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
-        created = Topic(id=topic_id, **topic.model_dump(), is_active=True,
-                        created_at=now, updated_at=now)
+        created = Topic(id=topic_id, **topic.model_dump(), created_at=now, updated_at=now)
         self.topics[topic_id] = created
         return created
 
@@ -167,6 +166,15 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(disabled.status_code, 200)
         self.assertFalse(disabled.json()["is_active"])
         self.assertEqual(self.client.patch("/topics/999/disable", headers=self.headers).status_code, 404)
+
+    def test_create_inactive_topic(self):
+        created = self.client.post(
+            "/topics", json={"slug": "queues", "name": "Queues", "is_active": False},
+            headers=self.headers,
+        )
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.json()["slug"], "queues")
+        self.assertFalse(created.json()["is_active"])
 
     def test_create_user(self):
         payload = {

@@ -13,7 +13,7 @@ from .postgres import (
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.5.0")
+app = FastAPI(title="LearniKal API", version="0.5.1")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:

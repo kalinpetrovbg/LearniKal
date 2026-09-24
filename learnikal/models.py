@@ -44,6 +44,7 @@ class EntryPage(BaseModel):
 class TopicInput(BaseModel):
     slug: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")
     name: str = Field(min_length=1, max_length=100)
+    is_active: bool = True
 
     @field_validator("slug")
     @classmethod
@@ -61,7 +62,6 @@ class TopicInput(BaseModel):
 
 class Topic(TopicInput):
     id: int
-    is_active: bool
     created_at: datetime
     updated_at: datetime
 

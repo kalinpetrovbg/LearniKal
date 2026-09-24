@@ -162,9 +162,9 @@ class PostgresStore:
             with self._connect() as conn:
                 try:
                     row = conn.execute(
-                        """INSERT INTO topics (slug, name) VALUES (%s, %s)
+                        """INSERT INTO topics (slug, name, is_active) VALUES (%s, %s, %s)
                            RETURNING id, slug, name, is_active, created_at, updated_at""",
-                        (topic.slug, topic.name),
+                        (topic.slug, topic.name, topic.is_active),
                     ).fetchone()
                 except psycopg.errors.UniqueViolation as exc:
                     raise TopicConflictError from exc
