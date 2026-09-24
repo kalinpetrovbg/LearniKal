@@ -3,7 +3,7 @@ import os
 import psycopg
 
 
-DSN = os.environ["LEARNIKAL_DATABASE_URL"]
+DSN = os.getenv("LEARNIKAL_DATABASE_URL", "dbname=learnikal user=postgres")
 
 
 def table_exists(conn, name: str) -> bool:
@@ -40,6 +40,7 @@ def ensure_constraint(conn, name: str, ddl: str) -> None:
 
 def main() -> None:
     with psycopg.connect(DSN) as conn:
+        conn.execute("SET ROLE learnikal")
         conn.execute(
             """CREATE OR REPLACE FUNCTION set_updated_at()
                RETURNS trigger LANGUAGE plpgsql AS $$
