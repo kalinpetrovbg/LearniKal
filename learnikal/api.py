@@ -6,14 +6,17 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
-from .models import Document, Entry, EntryInput, EntryPage, StartContext, Topic, TopicInput, User, UserInput
+from .models import (
+    Document, Entry, EntryInput, EntryPage, StartContext, Topic, TopicInput, User,
+    UserInput, UserUpdate,
+)
 from .postgres import (
     DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError,
     TopicConflictError, UserConflictError,
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.5.1")
+app = FastAPI(title="LearniKal API", version="0.5.2")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -110,6 +113,15 @@ def disable_topic(
           dependencies=[Depends(require_api_key)])
 def create_user(payload: UserInput, store: PostgresStore = Depends(get_store)) -> User:
     return store.create_user(payload)
+
+
+@app.patch("/users/{user_id}", response_model=User, dependencies=[Depends(require_api_key)])
+def update_user(
+    user_id: Annotated[int, Path(ge=1)],
+    payload: UserUpdate,
+    store: PostgresStore = Depends(get_store),
+) -> User:
+    return store.update_user(user_id, payload)
 
 
 @app.get("/entries/{technology}/{entry_id}", response_model=Entry, dependencies=[Depends(require_api_key)])

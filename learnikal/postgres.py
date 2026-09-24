@@ -5,7 +5,10 @@ from argon2 import PasswordHasher, Type
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
-from .models import Entry, EntryPage, StartContext, Topic, TopicInput, TopicProgress, User, UserInput
+from .models import (
+    Entry, EntryPage, StartContext, Topic, TopicInput, TopicProgress, User, UserInput,
+    UserUpdate,
+)
 
 
 DOCUMENTS = {
@@ -209,6 +212,33 @@ class PostgresStore:
                     ).fetchone()
                 except psycopg.errors.UniqueViolation as exc:
                     raise UserConflictError from exc
+                return self._user(row)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def update_user(self, user_id: int, user: UserUpdate) -> User:
+        password_hash = PASSWORD_HASHER.hash(user.password) if user.password is not None else None
+        try:
+            with self._connect() as conn:
+                try:
+                    row = conn.execute(
+                        """UPDATE users SET
+                           username = COALESCE(%s, username),
+                           first_name = COALESCE(%s, first_name),
+                           last_name = COALESCE(%s, last_name),
+                           email = COALESCE(%s, email),
+                           password_hash = COALESCE(%s, password_hash)
+                           WHERE id = %s
+                           RETURNING id, username, first_name, last_name, email, created_at, updated_at""",
+                        (
+                            user.username, user.first_name, user.last_name, user.email,
+                            password_hash, user_id,
+                        ),
+                    ).fetchone()
+                except psycopg.errors.UniqueViolation as exc:
+                    raise UserConflictError from exc
+                if row is None:
+                    raise NotFoundError
                 return self._user(row)
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc

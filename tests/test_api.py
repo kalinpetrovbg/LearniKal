@@ -69,6 +69,28 @@ class FakeStore:
         self.users[user_id] = created
         return created
 
+    def update_user(self, user_id, user):
+        old = self.users.get(user_id)
+        if old is None:
+            raise NotFoundError
+        username = user.username if user.username is not None else old.username
+        email = user.email if user.email is not None else old.email
+        if any(
+            item.id != user_id and (item.username == username or item.email == email)
+            for item in self.users.values()
+        ):
+            raise UserConflictError
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        updated = old.model_copy(update={
+            "username": username,
+            "first_name": user.first_name if user.first_name is not None else old.first_name,
+            "last_name": user.last_name if user.last_name is not None else old.last_name,
+            "email": email,
+            "updated_at": now,
+        })
+        self.users[user_id] = updated
+        return updated
+
     def get_entry(self, technology, entry_id):
         entry = self.entries.get(entry_id)
         if entry is None or entry.technology != technology:
@@ -190,6 +212,35 @@ class ApiTests(unittest.TestCase):
 
         duplicate = self.client.post("/users", json=payload, headers=self.headers)
         self.assertEqual(duplicate.status_code, 409)
+
+    def test_update_user(self):
+        created = self.client.post("/users", json={
+            "username": "MARTIN", "first_name": "Martin", "last_name": "Ivanov",
+            "email": "MARTIN@example.com", "password": "secret",
+        }, headers=self.headers).json()
+
+        updated = self.client.patch(
+            f"/users/{created['id']}",
+            json={"first_name": "Maria", "email": "MARIA@example.com", "password": "new-secret"},
+            headers=self.headers,
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.json()["username"], "martin")
+        self.assertEqual(updated.json()["first_name"], "Maria")
+        self.assertEqual(updated.json()["email"], "maria@example.com")
+        self.assertNotIn("password", updated.json())
+        self.assertNotIn("password_hash", updated.json())
+
+        self.client.post("/users", json={
+            "username": "ivan", "first_name": "Ivan", "last_name": "Petrov",
+            "email": "ivan@example.com", "password": "secret",
+        }, headers=self.headers)
+        duplicate = self.client.patch(
+            f"/users/{created['id']}", json={"email": "ivan@example.com"}, headers=self.headers
+        )
+        self.assertEqual(duplicate.status_code, 409)
+        self.assertEqual(self.client.patch("/users/999", json={"first_name": "Nobody"}, headers=self.headers).status_code, 404)
+        self.assertEqual(self.client.patch(f"/users/{created['id']}", json={}, headers=self.headers).status_code, 422)
 
     def test_invalid_input_and_missing_entry(self):
         payload = {"technology": "kafka", "question": "Q", "answer": "A"}

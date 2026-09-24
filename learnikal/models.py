@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class Evaluation(BaseModel):
@@ -90,6 +90,40 @@ class UserInput(BaseModel):
     @classmethod
     def normalize_email(cls, value: str) -> str:
         return value.lower()
+
+
+class UserUpdate(BaseModel):
+    username: str | None = Field(default=None, pattern=r"^[A-Za-z][A-Za-z0-9_-]{2,39}$")
+    first_name: str | None = Field(default=None, min_length=1, max_length=100)
+    last_name: str | None = Field(default=None, min_length=1, max_length=100)
+    email: str | None = Field(default=None, min_length=3, max_length=320)
+    password: str | None = Field(default=None, min_length=1, max_length=200)
+
+    @field_validator("username")
+    @classmethod
+    def normalize_username(cls, value: str | None) -> str | None:
+        return value.lower() if value is not None else value
+
+    @field_validator("first_name", "last_name", "email", "password")
+    @classmethod
+    def reject_blank_profile_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("Must contain non-whitespace text")
+        return value
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str | None) -> str | None:
+        return value.lower() if value is not None else value
+
+    @model_validator(mode="after")
+    def require_update_field(self):
+        if not self.model_fields_set:
+            raise ValueError("At least one user field must be provided")
+        return self
 
 
 class User(BaseModel):
