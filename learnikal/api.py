@@ -16,7 +16,7 @@ from .postgres import (
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.5.3")
+app = FastAPI(title="LearniKal API", version="0.5.4")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -94,13 +94,13 @@ def create_entry(payload: EntryInput, store: PostgresStore = Depends(get_store))
     return store.save_entry(entry)
 
 
-@app.post("/topics", response_model=Topic, status_code=status.HTTP_201_CREATED,
+@app.post("/topics", response_model=Topic, status_code=status.HTTP_201_CREATED, tags=["Topics"],
           dependencies=[Depends(require_api_key)])
 def create_topic(payload: TopicInput, store: PostgresStore = Depends(get_store)) -> Topic:
     return store.create_topic(payload)
 
 
-@app.patch("/topics/{topic_id}", response_model=Topic,
+@app.patch("/topics/{topic_id}", response_model=Topic, tags=["Topics"],
            dependencies=[Depends(require_api_key)])
 def update_topic(
     topic_id: Annotated[int, Path(ge=1)],
@@ -110,13 +110,13 @@ def update_topic(
     return store.update_topic(topic_id, payload)
 
 
-@app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED,
+@app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED, tags=["Users"],
           dependencies=[Depends(require_api_key)])
 def create_user(payload: UserInput, store: PostgresStore = Depends(get_store)) -> User:
     return store.create_user(payload)
 
 
-@app.patch("/users/{user_id}", response_model=User, dependencies=[Depends(require_api_key)])
+@app.patch("/users/{user_id}", response_model=User, tags=["Users"], dependencies=[Depends(require_api_key)])
 def update_user(
     user_id: Annotated[int, Path(ge=1)],
     payload: UserUpdate,
