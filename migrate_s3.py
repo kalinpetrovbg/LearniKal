@@ -4,13 +4,30 @@ import hashlib
 import json
 import os
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
 import boto3
 import psycopg
+from pydantic import BaseModel, Field, field_validator
 
-from learnikal.models import Entry
 from learnikal.postgres import DEFAULT_INSTRUCTIONS, DOCUMENTS
+
+
+class LegacyEntry(BaseModel):
+    technology: str
+    question: str
+    answer: str
+    evaluation: dict | None = None
+    next_question: str | None = None
+    difficulty: str | None = Field(default=None, pattern=r"^(low|medium|high)$")
+    score: int | None = Field(default=None, ge=0, le=5)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @field_validator("technology")
+    @classmethod
+    def normalize_technology(cls, value: str) -> str:
+        return value.lower()
 
 
 TOPIC_NAMES = {
@@ -65,7 +82,7 @@ def read_source(s3, bucket):
             body = s3.get_object(Bucket=bucket, Key=item["Key"])["Body"].read()
             raw_entry = json.loads(body)
             legacy_entry_id = raw_entry.pop("entry_id")
-            entry = Entry.model_validate({**raw_entry, "entry_id": None})
+            entry = LegacyEntry.model_validate(raw_entry)
             expected_key = f"learning/entries/{entry.technology}/{legacy_entry_id}.json"
             if item["Key"] != expected_key:
                 raise ValueError(f"S3 entry key does not match content: {item['Key']}")
@@ -122,24 +139,22 @@ def migrate(conn, documents, entries, username):
         )
 
     for _legacy_id, entry in entries:
-        from psycopg.types.json import Jsonb
-
         existing = conn.execute(
-            """SELECT id FROM learning_entries
-               WHERE user_id = %s AND topic_id = %s AND question = %s
-                 AND answer = %s AND created_at = %s""",
-            (user_id, topic_ids[entry.technology], entry.question, entry.answer, entry.created_at),
+            """SELECT id FROM answers
+               WHERE user_id = %s AND topic_id = %s AND created_at = %s""",
+            (user_id, topic_ids[entry.technology], entry.created_at),
         ).fetchone()
         if existing:
             continue
+        difficulty = {"low": 1, "medium": 3, "high": 5}.get(entry.difficulty or "medium", 3)
+        score = entry.score if entry.score is not None else 0
+        metric = min(5, max(1, score or 3))
         conn.execute(
-            """INSERT INTO learning_entries
-               (user_id, topic_id, question, answer, evaluation, next_question,
-                difficulty, score, created_at)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-            (user_id, topic_ids[entry.technology], entry.question, entry.answer,
-             Jsonb(entry.evaluation.model_dump()) if entry.evaluation else None,
-             entry.next_question, entry.difficulty, entry.score, entry.created_at),
+            """INSERT INTO answers
+               (user_id, topic_id, question_id, score, difficulty, independence_score,
+                clarity_score, completeness_score, confidence_score, created_at)
+               VALUES (%s, %s, NULL, %s, %s, %s, %s, %s, %s, %s)""",
+            (user_id, topic_ids[entry.technology], score, difficulty, metric, metric, metric, metric, entry.created_at),
         )
 
     question = pending_question(documents["handoff"])
@@ -157,7 +172,7 @@ def migrate(conn, documents, entries, username):
         if row != (content, hashlib.sha256(content.encode("utf-8")).hexdigest()):
             raise ValueError(f"Verification failed for document {name}")
     imported = conn.execute(
-        "SELECT COUNT(*) FROM learning_entries WHERE user_id = %s",
+        "SELECT COUNT(*) FROM answers WHERE user_id = %s",
         (user_id,),
     ).fetchone()[0]
     if imported < len(entries):

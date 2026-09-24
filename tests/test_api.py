@@ -4,7 +4,7 @@ import unittest
 from fastapi.testclient import TestClient
 
 from learnikal.api import app, get_store, require_api_key
-from learnikal.models import EntryPage, Instruction, StartContext, Subtopic, Topic, User
+from learnikal.models import Answer, AnswerPage, Instruction, StartContext, Subtopic, Topic, User
 from learnikal.postgres import (
     ConflictError, NotFoundError, SubtopicConflictError, TopicConflictError,
     TopicInUseError, UserConflictError,
@@ -13,7 +13,7 @@ from learnikal.postgres import (
 
 class FakeStore:
     def __init__(self):
-        self.entries = {}
+        self.answers = {}
         self.topics = {}
         self.subtopics = {}
         self.users = {}
@@ -35,14 +35,16 @@ class FakeStore:
             raise NotFoundError
         return "Следващ въпрос: Kafka ordering"
 
-    def save_entry(self, entry):
-        if not entry.entry_id:
-            entry = entry.model_copy(update={"entry_id": len(self.entries) + 1})
-        old = self.entries.get(entry.entry_id)
-        if old and old.model_dump(exclude={"created_at"}) != entry.model_dump(exclude={"created_at"}):
+    def create_answer(self, answer):
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        user_id = answer.user_id or 1
+        answer_id = answer.id or len(self.answers) + 1
+        created = Answer(**answer.model_dump(exclude={"id", "user_id"}), id=answer_id, user_id=user_id, created_at=now, updated_at=now)
+        old = self.answers.get(answer_id)
+        if old and old.model_dump(exclude={"created_at", "updated_at"}) != created.model_dump(exclude={"created_at", "updated_at"}):
             raise ConflictError
-        self.entries[entry.entry_id] = old or entry
-        return self.entries[entry.entry_id]
+        self.answers[answer_id] = old or created
+        return self.answers[answer_id]
 
     def create_topic(self, topic):
         if any(item.slug == topic.slug or item.name.lower() == topic.name.lower()
@@ -82,7 +84,7 @@ class FakeStore:
         topic = self.topics.get(topic_id)
         if topic is None:
             raise NotFoundError
-        if any(entry.technology == topic.slug for entry in self.entries.values()):
+        if any(answer.topic_id == topic_id for answer in self.answers.values()):
             raise TopicInUseError
         self.subtopics = {
             subtopic_id: subtopic for subtopic_id, subtopic in self.subtopics.items()
@@ -221,16 +223,17 @@ class FakeStore:
             raise NotFoundError
         del self.instructions[instruction_id]
 
-    def get_entry(self, technology, entry_id):
-        entry = self.entries.get(entry_id)
-        if entry is None or entry.technology != technology:
+    def get_answer(self, answer_id):
+        answer = self.answers.get(answer_id)
+        if answer is None:
             raise NotFoundError
-        return entry
+        return answer
 
-    def list_entries(self, technology, limit, cursor):
-        items = [entry for entry in self.entries.values() if entry.technology == technology]
+    def list_answers(self, topic_id, subtopic_id, limit, cursor):
+        items = [answer for answer in self.answers.values() if topic_id is None or answer.topic_id == topic_id]
+        items = [answer for answer in items if subtopic_id is None or answer.subtopic_id == subtopic_id]
         page = items[cursor:cursor + limit]
-        return EntryPage(items=page, next_cursor=str(cursor + limit) if len(items) > cursor + limit else None)
+        return AnswerPage(items=page, next_cursor=str(cursor + limit) if len(items) > cursor + limit else None)
 
 
 class ApiTests(unittest.TestCase):
@@ -270,38 +273,44 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.get("/documents/unknown", headers=self.headers).status_code, 404)
 
     def test_create_read_list_and_idempotent_retry(self):
-        entry_id = 123
+        topic = self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers).json()
+        subtopic = self.client.post(
+            "/subtopics", json={"topic_id": topic["id"], "slug": "ordering", "name": "Ordering"},
+            headers=self.headers,
+        ).json()
+        answer_id = 123
         payload = {
-            "entry_id": entry_id, "technology": "KAFKA",
-            "question": "How should events be partitioned?", "answer": "By order_id.",
-            "evaluation": {"demonstrated_independently": "Per-order ordering"},
-            "difficulty": "high", "score": 4,
+            "id": answer_id, "topic_id": topic["id"], "subtopic_id": subtopic["id"],
+            "question_id": 77, "difficulty": 5, "score": 4,
+            "independence_score": 4, "clarity_score": 5,
+            "completeness_score": 4, "confidence_score": 3,
         }
-        created = self.client.post("/entries", json=payload, headers=self.headers)
+        created = self.client.post("/answers", json=payload, headers=self.headers)
         self.assertEqual(created.status_code, 201)
-        self.assertEqual(created.json()["technology"], "kafka")
-        self.assertEqual(self.client.post("/entries", json=payload, headers=self.headers).json(), created.json())
+        self.assertEqual(created.json()["topic_id"], topic["id"])
+        self.assertEqual(self.client.post("/answers", json=payload, headers=self.headers).json(), created.json())
         self.assertEqual(
-            self.client.get(f"/entries/kafka/{entry_id}", headers=self.headers).json(), created.json()
+            self.client.get(f"/answers/{answer_id}", headers=self.headers).json(), created.json()
         )
         self.assertEqual(
-            self.client.get("/entries?technology=kafka", headers=self.headers).json()["items"],
+            self.client.get(f"/answers/list?topic_id={topic['id']}", headers=self.headers).json()["items"],
             [created.json()],
         )
         changed = self.client.post(
-            "/entries", json={**payload, "answer": "By customer_id."}, headers=self.headers
+            "/answers", json={**payload, "score": 2}, headers=self.headers
         )
         self.assertEqual(changed.status_code, 409)
 
-    def test_generated_entry_id_is_integer(self):
+    def test_generated_answer_id_is_integer(self):
+        topic = self.client.post("/topics", json={"slug": "postgresql", "name": "PostgreSQL"}, headers=self.headers).json()
         payload = {
-            "technology": "postgresql",
-            "question": "Q",
-            "answer": "A",
+            "topic_id": topic["id"], "score": 5, "difficulty": 2,
+            "independence_score": 5, "clarity_score": 4,
+            "completeness_score": 4, "confidence_score": 3,
         }
-        created = self.client.post("/entries", json=payload, headers=self.headers)
+        created = self.client.post("/answers", json=payload, headers=self.headers)
         self.assertEqual(created.status_code, 201)
-        self.assertEqual(created.json()["entry_id"], 1)
+        self.assertEqual(created.json()["id"], 1)
 
     def test_create_and_update_topic(self):
         created = self.client.post(
@@ -379,7 +388,15 @@ class ApiTests(unittest.TestCase):
         used = self.client.post(
             "/topics", json={"slug": "used", "name": "Used"}, headers=self.headers
         ).json()
-        self.client.post("/entries", json={"technology": "used", "question": "Q", "answer": "A"}, headers=self.headers)
+        self.client.post(
+            "/answers",
+            json={
+                "topic_id": used["id"], "score": 3, "difficulty": 2,
+                "independence_score": 3, "clarity_score": 3,
+                "completeness_score": 3, "confidence_score": 3,
+            },
+            headers=self.headers,
+        )
         self.assertEqual(self.client.delete(f"/topics/{used['id']}", headers=self.headers).status_code, 409)
 
     def test_create_list_update_and_delete_subtopic(self):
@@ -530,12 +547,16 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.delete(f"/instructions/{first.json()['id']}", headers=self.headers).status_code, 204)
         self.assertEqual(self.client.delete(f"/instructions/{first.json()['id']}", headers=self.headers).status_code, 404)
 
-    def test_invalid_input_and_missing_entry(self):
-        payload = {"technology": "kafka", "question": "Q", "answer": "A"}
-        self.assertEqual(self.client.post("/entries", json={**payload, "score": 6}, headers=self.headers).status_code, 422)
-        self.assertEqual(self.client.post("/entries", json={**payload, "difficulty": "extreme"}, headers=self.headers).status_code, 422)
-        self.assertEqual(self.client.post("/entries", json={**payload, "answer": "  "}, headers=self.headers).status_code, 422)
-        self.assertEqual(self.client.get("/entries/kafka/999", headers=self.headers).status_code, 404)
+    def test_invalid_input_and_missing_answer(self):
+        payload = {
+            "topic_id": 1, "score": 4, "difficulty": 3,
+            "independence_score": 4, "clarity_score": 4,
+            "completeness_score": 4, "confidence_score": 4,
+        }
+        self.assertEqual(self.client.post("/answers", json={**payload, "score": 6}, headers=self.headers).status_code, 422)
+        self.assertEqual(self.client.post("/answers", json={**payload, "difficulty": 6}, headers=self.headers).status_code, 422)
+        self.assertEqual(self.client.post("/answers", json={**payload, "confidence_score": 0}, headers=self.headers).status_code, 422)
+        self.assertEqual(self.client.get("/answers/999", headers=self.headers).status_code, 404)
 
 
 if __name__ == "__main__":

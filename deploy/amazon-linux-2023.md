@@ -8,7 +8,7 @@ Attach `LearniKal-EC2-Role` to the instance. It needs `AmazonSSMManagedInstanceC
 
 ## S3 layout
 
-Use the private `learnikal-s3-bucket` bucket with the existing `learning/documents/` objects. The service stores new answer records under `learning/entries/`.
+Use the private `learnikal-s3-bucket` bucket with the existing `learning/documents/` objects. New answer scores are stored in PostgreSQL.
 
 ## Install
 

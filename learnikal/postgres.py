@@ -3,10 +3,9 @@ import re
 import psycopg
 from argon2 import PasswordHasher, Type
 from psycopg.rows import dict_row
-from psycopg.types.json import Jsonb
 
 from .models import (
-    Entry, EntryPage, Instruction, InstructionInput, InstructionUpdate, StartContext,
+    Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionUpdate, StartContext,
     Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicProgress,
     TopicUpdate, User, UserInput, UserUpdate,
 )
@@ -83,11 +82,14 @@ class PostgresStore:
         return row["id"]
 
     @staticmethod
-    def _entry(row):
-        return Entry(
-            entry_id=row["id"], technology=row["technology"], question=row["question"],
-            answer=row["answer"], evaluation=row["evaluation"], next_question=row["next_question"],
-            difficulty=row["difficulty"], score=row["score"], created_at=row["created_at"],
+    def _answer(row):
+        return Answer(
+            id=row["id"], user_id=row["user_id"], topic_id=row["topic_id"],
+            subtopic_id=row["subtopic_id"], question_id=row["question_id"],
+            score=row["score"], difficulty=row["difficulty"],
+            independence_score=row["independence_score"], clarity_score=row["clarity_score"],
+            completeness_score=row["completeness_score"], confidence_score=row["confidence_score"],
+            created_at=row["created_at"], updated_at=row["updated_at"],
         )
 
     @staticmethod
@@ -142,50 +144,61 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
 
-    def save_entry(self, entry: Entry) -> Entry:
+    def create_answer(self, answer: AnswerInput) -> Answer:
         try:
             with self._connect() as conn:
-                user_id = self._user_id(conn)
+                user_id = answer.user_id or self._user_id(conn)
                 topic = conn.execute(
-                    "SELECT id FROM topics WHERE slug = %s AND is_active = true",
-                    (entry.technology,),
+                    "SELECT id FROM topics WHERE id = %s AND is_active = true",
+                    (answer.topic_id,),
                 ).fetchone()
                 if topic is None:
                     raise NotFoundError
-                values = (user_id, topic["id"], entry.question, entry.answer,
-                          Jsonb(entry.evaluation.model_dump()) if entry.evaluation else None,
-                          entry.next_question, entry.difficulty, entry.score, entry.created_at)
-                if entry.entry_id:
+                if answer.subtopic_id is not None:
+                    subtopic = conn.execute(
+                        """SELECT id FROM subtopics
+                           WHERE id = %s AND topic_id = %s AND is_active = true""",
+                        (answer.subtopic_id, answer.topic_id),
+                    ).fetchone()
+                    if subtopic is None:
+                        raise NotFoundError
+                values = (
+                    user_id, answer.topic_id, answer.subtopic_id, answer.question_id,
+                    answer.score, answer.difficulty, answer.independence_score,
+                    answer.clarity_score, answer.completeness_score, answer.confidence_score,
+                )
+                if answer.id:
                     inserted = conn.execute(
-                        """INSERT INTO learning_entries
-                           (id, user_id, topic_id, question, answer, evaluation, next_question,
-                            difficulty, score, created_at)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """INSERT INTO answers
+                           (id, user_id, topic_id, subtopic_id, question_id, score, difficulty,
+                            independence_score, clarity_score, completeness_score, confidence_score)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                            ON CONFLICT (id) DO NOTHING RETURNING id""",
-                        (entry.entry_id, *values),
+                        (answer.id, *values),
                     ).fetchone()
                 else:
                     inserted = conn.execute(
-                        """INSERT INTO learning_entries
-                           (user_id, topic_id, question, answer, evaluation, next_question,
-                            difficulty, score, created_at)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """INSERT INTO answers
+                           (user_id, topic_id, subtopic_id, question_id, score, difficulty,
+                            independence_score, clarity_score, completeness_score, confidence_score)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                            RETURNING id""",
                         values,
                     ).fetchone()
                 if inserted is None:
-                    existing = self._get_entry(conn, user_id, entry.technology, entry.entry_id)
-                    if existing.model_dump(exclude={"created_at"}) != entry.model_dump(exclude={"created_at"}):
+                    existing = self._get_answer(conn, user_id, answer.id)
+                    expected = answer.model_dump(exclude={"id", "user_id"}) | {"user_id": user_id}
+                    actual = existing.model_dump(
+                        exclude={"id", "created_at", "updated_at"}
+                    )
+                    if actual != expected:
                         raise ConflictError
                     return existing
-                conn.execute(
-                    """INSERT INTO learning_state (user_id, next_topic_id, next_question)
-                       VALUES (%s, %s, %s) ON CONFLICT (user_id) DO UPDATE SET
-                       next_topic_id = EXCLUDED.next_topic_id,
-                       next_question = EXCLUDED.next_question, updated_at = now()""",
-                    (user_id, topic["id"] if entry.next_question else None, entry.next_question),
-                )
-                return Entry(**entry.model_dump(exclude={"entry_id"}), entry_id=inserted["id"])
+                return self._get_answer(conn, user_id, inserted["id"])
+        except psycopg.errors.UniqueViolation as exc:
+            raise ConflictError from exc
+        except psycopg.errors.ForeignKeyViolation as exc:
+            raise NotFoundError from exc
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
@@ -243,7 +256,7 @@ class PostgresStore:
                 if topic is None:
                     raise NotFoundError
                 entry_count = conn.execute(
-                    "SELECT COUNT(*) AS count FROM learning_entries WHERE topic_id = %s",
+                    "SELECT COUNT(*) AS count FROM answers WHERE topic_id = %s",
                     (topic_id,),
                 ).fetchone()["count"]
                 if entry_count:
@@ -402,7 +415,7 @@ class PostgresStore:
                 if user is None:
                     raise NotFoundError
                 conn.execute("DELETE FROM learning_state WHERE user_id = %s", (user_id,))
-                conn.execute("DELETE FROM learning_entries WHERE user_id = %s", (user_id,))
+                conn.execute("DELETE FROM answers WHERE user_id = %s", (user_id,))
                 conn.execute("DELETE FROM users WHERE id = %s", (user_id,))
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
@@ -465,36 +478,41 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
-    def _get_entry(self, conn, user_id, technology, entry_id):
+    def _get_answer(self, conn, user_id, answer_id):
         row = conn.execute(
-            """SELECT e.*, t.slug AS technology FROM learning_entries e
-               JOIN topics t ON t.id = e.topic_id
-               WHERE e.id = %s AND e.user_id = %s AND t.slug = %s""",
-            (entry_id, user_id, technology),
+            """SELECT id, user_id, topic_id, subtopic_id, question_id, score, difficulty,
+                      independence_score, clarity_score, completeness_score, confidence_score,
+                      created_at, updated_at
+               FROM answers WHERE id = %s AND user_id = %s""",
+            (answer_id, user_id),
         ).fetchone()
         if row is None:
             raise NotFoundError
-        return self._entry(row)
+        return self._answer(row)
 
-    def get_entry(self, technology: str, entry_id: int) -> Entry:
+    def get_answer(self, answer_id: int) -> Answer:
         try:
             with self._connect() as conn:
-                return self._get_entry(conn, self._user_id(conn), technology, entry_id)
+                return self._get_answer(conn, self._user_id(conn), answer_id)
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
 
-    def list_entries(self, technology: str, limit: int, cursor: int) -> EntryPage:
+    def list_answers(self, topic_id: int | None, subtopic_id: int | None, limit: int, cursor: int) -> AnswerPage:
         try:
             with self._connect() as conn:
                 rows = conn.execute(
-                    """SELECT e.*, t.slug AS technology FROM learning_entries e
-                       JOIN topics t ON t.id = e.topic_id
-                       WHERE e.user_id = %s AND t.slug = %s
-                       ORDER BY e.created_at DESC, e.id DESC LIMIT %s OFFSET %s""",
-                    (self._user_id(conn), technology, limit + 1, cursor),
+                    """SELECT id, user_id, topic_id, subtopic_id, question_id, score, difficulty,
+                              independence_score, clarity_score, completeness_score, confidence_score,
+                              created_at, updated_at
+                       FROM answers
+                       WHERE user_id = %s
+                         AND (%s IS NULL OR topic_id = %s)
+                         AND (%s IS NULL OR subtopic_id = %s)
+                       ORDER BY created_at DESC, id DESC LIMIT %s OFFSET %s""",
+                    (self._user_id(conn), topic_id, topic_id, subtopic_id, subtopic_id, limit + 1, cursor),
                 ).fetchall()
-                return EntryPage(
-                    items=[self._entry(row) for row in rows[:limit]],
+                return AnswerPage(
+                    items=[self._answer(row) for row in rows[:limit]],
                     next_cursor=str(cursor + limit) if len(rows) > limit else None,
                 )
         except psycopg.Error as exc:
@@ -521,7 +539,7 @@ class PostgresStore:
                 ).fetchone()
                 topic = conn.execute(
                     """SELECT t.slug FROM topics t
-                       LEFT JOIN learning_entries e ON e.topic_id = t.id AND e.user_id = %s
+                       LEFT JOIN answers e ON e.topic_id = t.id AND e.user_id = %s
                        WHERE t.is_active = true
                        GROUP BY t.id, t.slug
                        ORDER BY max(e.created_at) ASC NULLS FIRST, t.slug ASC LIMIT 1""",
@@ -530,7 +548,7 @@ class PostgresStore:
                 progress_rows = conn.execute(
                     """SELECT t.slug, COUNT(e.id) AS answer_count,
                               AVG(e.score) AS average_score
-                       FROM topics t LEFT JOIN learning_entries e
+                       FROM topics t LEFT JOIN answers e
                          ON e.topic_id = t.id AND e.user_id = %s
                        WHERE t.is_active = true
                        GROUP BY t.id, t.slug ORDER BY t.slug""",

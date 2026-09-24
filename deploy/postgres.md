@@ -82,7 +82,7 @@ output.
 
 Deploy the PostgreSQL API only after the import succeeds. Check
 https://api.learnikal.com/health and authenticated /start, /documents/handoff,
-and create/read/list entries. Remove S3 learning data and local Markdown copies
+and create/read/list answers. Remove S3 learning data and local Markdown copies
 only after those checks.
 *** Update File: NEXT_STEPS.md
 @@

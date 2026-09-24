@@ -1,13 +1,12 @@
 import hmac
 import os
-from datetime import datetime, timezone
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
 from .models import (
-    Document, Entry, EntryInput, EntryPage, Instruction, InstructionInput,
+    Answer, AnswerInput, AnswerPage, Document, Instruction, InstructionInput,
     InstructionUpdate, StartContext, Subtopic, SubtopicInput, SubtopicUpdate, Topic,
     TopicInput, TopicUpdate, User, UserInput, UserUpdate,
 )
@@ -44,7 +43,7 @@ async def not_found_handler(_request, _exc):
 
 @app.exception_handler(ConflictError)
 async def conflict_handler(_request, _exc):
-    return JSONResponse(status_code=409, content={"detail": "Entry ID already exists with different content"})
+    return JSONResponse(status_code=409, content={"detail": "Answer ID already exists with different content"})
 
 
 @app.exception_handler(TopicConflictError)
@@ -54,7 +53,7 @@ async def topic_conflict_handler(_request, _exc):
 
 @app.exception_handler(TopicInUseError)
 async def topic_in_use_handler(_request, _exc):
-    return JSONResponse(status_code=409, content={"detail": "Topic has learning entries; disable it instead"})
+    return JSONResponse(status_code=409, content={"detail": "Topic has answers; disable it instead"})
 
 
 @app.exception_handler(SubtopicConflictError)
@@ -95,14 +94,10 @@ def get_document(name: str, store: PostgresStore = Depends(get_store)) -> Docume
     return Document(name=name, content=store.get_document(name))
 
 
-@app.post("/entries", response_model=Entry, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_api_key)])
-def create_entry(payload: EntryInput, store: PostgresStore = Depends(get_store)) -> Entry:
-    entry = Entry(
-        **payload.model_dump(exclude={"entry_id"}),
-        entry_id=payload.entry_id,
-        created_at=datetime.now(timezone.utc),
-    )
-    return store.save_entry(entry)
+@app.post("/answers", response_model=Answer, status_code=status.HTTP_201_CREATED,
+          tags=["Answers"], dependencies=[Depends(require_api_key)])
+def create_answer(payload: AnswerInput, store: PostgresStore = Depends(get_store)) -> Answer:
+    return store.create_answer(payload)
 
 
 @app.post("/topics", response_model=Topic, status_code=status.HTTP_201_CREATED, tags=["Topics"],
@@ -231,20 +226,22 @@ def delete_instruction(
     store.delete_instruction(instruction_id)
 
 
-@app.get("/entries/{technology}/{entry_id}", response_model=Entry, dependencies=[Depends(require_api_key)])
-def get_entry(
-    technology: Annotated[str, Path(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")],
-    entry_id: Annotated[int, Path(ge=1)],
-    store: PostgresStore = Depends(get_store),
-) -> Entry:
-    return store.get_entry(technology.lower(), entry_id)
-
-
-@app.get("/entries", response_model=EntryPage, dependencies=[Depends(require_api_key)])
-def list_entries(
-    technology: Annotated[str, Query(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")],
+@app.get("/answers/list", response_model=AnswerPage, tags=["Answers"],
+         dependencies=[Depends(require_api_key)])
+def list_answers(
+    topic_id: Annotated[int | None, Query(ge=1)] = None,
+    subtopic_id: Annotated[int | None, Query(ge=1)] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     cursor: Annotated[int, Query(ge=0)] = 0,
     store: PostgresStore = Depends(get_store),
-) -> EntryPage:
-    return store.list_entries(technology.lower(), limit, cursor)
+) -> AnswerPage:
+    return store.list_answers(topic_id, subtopic_id, limit, cursor)
+
+
+@app.get("/answers/{answer_id}", response_model=Answer, tags=["Answers"],
+         dependencies=[Depends(require_api_key)])
+def get_answer(
+    answer_id: Annotated[int, Path(ge=1)],
+    store: PostgresStore = Depends(get_store),
+) -> Answer:
+    return store.get_answer(answer_id)
