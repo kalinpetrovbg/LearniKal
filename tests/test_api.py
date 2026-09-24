@@ -4,14 +4,15 @@ import unittest
 from fastapi.testclient import TestClient
 
 from learnikal.api import app, get_store, require_api_key
-from learnikal.models import EntryPage, StartContext, Topic
-from learnikal.postgres import ConflictError, NotFoundError, TopicConflictError
+from learnikal.models import EntryPage, StartContext, Topic, User
+from learnikal.postgres import ConflictError, NotFoundError, TopicConflictError, UserConflictError
 
 
 class FakeStore:
     def __init__(self):
         self.entries = {}
         self.topics = {}
+        self.users = {}
 
     def start(self):
         return StartContext(
@@ -56,6 +57,18 @@ class FakeStore:
         disabled = topic.model_copy(update={"is_active": False})
         self.topics[topic_id] = disabled
         return disabled
+
+    def create_user(self, user):
+        if any(item.username == user.username or item.email == user.email for item in self.users.values()):
+            raise UserConflictError
+        user_id = len(self.users) + 1
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        created = User(
+            id=user_id, username=user.username, first_name=user.first_name,
+            last_name=user.last_name, email=user.email, created_at=now, updated_at=now,
+        )
+        self.users[user_id] = created
+        return created
 
     def get_entry(self, technology, entry_id):
         entry = self.entries.get(entry_id)
@@ -154,6 +167,21 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(disabled.status_code, 200)
         self.assertFalse(disabled.json()["is_active"])
         self.assertEqual(self.client.patch("/topics/999/disable", headers=self.headers).status_code, 404)
+
+    def test_create_user(self):
+        payload = {
+            "username": "MARTIN", "first_name": "Martin", "last_name": "Ivanov",
+            "email": "MARTIN@example.com", "password": "secret",
+        }
+        created = self.client.post("/users", json=payload, headers=self.headers)
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.json()["username"], "martin")
+        self.assertEqual(created.json()["email"], "martin@example.com")
+        self.assertNotIn("password", created.json())
+        self.assertNotIn("password_hash", created.json())
+
+        duplicate = self.client.post("/users", json=payload, headers=self.headers)
+        self.assertEqual(duplicate.status_code, 409)
 
     def test_invalid_input_and_missing_entry(self):
         payload = {"technology": "kafka", "question": "Q", "answer": "A"}

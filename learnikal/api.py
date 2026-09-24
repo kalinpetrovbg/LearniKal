@@ -6,14 +6,14 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
-from .models import Document, Entry, EntryInput, EntryPage, StartContext, Topic, TopicInput
+from .models import Document, Entry, EntryInput, EntryPage, StartContext, Topic, TopicInput, User, UserInput
 from .postgres import (
     DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError,
-    TopicConflictError,
+    TopicConflictError, UserConflictError,
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.4.0")
+app = FastAPI(title="LearniKal API", version="0.5.0")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -46,6 +46,11 @@ async def conflict_handler(_request, _exc):
 @app.exception_handler(TopicConflictError)
 async def topic_conflict_handler(_request, _exc):
     return JSONResponse(status_code=409, content={"detail": "Topic slug or name already exists"})
+
+
+@app.exception_handler(UserConflictError)
+async def user_conflict_handler(_request, _exc):
+    return JSONResponse(status_code=409, content={"detail": "Username or email already exists"})
 
 
 @app.exception_handler(StorageError)
@@ -99,6 +104,12 @@ def disable_topic(
     store: PostgresStore = Depends(get_store),
 ) -> Topic:
     return store.disable_topic(topic_id)
+
+
+@app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED,
+          dependencies=[Depends(require_api_key)])
+def create_user(payload: UserInput, store: PostgresStore = Depends(get_store)) -> User:
+    return store.create_user(payload)
 
 
 @app.get("/entries/{technology}/{entry_id}", response_model=Entry, dependencies=[Depends(require_api_key)])

@@ -1,10 +1,11 @@
 import re
 
 import psycopg
+from argon2 import PasswordHasher, Type
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
-from .models import Entry, EntryPage, StartContext, Topic, TopicInput, TopicProgress
+from .models import Entry, EntryPage, StartContext, Topic, TopicInput, TopicProgress, User, UserInput
 
 
 DOCUMENTS = {
@@ -38,8 +39,15 @@ class TopicConflictError(Exception):
     pass
 
 
+class UserConflictError(Exception):
+    pass
+
+
 class StorageError(Exception):
     pass
+
+
+PASSWORD_HASHER = PasswordHasher(time_cost=2, memory_cost=19456, parallelism=1, type=Type.ID)
 
 
 class PostgresStore:
@@ -72,6 +80,14 @@ class PostgresStore:
         return Topic(
             id=row["id"], slug=row["slug"], name=row["name"],
             is_active=row["is_active"], created_at=row["created_at"],
+            updated_at=row["updated_at"],
+        )
+
+    @staticmethod
+    def _user(row):
+        return User(
+            id=row["id"], username=row["username"], first_name=row["first_name"],
+            last_name=row["last_name"], email=row["email"], created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
 
@@ -174,6 +190,26 @@ class PostgresStore:
                 if row is None:
                     raise NotFoundError
                 return self._topic(row)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def create_user(self, user: UserInput) -> User:
+        try:
+            with self._connect() as conn:
+                try:
+                    row = conn.execute(
+                        """INSERT INTO users
+                           (username, first_name, last_name, email, password_hash)
+                           VALUES (%s, %s, %s, %s, %s)
+                           RETURNING id, username, first_name, last_name, email, created_at, updated_at""",
+                        (
+                            user.username, user.first_name, user.last_name, user.email,
+                            PASSWORD_HASHER.hash(user.password),
+                        ),
+                    ).fetchone()
+                except psycopg.errors.UniqueViolation as exc:
+                    raise UserConflictError from exc
+                return self._user(row)
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 

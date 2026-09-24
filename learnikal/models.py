@@ -66,6 +66,42 @@ class Topic(TopicInput):
     updated_at: datetime
 
 
+class UserInput(BaseModel):
+    username: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_-]{2,39}$")
+    first_name: str = Field(min_length=1, max_length=100)
+    last_name: str = Field(min_length=1, max_length=100)
+    email: str = Field(min_length=3, max_length=320)
+    password: str = Field(min_length=1, max_length=200)
+
+    @field_validator("username")
+    @classmethod
+    def normalize_username(cls, value: str) -> str:
+        return value.lower()
+
+    @field_validator("first_name", "last_name", "email", "password")
+    @classmethod
+    def reject_blank_profile_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Must contain non-whitespace text")
+        return value
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str) -> str:
+        return value.lower()
+
+
+class User(BaseModel):
+    id: int
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+    created_at: datetime
+    updated_at: datetime
+
+
 class Document(BaseModel):
     name: str
     content: str
