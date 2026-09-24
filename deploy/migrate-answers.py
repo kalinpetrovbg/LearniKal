@@ -135,10 +135,24 @@ def main() -> None:
         conn.execute("UPDATE answers SET difficulty = COALESCE(difficulty, 3)")
         conn.execute(
             """UPDATE answers SET
-                   independence_score = COALESCE(independence_score, GREATEST(1, LEAST(5, NULLIF(score, 0)))),
-                   clarity_score = COALESCE(clarity_score, GREATEST(1, LEAST(5, NULLIF(score, 0)))),
-                   completeness_score = COALESCE(completeness_score, GREATEST(1, LEAST(5, NULLIF(score, 0)))),
-                   confidence_score = COALESCE(confidence_score, GREATEST(1, LEAST(5, NULLIF(score, 0))))"""
+                   independence_score = COALESCE(independence_score, GREATEST(1, LEAST(5, COALESCE(NULLIF(score, 0), 3)))),
+                   clarity_score = COALESCE(clarity_score, GREATEST(1, LEAST(5, COALESCE(NULLIF(score, 0), 3)))),
+                   completeness_score = COALESCE(completeness_score, GREATEST(1, LEAST(5, COALESCE(NULLIF(score, 0), 3)))),
+                   confidence_score = COALESCE(confidence_score, GREATEST(1, LEAST(5, COALESCE(NULLIF(score, 0), 3))))"""
+        )
+        conn.execute(
+            """UPDATE answers SET
+                   independence_score = 3,
+                   clarity_score = 3,
+                   completeness_score = 3,
+                   confidence_score = 3
+               WHERE question_id IS NULL
+                 AND subtopic_id IS NULL
+                 AND score = 0
+                 AND independence_score = 5
+                 AND clarity_score = 5
+                 AND completeness_score = 5
+                 AND confidence_score = 5"""
         )
         conn.execute(
             """UPDATE answers SET
