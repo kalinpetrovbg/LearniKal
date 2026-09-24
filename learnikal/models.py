@@ -137,6 +137,56 @@ class Subtopic(SubtopicInput):
     updated_at: datetime
 
 
+class QuestionInput(BaseModel):
+    topic_id: int = Field(ge=1)
+    subtopic_id: int = Field(ge=1)
+    text: str = Field(min_length=1, max_length=20000)
+    difficulty: int = Field(ge=1, le=5)
+    is_active: bool = True
+
+    @field_validator("text")
+    @classmethod
+    def normalize_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Must contain non-whitespace text")
+        return value
+
+
+class QuestionUpdate(BaseModel):
+    topic_id: int | None = Field(default=None, ge=1)
+    subtopic_id: int | None = Field(default=None, ge=1)
+    text: str | None = Field(default=None, min_length=1, max_length=20000)
+    difficulty: int | None = Field(default=None, ge=1, le=5)
+    is_active: bool | None = None
+
+    @field_validator("text")
+    @classmethod
+    def normalize_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("Must contain non-whitespace text")
+        return value
+
+    @model_validator(mode="after")
+    def require_update_field(self):
+        if not self.model_fields_set:
+            raise ValueError("At least one question field must be provided")
+        return self
+
+
+class Question(QuestionInput):
+    id: int
+    topic_slug: str
+    topic_name: str
+    subtopic_slug: str
+    subtopic_name: str
+    created_at: datetime
+    updated_at: datetime
+
+
 class InstructionInput(BaseModel):
     text: str = Field(min_length=1, max_length=5000)
     position: int | None = Field(default=None, ge=1)
