@@ -4,9 +4,10 @@ import unittest
 from fastapi.testclient import TestClient
 
 from learnikal.api import app, get_store, require_api_key
-from learnikal.models import EntryPage, Instruction, StartContext, Topic, User
+from learnikal.models import EntryPage, Instruction, StartContext, Subtopic, Topic, User
 from learnikal.postgres import (
-    ConflictError, NotFoundError, TopicConflictError, TopicInUseError, UserConflictError,
+    ConflictError, NotFoundError, SubtopicConflictError, TopicConflictError,
+    TopicInUseError, UserConflictError,
 )
 
 
@@ -14,6 +15,7 @@ class FakeStore:
     def __init__(self):
         self.entries = {}
         self.topics = {}
+        self.subtopics = {}
         self.users = {}
         self.instructions = {}
 
@@ -82,7 +84,67 @@ class FakeStore:
             raise NotFoundError
         if any(entry.technology == topic.slug for entry in self.entries.values()):
             raise TopicInUseError
+        self.subtopics = {
+            subtopic_id: subtopic for subtopic_id, subtopic in self.subtopics.items()
+            if subtopic.topic_id != topic_id
+        }
         del self.topics[topic_id]
+
+    def create_subtopic(self, subtopic):
+        topic = self.topics.get(subtopic.topic_id)
+        if topic is None:
+            raise NotFoundError
+        if any(
+            item.topic_id == subtopic.topic_id
+            and (item.slug == subtopic.slug or item.name.lower() == subtopic.name.lower())
+            for item in self.subtopics.values()
+        ):
+            raise SubtopicConflictError
+        subtopic_id = len(self.subtopics) + 1
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        created = Subtopic(
+            id=subtopic_id, topic_slug=topic.slug, topic_name=topic.name,
+            **subtopic.model_dump(), created_at=now, updated_at=now,
+        )
+        self.subtopics[subtopic_id] = created
+        return created
+
+    def list_subtopics(self):
+        return list(self.subtopics.values())
+
+    def update_subtopic(self, subtopic_id, subtopic):
+        old = self.subtopics.get(subtopic_id)
+        if old is None:
+            raise NotFoundError
+        topic_id = subtopic.topic_id if subtopic.topic_id is not None else old.topic_id
+        topic = self.topics.get(topic_id)
+        if topic is None:
+            raise NotFoundError
+        slug = subtopic.slug if subtopic.slug is not None else old.slug
+        name = subtopic.name if subtopic.name is not None else old.name
+        if any(
+            item.id != subtopic_id and item.topic_id == topic_id
+            and (item.slug == slug or item.name.lower() == name.lower())
+            for item in self.subtopics.values()
+        ):
+            raise SubtopicConflictError
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        updated = old.model_copy(update={
+            "topic_id": topic_id,
+            "topic_slug": topic.slug,
+            "topic_name": topic.name,
+            "slug": slug,
+            "name": name,
+            "is_active": subtopic.is_active if subtopic.is_active is not None else old.is_active,
+            "updated_at": now,
+        })
+        self.subtopics[subtopic_id] = updated
+        return updated
+
+    def delete_subtopic(self, subtopic_id):
+        if subtopic_id not in self.subtopics:
+            raise NotFoundError
+        del self.subtopics[subtopic_id]
 
     def create_user(self, user):
         if any(item.username == user.username or item.email == user.email for item in self.users.values()):
@@ -305,14 +367,70 @@ class ApiTests(unittest.TestCase):
         created = self.client.post(
             "/topics", json={"slug": "temporary", "name": "Temporary"}, headers=self.headers
         ).json()
+        self.client.post(
+            "/subtopics",
+            json={"topic_id": created["id"], "slug": "child", "name": "Child"},
+            headers=self.headers,
+        )
         self.assertEqual(self.client.delete(f"/topics/{created['id']}", headers=self.headers).status_code, 204)
         self.assertEqual(self.client.delete(f"/topics/{created['id']}", headers=self.headers).status_code, 404)
+        self.assertEqual(self.client.get("/subtopics/list", headers=self.headers).json(), [])
 
         used = self.client.post(
             "/topics", json={"slug": "used", "name": "Used"}, headers=self.headers
         ).json()
         self.client.post("/entries", json={"technology": "used", "question": "Q", "answer": "A"}, headers=self.headers)
         self.assertEqual(self.client.delete(f"/topics/{used['id']}", headers=self.headers).status_code, 409)
+
+    def test_create_list_update_and_delete_subtopic(self):
+        topic = self.client.post(
+            "/topics", json={"slug": "postgresql", "name": "PostgreSQL"}, headers=self.headers
+        ).json()
+        other_topic = self.client.post(
+            "/topics", json={"slug": "python", "name": "Python"}, headers=self.headers
+        ).json()
+
+        created = self.client.post(
+            "/subtopics",
+            json={"topic_id": topic["id"], "slug": "INDEXES", "name": "Indexes"},
+            headers=self.headers,
+        )
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.json()["slug"], "indexes")
+        self.assertEqual(created.json()["topic_slug"], "postgresql")
+        self.assertTrue(created.json()["is_active"])
+
+        duplicate = self.client.post(
+            "/subtopics",
+            json={"topic_id": topic["id"], "slug": "indexes", "name": "Index Strategy"},
+            headers=self.headers,
+        )
+        self.assertEqual(duplicate.status_code, 409)
+        missing_topic = self.client.post(
+            "/subtopics",
+            json={"topic_id": 999, "slug": "indexes", "name": "Indexes"},
+            headers=self.headers,
+        )
+        self.assertEqual(missing_topic.status_code, 404)
+
+        listed = self.client.get("/subtopics/list", headers=self.headers)
+        self.assertEqual(listed.status_code, 200)
+        self.assertEqual(listed.json(), [created.json()])
+
+        updated = self.client.patch(
+            f"/subtopics/{created.json()['id']}",
+            json={"topic_id": other_topic["id"], "slug": "iterators", "name": "Iterators", "is_active": False},
+            headers=self.headers,
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.json()["topic_slug"], "python")
+        self.assertEqual(updated.json()["slug"], "iterators")
+        self.assertFalse(updated.json()["is_active"])
+        self.assertEqual(self.client.patch(f"/subtopics/{created.json()['id']}", json={}, headers=self.headers).status_code, 422)
+        self.assertEqual(self.client.patch("/subtopics/999", json={"name": "Missing"}, headers=self.headers).status_code, 404)
+
+        self.assertEqual(self.client.delete(f"/subtopics/{created.json()['id']}", headers=self.headers).status_code, 204)
+        self.assertEqual(self.client.delete(f"/subtopics/{created.json()['id']}", headers=self.headers).status_code, 404)
 
     def test_create_user(self):
         payload = {

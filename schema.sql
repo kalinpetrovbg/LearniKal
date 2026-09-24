@@ -41,6 +41,25 @@ CREATE TRIGGER topics_set_updated_at
 BEFORE UPDATE ON topics
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+CREATE TABLE IF NOT EXISTS subtopics (
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    topic_id bigint NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+    slug text NOT NULL CHECK (slug ~ '^[a-z][a-z0-9_-]{0,39}$'),
+    name text NOT NULL CHECK (btrim(name) <> ''),
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (topic_id, slug)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS subtopics_topic_name_lower_key
+    ON subtopics (topic_id, lower(name));
+
+DROP TRIGGER IF EXISTS subtopics_set_updated_at ON subtopics;
+CREATE TRIGGER subtopics_set_updated_at
+BEFORE UPDATE ON subtopics
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
 CREATE TABLE IF NOT EXISTS learning_documents (
     name text PRIMARY KEY CHECK (name IN ('plan', 'knowledge', 'handoff', 'history', 'patterns')),
     content text NOT NULL,

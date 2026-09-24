@@ -8,16 +8,16 @@ from fastapi.responses import JSONResponse
 
 from .models import (
     Document, Entry, EntryInput, EntryPage, Instruction, InstructionInput,
-    InstructionUpdate, StartContext, Topic, TopicInput, TopicUpdate, User, UserInput,
-    UserUpdate,
+    InstructionUpdate, StartContext, Subtopic, SubtopicInput, SubtopicUpdate, Topic,
+    TopicInput, TopicUpdate, User, UserInput, UserUpdate,
 )
 from .postgres import (
     DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError,
-    TopicConflictError, TopicInUseError, UserConflictError,
+    SubtopicConflictError, TopicConflictError, TopicInUseError, UserConflictError,
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.6.0")
+app = FastAPI(title="LearniKal API", version="0.7.0")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -55,6 +55,11 @@ async def topic_conflict_handler(_request, _exc):
 @app.exception_handler(TopicInUseError)
 async def topic_in_use_handler(_request, _exc):
     return JSONResponse(status_code=409, content={"detail": "Topic has learning entries; disable it instead"})
+
+
+@app.exception_handler(SubtopicConflictError)
+async def subtopic_conflict_handler(_request, _exc):
+    return JSONResponse(status_code=409, content={"detail": "Subtopic slug or name already exists for this topic"})
 
 
 @app.exception_handler(UserConflictError)
@@ -129,6 +134,37 @@ def delete_topic(
     store: PostgresStore = Depends(get_store),
 ) -> None:
     store.delete_topic(topic_id)
+
+
+@app.post("/subtopics", response_model=Subtopic, status_code=status.HTTP_201_CREATED,
+          tags=["Topics"], dependencies=[Depends(require_api_key)])
+def create_subtopic(payload: SubtopicInput, store: PostgresStore = Depends(get_store)) -> Subtopic:
+    return store.create_subtopic(payload)
+
+
+@app.get("/subtopics/list", response_model=list[Subtopic], tags=["Topics"],
+         dependencies=[Depends(require_api_key)])
+def list_subtopics(store: PostgresStore = Depends(get_store)) -> list[Subtopic]:
+    return store.list_subtopics()
+
+
+@app.patch("/subtopics/{subtopic_id}", response_model=Subtopic, tags=["Topics"],
+           dependencies=[Depends(require_api_key)])
+def update_subtopic(
+    subtopic_id: Annotated[int, Path(ge=1)],
+    payload: SubtopicUpdate,
+    store: PostgresStore = Depends(get_store),
+) -> Subtopic:
+    return store.update_subtopic(subtopic_id, payload)
+
+
+@app.delete("/subtopics/{subtopic_id}", status_code=status.HTTP_204_NO_CONTENT,
+            tags=["Topics"], dependencies=[Depends(require_api_key)])
+def delete_subtopic(
+    subtopic_id: Annotated[int, Path(ge=1)],
+    store: PostgresStore = Depends(get_store),
+) -> None:
+    store.delete_subtopic(subtopic_id)
 
 
 @app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED, tags=["Users"],

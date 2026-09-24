@@ -7,7 +7,8 @@ from psycopg.types.json import Jsonb
 
 from .models import (
     Entry, EntryPage, Instruction, InstructionInput, InstructionUpdate, StartContext,
-    Topic, TopicInput, TopicProgress, TopicUpdate, User, UserInput, UserUpdate,
+    Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicProgress,
+    TopicUpdate, User, UserInput, UserUpdate,
 )
 
 
@@ -46,6 +47,10 @@ class TopicConflictError(Exception):
 
 
 class TopicInUseError(Exception):
+    pass
+
+
+class SubtopicConflictError(Exception):
     pass
 
 
@@ -105,6 +110,15 @@ class PostgresStore:
     def _instruction(row):
         return Instruction(
             id=row["id"], text=row["text"], position=row["position"],
+            is_active=row["is_active"], created_at=row["created_at"],
+            updated_at=row["updated_at"],
+        )
+
+    @staticmethod
+    def _subtopic(row):
+        return Subtopic(
+            id=row["id"], topic_id=row["topic_id"], topic_slug=row["topic_slug"],
+            topic_name=row["topic_name"], slug=row["slug"], name=row["name"],
             is_active=row["is_active"], created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
@@ -241,6 +255,87 @@ class PostgresStore:
                 conn.execute("DELETE FROM topics WHERE id = %s", (topic_id,))
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
+
+    def create_subtopic(self, subtopic: SubtopicInput) -> Subtopic:
+        try:
+            with self._connect() as conn:
+                try:
+                    row = conn.execute(
+                        """INSERT INTO subtopics (topic_id, slug, name, is_active)
+                           VALUES (%s, %s, %s, %s)
+                           RETURNING id, topic_id, slug, name, is_active, created_at, updated_at""",
+                        (subtopic.topic_id, subtopic.slug, subtopic.name, subtopic.is_active),
+                    ).fetchone()
+                except psycopg.errors.UniqueViolation as exc:
+                    raise SubtopicConflictError from exc
+                except psycopg.errors.ForeignKeyViolation as exc:
+                    raise NotFoundError from exc
+                return self._subtopic(self._with_topic(conn, row))
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def list_subtopics(self) -> list[Subtopic]:
+        try:
+            with self._connect() as conn:
+                rows = conn.execute(
+                    """SELECT s.id, s.topic_id, t.slug AS topic_slug, t.name AS topic_name,
+                              s.slug, s.name, s.is_active, s.created_at, s.updated_at
+                       FROM subtopics s JOIN topics t ON t.id = s.topic_id
+                       ORDER BY s.topic_id, s.id"""
+                ).fetchall()
+                return [self._subtopic(row) for row in rows]
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
+    def update_subtopic(self, subtopic_id: int, subtopic: SubtopicUpdate) -> Subtopic:
+        try:
+            with self._connect() as conn:
+                try:
+                    row = conn.execute(
+                        """UPDATE subtopics SET
+                           topic_id = COALESCE(%s, topic_id),
+                           slug = COALESCE(%s, slug),
+                           name = COALESCE(%s, name),
+                           is_active = COALESCE(%s, is_active)
+                           WHERE id = %s
+                           RETURNING id, topic_id, slug, name, is_active, created_at, updated_at""",
+                        (
+                            subtopic.topic_id, subtopic.slug, subtopic.name,
+                            subtopic.is_active, subtopic_id,
+                        ),
+                    ).fetchone()
+                except psycopg.errors.UniqueViolation as exc:
+                    raise SubtopicConflictError from exc
+                except psycopg.errors.ForeignKeyViolation as exc:
+                    raise NotFoundError from exc
+                if row is None:
+                    raise NotFoundError
+                return self._subtopic(self._with_topic(conn, row))
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def delete_subtopic(self, subtopic_id: int) -> None:
+        try:
+            with self._connect() as conn:
+                deleted = conn.execute(
+                    "DELETE FROM subtopics WHERE id = %s RETURNING id",
+                    (subtopic_id,),
+                ).fetchone()
+                if deleted is None:
+                    raise NotFoundError
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def _with_topic(self, conn, subtopic_row):
+        row = conn.execute(
+            """SELECT s.id, s.topic_id, t.slug AS topic_slug, t.name AS topic_name,
+                      s.slug, s.name, s.is_active, s.created_at, s.updated_at
+               FROM subtopics s JOIN topics t ON t.id = s.topic_id WHERE s.id = %s""",
+            (subtopic_row["id"],),
+        ).fetchone()
+        if row is None:
+            raise NotFoundError
+        return row
 
     def create_user(self, user: UserInput) -> User:
         try:

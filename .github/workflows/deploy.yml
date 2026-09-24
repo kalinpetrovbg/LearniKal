@@ -32,6 +32,7 @@ jobs:
             git pull --ff-only origin main
             .venv/bin/python -m pip install -r requirements.txt
             sudo -u postgres .venv/bin/python deploy/migrate-topics.py
+            sudo -u postgres .venv/bin/python deploy/migrate-subtopics.py
             sudo -u postgres .venv/bin/python deploy/migrate-instructions.py
             sudo systemctl restart learnikal
             sudo systemctl status learnikal --no-pager
