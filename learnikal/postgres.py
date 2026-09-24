@@ -5,9 +5,10 @@ from argon2 import PasswordHasher, Type
 from psycopg.rows import dict_row
 
 from .models import (
-    Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionUpdate, StartContext,
-    Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicProgress,
-    TopicUpdate, User, UserInput, UserUpdate,
+    Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionUpdate,
+    Question, QuestionInput, QuestionUpdate, StartContext, Subtopic, SubtopicInput,
+    SubtopicUpdate, Topic, TopicInput, TopicProgress, TopicUpdate, User, UserInput,
+    UserUpdate,
 )
 
 
@@ -50,6 +51,10 @@ class TopicInUseError(Exception):
 
 
 class SubtopicConflictError(Exception):
+    pass
+
+
+class QuestionConflictError(Exception):
     pass
 
 
@@ -125,6 +130,16 @@ class PostgresStore:
             updated_at=row["updated_at"],
         )
 
+    @staticmethod
+    def _question(row):
+        return Question(
+            id=row["id"], topic_id=row["topic_id"], topic_slug=row["topic_slug"],
+            topic_name=row["topic_name"], subtopic_id=row["subtopic_id"],
+            subtopic_slug=row["subtopic_slug"], subtopic_name=row["subtopic_name"],
+            text=row["text"], difficulty=row["difficulty"], is_active=row["is_active"],
+            created_at=row["created_at"], updated_at=row["updated_at"],
+        )
+
     def ping(self) -> None:
         try:
             with self._connect() as conn:
@@ -154,16 +169,31 @@ class PostgresStore:
                 ).fetchone()
                 if topic is None:
                     raise NotFoundError
-                if answer.subtopic_id is not None:
+                topic_id = answer.topic_id
+                subtopic_id = answer.subtopic_id
+                if answer.question_id is not None:
+                    question = conn.execute(
+                        """SELECT topic_id, subtopic_id FROM questions
+                           WHERE id = %s AND is_active = true""",
+                        (answer.question_id,),
+                    ).fetchone()
+                    if question is None:
+                        raise NotFoundError
+                    if question["topic_id"] != answer.topic_id:
+                        raise NotFoundError
+                    if subtopic_id is not None and question["subtopic_id"] != subtopic_id:
+                        raise NotFoundError
+                    subtopic_id = question["subtopic_id"]
+                if subtopic_id is not None:
                     subtopic = conn.execute(
                         """SELECT id FROM subtopics
                            WHERE id = %s AND topic_id = %s AND is_active = true""",
-                        (answer.subtopic_id, answer.topic_id),
+                        (subtopic_id, topic_id),
                     ).fetchone()
                     if subtopic is None:
                         raise NotFoundError
                 values = (
-                    user_id, answer.topic_id, answer.subtopic_id, answer.question_id,
+                    user_id, topic_id, subtopic_id, answer.question_id,
                     answer.score, answer.difficulty, answer.independence_score,
                     answer.clarity_score, answer.completeness_score, answer.confidence_score,
                 )
@@ -187,7 +217,10 @@ class PostgresStore:
                     ).fetchone()
                 if inserted is None:
                     existing = self._get_answer(conn, user_id, answer.id)
-                    expected = answer.model_dump(exclude={"id", "user_id"}) | {"user_id": user_id}
+                    expected = answer.model_dump(exclude={"id", "user_id"}) | {
+                        "user_id": user_id,
+                        "subtopic_id": subtopic_id,
+                    }
                     actual = existing.model_dump(
                         exclude={"id", "created_at", "updated_at"}
                     )
@@ -338,6 +371,134 @@ class PostgresStore:
                     raise NotFoundError
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
+
+    def create_question(self, question: QuestionInput) -> Question:
+        try:
+            with self._connect() as conn:
+                self._validate_topic_subtopic(conn, question.topic_id, question.subtopic_id)
+                try:
+                    row = conn.execute(
+                        """INSERT INTO questions (topic_id, subtopic_id, text, difficulty, is_active)
+                           VALUES (%s, %s, %s, %s, %s)
+                           RETURNING id""",
+                        (
+                            question.topic_id, question.subtopic_id, question.text,
+                            question.difficulty, question.is_active,
+                        ),
+                    ).fetchone()
+                except psycopg.errors.UniqueViolation as exc:
+                    raise QuestionConflictError from exc
+                return self._get_question(conn, row["id"])
+        except psycopg.errors.ForeignKeyViolation as exc:
+            raise NotFoundError from exc
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def list_questions(
+        self,
+        topic_id: int | None,
+        subtopic_id: int | None,
+        is_active: bool | None,
+    ) -> list[Question]:
+        try:
+            with self._connect() as conn:
+                params = []
+                filters = []
+                if topic_id is not None:
+                    filters.append("q.topic_id = %s")
+                    params.append(topic_id)
+                if subtopic_id is not None:
+                    filters.append("q.subtopic_id = %s")
+                    params.append(subtopic_id)
+                if is_active is not None:
+                    filters.append("q.is_active = %s")
+                    params.append(is_active)
+                where = f"WHERE {' AND '.join(filters)}" if filters else ""
+                rows = conn.execute(
+                    f"""SELECT q.id, q.topic_id, t.slug AS topic_slug, t.name AS topic_name,
+                               q.subtopic_id, s.slug AS subtopic_slug, s.name AS subtopic_name,
+                               q.text, q.difficulty, q.is_active, q.created_at, q.updated_at
+                        FROM questions q
+                        JOIN topics t ON t.id = q.topic_id
+                        JOIN subtopics s ON s.id = q.subtopic_id
+                        {where}
+                        ORDER BY q.topic_id, q.subtopic_id, q.id""",
+                    params,
+                ).fetchall()
+                return [self._question(row) for row in rows]
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
+    def update_question(self, question_id: int, question: QuestionUpdate) -> Question:
+        try:
+            with self._connect() as conn:
+                current = conn.execute(
+                    "SELECT topic_id, subtopic_id FROM questions WHERE id = %s",
+                    (question_id,),
+                ).fetchone()
+                if current is None:
+                    raise NotFoundError
+                topic_id = question.topic_id if question.topic_id is not None else current["topic_id"]
+                subtopic_id = question.subtopic_id if question.subtopic_id is not None else current["subtopic_id"]
+                self._validate_topic_subtopic(conn, topic_id, subtopic_id)
+                try:
+                    row = conn.execute(
+                        """UPDATE questions SET
+                           topic_id = %s,
+                           subtopic_id = %s,
+                           text = COALESCE(%s, text),
+                           difficulty = COALESCE(%s, difficulty),
+                           is_active = COALESCE(%s, is_active)
+                           WHERE id = %s
+                           RETURNING id""",
+                        (
+                            topic_id, subtopic_id, question.text, question.difficulty,
+                            question.is_active, question_id,
+                        ),
+                    ).fetchone()
+                except psycopg.errors.UniqueViolation as exc:
+                    raise QuestionConflictError from exc
+                return self._get_question(conn, row["id"])
+        except psycopg.errors.ForeignKeyViolation as exc:
+            raise NotFoundError from exc
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def delete_question(self, question_id: int) -> None:
+        try:
+            with self._connect() as conn:
+                deleted = conn.execute(
+                    "DELETE FROM questions WHERE id = %s RETURNING id",
+                    (question_id,),
+                ).fetchone()
+                if deleted is None:
+                    raise NotFoundError
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def _validate_topic_subtopic(self, conn, topic_id: int, subtopic_id: int) -> None:
+        row = conn.execute(
+            """SELECT 1 FROM subtopics
+               WHERE id = %s AND topic_id = %s AND is_active = true""",
+            (subtopic_id, topic_id),
+        ).fetchone()
+        if row is None:
+            raise NotFoundError
+
+    def _get_question(self, conn, question_id: int) -> Question:
+        row = conn.execute(
+            """SELECT q.id, q.topic_id, t.slug AS topic_slug, t.name AS topic_name,
+                      q.subtopic_id, s.slug AS subtopic_slug, s.name AS subtopic_name,
+                      q.text, q.difficulty, q.is_active, q.created_at, q.updated_at
+               FROM questions q
+               JOIN topics t ON t.id = q.topic_id
+               JOIN subtopics s ON s.id = q.subtopic_id
+               WHERE q.id = %s""",
+            (question_id,),
+        ).fetchone()
+        if row is None:
+            raise NotFoundError
+        return self._question(row)
 
     def _with_topic(self, conn, subtopic_row):
         row = conn.execute(

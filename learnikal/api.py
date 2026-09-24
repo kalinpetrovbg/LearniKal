@@ -7,16 +7,18 @@ from fastapi.responses import JSONResponse
 
 from .models import (
     Answer, AnswerInput, AnswerPage, Document, Instruction, InstructionInput,
-    InstructionUpdate, StartContext, Subtopic, SubtopicInput, SubtopicUpdate, Topic,
-    TopicInput, TopicUpdate, User, UserInput, UserUpdate,
+    InstructionUpdate, Question, QuestionInput, QuestionUpdate, StartContext,
+    Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicUpdate, User,
+    UserInput, UserUpdate,
 )
 from .postgres import (
     DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError,
-    SubtopicConflictError, TopicConflictError, TopicInUseError, UserConflictError,
+    QuestionConflictError, SubtopicConflictError, TopicConflictError, TopicInUseError,
+    UserConflictError,
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.7.0")
+app = FastAPI(title="LearniKal API", version="0.8.0")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -59,6 +61,11 @@ async def topic_in_use_handler(_request, _exc):
 @app.exception_handler(SubtopicConflictError)
 async def subtopic_conflict_handler(_request, _exc):
     return JSONResponse(status_code=409, content={"detail": "Subtopic slug or name already exists for this topic"})
+
+
+@app.exception_handler(QuestionConflictError)
+async def question_conflict_handler(_request, _exc):
+    return JSONResponse(status_code=409, content={"detail": "Question already exists for this subtopic"})
 
 
 @app.exception_handler(UserConflictError)
@@ -160,6 +167,42 @@ def delete_subtopic(
     store: PostgresStore = Depends(get_store),
 ) -> None:
     store.delete_subtopic(subtopic_id)
+
+
+@app.post("/questions", response_model=Question, status_code=status.HTTP_201_CREATED,
+          tags=["Questions"], dependencies=[Depends(require_api_key)])
+def create_question(payload: QuestionInput, store: PostgresStore = Depends(get_store)) -> Question:
+    return store.create_question(payload)
+
+
+@app.get("/questions/list", response_model=list[Question], tags=["Questions"],
+         dependencies=[Depends(require_api_key)])
+def list_questions(
+    topic_id: Annotated[int | None, Query(ge=1)] = None,
+    subtopic_id: Annotated[int | None, Query(ge=1)] = None,
+    is_active: bool | None = None,
+    store: PostgresStore = Depends(get_store),
+) -> list[Question]:
+    return store.list_questions(topic_id, subtopic_id, is_active)
+
+
+@app.patch("/questions/{question_id}", response_model=Question, tags=["Questions"],
+           dependencies=[Depends(require_api_key)])
+def update_question(
+    question_id: Annotated[int, Path(ge=1)],
+    payload: QuestionUpdate,
+    store: PostgresStore = Depends(get_store),
+) -> Question:
+    return store.update_question(question_id, payload)
+
+
+@app.delete("/questions/{question_id}", status_code=status.HTTP_204_NO_CONTENT,
+            tags=["Questions"], dependencies=[Depends(require_api_key)])
+def delete_question(
+    question_id: Annotated[int, Path(ge=1)],
+    store: PostgresStore = Depends(get_store),
+) -> None:
+    store.delete_question(question_id)
 
 
 @app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED, tags=["Users"],

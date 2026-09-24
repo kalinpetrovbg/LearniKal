@@ -54,6 +54,17 @@ An answer records its topic and optional subtopic and question, plus score, diff
 
 Topic and subtopic slugs are normalized to lowercase. Topics that already have answers cannot be deleted and should be disabled with `is_active: false` instead.
 
+### Questions
+
+- `POST /questions`
+- `GET /questions/list`
+- `PATCH /questions/{question_id}`
+- `DELETE /questions/{question_id}`
+
+Each question belongs to a topic and one of that topic's subtopics, has a difficulty from 1 to 5, and can be enabled or disabled with `is_active`. The list endpoint can filter by `topic_id`, `subtopic_id`, and `is_active`. Question text must be unique within a subtopic, ignoring letter case.
+
+Answers can reference a question with `question_id`. When the question is valid and `subtopic_id` is omitted from the answer, the API takes the subtopic from the question. Deleting a question keeps its historical answers and clears their `question_id` reference.
+
 ### Users
 
 - `POST /users`
@@ -111,7 +122,7 @@ The workflow in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) r
 
 1. Fast-forwards `/opt/learnikal` to the latest `main` commit.
 2. Installs the current Python requirements.
-3. Runs the topic, subtopic, instruction, and answer migrations.
+3. Runs the topic, subtopic, instruction, answer, and question migrations.
 4. Restarts the `learnikal` systemd service.
 5. Checks `http://127.0.0.1:8000/health` and prints recent service logs if the check fails.
 

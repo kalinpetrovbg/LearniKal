@@ -4,10 +4,10 @@ import unittest
 from fastapi.testclient import TestClient
 
 from learnikal.api import app, get_store, require_api_key
-from learnikal.models import Answer, AnswerPage, Instruction, StartContext, Subtopic, Topic, User
+from learnikal.models import Answer, AnswerPage, Instruction, Question, StartContext, Subtopic, Topic, User
 from learnikal.postgres import (
-    ConflictError, NotFoundError, SubtopicConflictError, TopicConflictError,
-    TopicInUseError, UserConflictError,
+    ConflictError, NotFoundError, QuestionConflictError, SubtopicConflictError,
+    TopicConflictError, TopicInUseError, UserConflictError,
 )
 
 
@@ -16,6 +16,7 @@ class FakeStore:
         self.answers = {}
         self.topics = {}
         self.subtopics = {}
+        self.questions = {}
         self.users = {}
         self.instructions = {}
 
@@ -39,7 +40,19 @@ class FakeStore:
         now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
         user_id = answer.user_id or 1
         answer_id = answer.id or len(self.answers) + 1
-        created = Answer(**answer.model_dump(exclude={"id", "user_id"}), id=answer_id, user_id=user_id, created_at=now, updated_at=now)
+        subtopic_id = answer.subtopic_id
+        if answer.question_id is not None:
+            question = self.questions.get(answer.question_id)
+            if question is None or not question.is_active or question.topic_id != answer.topic_id:
+                raise NotFoundError
+            if subtopic_id is not None and question.subtopic_id != subtopic_id:
+                raise NotFoundError
+            subtopic_id = question.subtopic_id
+        created = Answer(
+            **answer.model_dump(exclude={"id", "user_id", "subtopic_id"}),
+            id=answer_id, user_id=user_id, subtopic_id=subtopic_id,
+            created_at=now, updated_at=now,
+        )
         old = self.answers.get(answer_id)
         if old and old.model_dump(exclude={"created_at", "updated_at"}) != created.model_dump(exclude={"created_at", "updated_at"}):
             raise ConflictError
@@ -89,6 +102,10 @@ class FakeStore:
         self.subtopics = {
             subtopic_id: subtopic for subtopic_id, subtopic in self.subtopics.items()
             if subtopic.topic_id != topic_id
+        }
+        self.questions = {
+            question_id: question for question_id, question in self.questions.items()
+            if question.topic_id != topic_id
         }
         del self.topics[topic_id]
 
@@ -147,6 +164,80 @@ class FakeStore:
         if subtopic_id not in self.subtopics:
             raise NotFoundError
         del self.subtopics[subtopic_id]
+        self.questions = {
+            question_id: question for question_id, question in self.questions.items()
+            if question.subtopic_id != subtopic_id
+        }
+
+    def create_question(self, question):
+        topic = self.topics.get(question.topic_id)
+        subtopic = self.subtopics.get(question.subtopic_id)
+        if topic is None or subtopic is None or subtopic.topic_id != question.topic_id:
+            raise NotFoundError
+        if any(
+            item.subtopic_id == question.subtopic_id and item.text.lower() == question.text.lower()
+            for item in self.questions.values()
+        ):
+            raise QuestionConflictError
+        question_id = len(self.questions) + 1
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        created = Question(
+            id=question_id, topic_slug=topic.slug, topic_name=topic.name,
+            subtopic_slug=subtopic.slug, subtopic_name=subtopic.name,
+            **question.model_dump(), created_at=now, updated_at=now,
+        )
+        self.questions[question_id] = created
+        return created
+
+    def list_questions(self, topic_id, subtopic_id, is_active):
+        questions = list(self.questions.values())
+        if topic_id is not None:
+            questions = [question for question in questions if question.topic_id == topic_id]
+        if subtopic_id is not None:
+            questions = [question for question in questions if question.subtopic_id == subtopic_id]
+        if is_active is not None:
+            questions = [question for question in questions if question.is_active == is_active]
+        return questions
+
+    def update_question(self, question_id, question):
+        old = self.questions.get(question_id)
+        if old is None:
+            raise NotFoundError
+        topic_id = question.topic_id if question.topic_id is not None else old.topic_id
+        subtopic_id = question.subtopic_id if question.subtopic_id is not None else old.subtopic_id
+        topic = self.topics.get(topic_id)
+        subtopic = self.subtopics.get(subtopic_id)
+        if topic is None or subtopic is None or subtopic.topic_id != topic_id:
+            raise NotFoundError
+        text = question.text if question.text is not None else old.text
+        if any(
+            item.id != question_id and item.subtopic_id == subtopic_id and item.text.lower() == text.lower()
+            for item in self.questions.values()
+        ):
+            raise QuestionConflictError
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        updated = old.model_copy(update={
+            "topic_id": topic_id,
+            "topic_slug": topic.slug,
+            "topic_name": topic.name,
+            "subtopic_id": subtopic_id,
+            "subtopic_slug": subtopic.slug,
+            "subtopic_name": subtopic.name,
+            "text": text,
+            "difficulty": question.difficulty if question.difficulty is not None else old.difficulty,
+            "is_active": question.is_active if question.is_active is not None else old.is_active,
+            "updated_at": now,
+        })
+        self.questions[question_id] = updated
+        return updated
+
+    def delete_question(self, question_id):
+        if question_id not in self.questions:
+            raise NotFoundError
+        del self.questions[question_id]
+        for answer_id, answer in list(self.answers.items()):
+            if answer.question_id == question_id:
+                self.answers[answer_id] = answer.model_copy(update={"question_id": None})
 
     def create_user(self, user):
         if any(item.username == user.username or item.email == user.email for item in self.users.values()):
@@ -281,7 +372,7 @@ class ApiTests(unittest.TestCase):
         answer_id = 123
         payload = {
             "id": answer_id, "topic_id": topic["id"], "subtopic_id": subtopic["id"],
-            "question_id": 77, "difficulty": 5, "score": 4,
+            "difficulty": 5, "score": 4,
             "independence_score": 4, "clarity_score": 5,
             "completeness_score": 4, "confidence_score": 3,
         }
@@ -448,6 +539,85 @@ class ApiTests(unittest.TestCase):
 
         self.assertEqual(self.client.delete(f"/subtopics/{created.json()['id']}", headers=self.headers).status_code, 204)
         self.assertEqual(self.client.delete(f"/subtopics/{created.json()['id']}", headers=self.headers).status_code, 404)
+
+    def test_create_list_update_and_delete_question(self):
+        topic = self.client.post(
+            "/topics", json={"slug": "postgresql", "name": "PostgreSQL"}, headers=self.headers
+        ).json()
+        subtopic = self.client.post(
+            "/subtopics", json={"topic_id": topic["id"], "slug": "indexes", "name": "Indexes"},
+            headers=self.headers,
+        ).json()
+
+        created = self.client.post(
+            "/questions",
+            json={
+                "topic_id": topic["id"], "subtopic_id": subtopic["id"],
+                "text": "Кога partial index е по-добър избор?", "difficulty": 4,
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.json()["topic_slug"], "postgresql")
+        self.assertEqual(created.json()["subtopic_slug"], "indexes")
+        self.assertTrue(created.json()["is_active"])
+
+        duplicate = self.client.post(
+            "/questions",
+            json={
+                "topic_id": topic["id"], "subtopic_id": subtopic["id"],
+                "text": "кога partial index е по-добър избор?", "difficulty": 3,
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(duplicate.status_code, 409)
+
+        listed = self.client.get(f"/questions/list?topic_id={topic['id']}&is_active=true", headers=self.headers)
+        self.assertEqual(listed.status_code, 200)
+        self.assertEqual(listed.json(), [created.json()])
+
+        updated = self.client.patch(
+            f"/questions/{created.json()['id']}",
+            json={"text": "Кога partial index помага най-много?", "difficulty": 5, "is_active": False},
+            headers=self.headers,
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.json()["difficulty"], 5)
+        self.assertFalse(updated.json()["is_active"])
+        self.assertEqual(self.client.patch(f"/questions/{created.json()['id']}", json={}, headers=self.headers).status_code, 422)
+
+        self.assertEqual(self.client.delete(f"/questions/{created.json()['id']}", headers=self.headers).status_code, 204)
+        self.assertEqual(self.client.delete(f"/questions/{created.json()['id']}", headers=self.headers).status_code, 404)
+
+    def test_answer_can_reference_question_and_infer_subtopic(self):
+        topic = self.client.post(
+            "/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers
+        ).json()
+        subtopic = self.client.post(
+            "/subtopics", json={"topic_id": topic["id"], "slug": "ordering", "name": "Ordering"},
+            headers=self.headers,
+        ).json()
+        question = self.client.post(
+            "/questions",
+            json={
+                "topic_id": topic["id"], "subtopic_id": subtopic["id"],
+                "text": "Как избираш partition key?", "difficulty": 4,
+            },
+            headers=self.headers,
+        ).json()
+
+        created = self.client.post(
+            "/answers",
+            json={
+                "topic_id": topic["id"], "question_id": question["id"],
+                "score": 4, "difficulty": 4, "independence_score": 4,
+                "clarity_score": 4, "completeness_score": 4, "confidence_score": 3,
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.json()["subtopic_id"], subtopic["id"])
+        self.assertEqual(created.json()["question_id"], question["id"])
 
     def test_create_user(self):
         payload = {

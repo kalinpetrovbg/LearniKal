@@ -35,6 +35,7 @@ jobs:
             sudo -u postgres .venv/bin/python deploy/migrate-subtopics.py
             sudo -u postgres .venv/bin/python deploy/migrate-instructions.py
             sudo -u postgres .venv/bin/python deploy/migrate-answers.py
+            sudo -u postgres .venv/bin/python deploy/migrate-questions.py
             sudo systemctl restart learnikal
             sudo systemctl status learnikal --no-pager
             for attempt in {1..10}; do
