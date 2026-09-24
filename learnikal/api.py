@@ -110,15 +110,6 @@ def update_topic(
     return store.update_topic(topic_id, payload)
 
 
-@app.patch("/topics/{topic_id}/disable", response_model=Topic, include_in_schema=False,
-           dependencies=[Depends(require_api_key)])
-def disable_topic(
-    topic_id: Annotated[int, Path(ge=1)],
-    store: PostgresStore = Depends(get_store),
-) -> Topic:
-    return store.disable_topic(topic_id)
-
-
 @app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED,
           dependencies=[Depends(require_api_key)])
 def create_user(payload: UserInput, store: PostgresStore = Depends(get_store)) -> User:

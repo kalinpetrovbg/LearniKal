@@ -49,9 +49,6 @@ class FakeStore:
         self.topics[topic_id] = created
         return created
 
-    def disable_topic(self, topic_id):
-        return self.update_topic(topic_id, type("TopicPatch", (), {"slug": None, "name": None, "is_active": False})())
-
     def update_topic(self, topic_id, topic):
         old = self.topics.get(topic_id)
         if old is None:
@@ -189,7 +186,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(created.status_code, 201)
         self.assertEqual(created.json()["entry_id"], 1)
 
-    def test_create_and_disable_topic(self):
+    def test_create_and_update_topic(self):
         created = self.client.post(
             "/topics", json={"slug": "MONGODB", "name": "MongoDB"}, headers=self.headers
         )
@@ -200,10 +197,11 @@ class ApiTests(unittest.TestCase):
             "/topics", json={"slug": "mongodb", "name": "Mongo DB"}, headers=self.headers
         )
         self.assertEqual(duplicate.status_code, 409)
-        disabled = self.client.patch("/topics/1/disable", headers=self.headers)
+        disabled = self.client.patch("/topics/1", json={"is_active": False}, headers=self.headers)
         self.assertEqual(disabled.status_code, 200)
         self.assertFalse(disabled.json()["is_active"])
-        self.assertEqual(self.client.patch("/topics/999/disable", headers=self.headers).status_code, 404)
+        self.assertEqual(self.client.patch("/topics/999", json={"is_active": False}, headers=self.headers).status_code, 404)
+        self.assertEqual(self.client.patch("/topics/1/disable", headers=self.headers).status_code, 404)
 
     def test_create_inactive_topic(self):
         created = self.client.post(

@@ -175,9 +175,6 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
-    def disable_topic(self, topic_id: int) -> Topic:
-        return self.update_topic(topic_id, TopicUpdate(is_active=False))
-
     def update_topic(self, topic_id: int, topic: TopicUpdate) -> Topic:
         try:
             with self._connect() as conn:
@@ -193,21 +190,6 @@ class PostgresStore:
                     ).fetchone()
                 except psycopg.errors.UniqueViolation as exc:
                     raise TopicConflictError from exc
-                if row is None:
-                    raise NotFoundError
-                return self._topic(row)
-        except psycopg.Error as exc:
-            raise StorageError("PostgreSQL write failed") from exc
-
-    def set_topic_active(self, topic_id: int, is_active: bool) -> Topic:
-        try:
-            with self._connect() as conn:
-                row = conn.execute(
-                    """UPDATE topics SET is_active = %s
-                       WHERE id = %s
-                       RETURNING id, slug, name, is_active, created_at, updated_at""",
-                    (is_active, topic_id),
-                ).fetchone()
                 if row is None:
                     raise NotFoundError
                 return self._topic(row)
