@@ -7,8 +7,8 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
 from .models import (
-    Document, Entry, EntryInput, EntryPage, StartContext, Topic, TopicInput, User,
-    UserInput, UserUpdate,
+    Document, Entry, EntryInput, EntryPage, StartContext, Topic, TopicInput, TopicUpdate,
+    User, UserInput, UserUpdate,
 )
 from .postgres import (
     DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError,
@@ -16,7 +16,7 @@ from .postgres import (
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.5.2")
+app = FastAPI(title="LearniKal API", version="0.5.3")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -100,7 +100,17 @@ def create_topic(payload: TopicInput, store: PostgresStore = Depends(get_store))
     return store.create_topic(payload)
 
 
-@app.patch("/topics/{topic_id}/disable", response_model=Topic,
+@app.patch("/topics/{topic_id}", response_model=Topic,
+           dependencies=[Depends(require_api_key)])
+def update_topic(
+    topic_id: Annotated[int, Path(ge=1)],
+    payload: TopicUpdate,
+    store: PostgresStore = Depends(get_store),
+) -> Topic:
+    return store.update_topic(topic_id, payload)
+
+
+@app.patch("/topics/{topic_id}/disable", response_model=Topic, include_in_schema=False,
            dependencies=[Depends(require_api_key)])
 def disable_topic(
     topic_id: Annotated[int, Path(ge=1)],

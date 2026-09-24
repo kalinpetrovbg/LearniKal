@@ -6,8 +6,8 @@ from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
 from .models import (
-    Entry, EntryPage, StartContext, Topic, TopicInput, TopicProgress, User, UserInput,
-    UserUpdate,
+    Entry, EntryPage, StartContext, Topic, TopicInput, TopicProgress, TopicUpdate, User,
+    UserInput, UserUpdate,
 )
 
 
@@ -176,20 +176,38 @@ class PostgresStore:
             raise StorageError("PostgreSQL write failed") from exc
 
     def disable_topic(self, topic_id: int) -> Topic:
+        return self.update_topic(topic_id, TopicUpdate(is_active=False))
+
+    def update_topic(self, topic_id: int, topic: TopicUpdate) -> Topic:
+        try:
+            with self._connect() as conn:
+                try:
+                    row = conn.execute(
+                        """UPDATE topics SET
+                           slug = COALESCE(%s, slug),
+                           name = COALESCE(%s, name),
+                           is_active = COALESCE(%s, is_active)
+                           WHERE id = %s
+                           RETURNING id, slug, name, is_active, created_at, updated_at""",
+                        (topic.slug, topic.name, topic.is_active, topic_id),
+                    ).fetchone()
+                except psycopg.errors.UniqueViolation as exc:
+                    raise TopicConflictError from exc
+                if row is None:
+                    raise NotFoundError
+                return self._topic(row)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def set_topic_active(self, topic_id: int, is_active: bool) -> Topic:
         try:
             with self._connect() as conn:
                 row = conn.execute(
-                    """UPDATE topics SET is_active = false
-                       WHERE id = %s AND is_active = true
+                    """UPDATE topics SET is_active = %s
+                       WHERE id = %s
                        RETURNING id, slug, name, is_active, created_at, updated_at""",
-                    (topic_id,),
+                    (is_active, topic_id),
                 ).fetchone()
-                if row is None:
-                    row = conn.execute(
-                        """SELECT id, slug, name, is_active, created_at, updated_at
-                           FROM topics WHERE id = %s""",
-                        (topic_id,),
-                    ).fetchone()
                 if row is None:
                     raise NotFoundError
                 return self._topic(row)

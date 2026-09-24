@@ -60,6 +60,33 @@ class TopicInput(BaseModel):
         return value
 
 
+class TopicUpdate(BaseModel):
+    slug: str | None = Field(default=None, pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    is_active: bool | None = None
+
+    @field_validator("slug")
+    @classmethod
+    def normalize_slug(cls, value: str | None) -> str | None:
+        return value.lower() if value is not None else value
+
+    @field_validator("name")
+    @classmethod
+    def normalize_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("Must contain non-whitespace text")
+        return value
+
+    @model_validator(mode="after")
+    def require_update_field(self):
+        if not self.model_fields_set:
+            raise ValueError("At least one topic field must be provided")
+        return self
+
+
 class Topic(TopicInput):
     id: int
     created_at: datetime

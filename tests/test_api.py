@@ -50,12 +50,28 @@ class FakeStore:
         return created
 
     def disable_topic(self, topic_id):
-        topic = self.topics.get(topic_id)
-        if topic is None:
+        return self.update_topic(topic_id, type("TopicPatch", (), {"slug": None, "name": None, "is_active": False})())
+
+    def update_topic(self, topic_id, topic):
+        old = self.topics.get(topic_id)
+        if old is None:
             raise NotFoundError
-        disabled = topic.model_copy(update={"is_active": False})
-        self.topics[topic_id] = disabled
-        return disabled
+        slug = topic.slug if topic.slug is not None else old.slug
+        name = topic.name if topic.name is not None else old.name
+        if any(
+            item.id != topic_id and (item.slug == slug or item.name.lower() == name.lower())
+            for item in self.topics.values()
+        ):
+            raise TopicConflictError
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        updated = old.model_copy(update={
+            "slug": slug,
+            "name": name,
+            "is_active": topic.is_active if topic.is_active is not None else old.is_active,
+            "updated_at": now,
+        })
+        self.topics[topic_id] = updated
+        return updated
 
     def create_user(self, user):
         if any(item.username == user.username or item.email == user.email for item in self.users.values()):
@@ -197,6 +213,32 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(created.status_code, 201)
         self.assertEqual(created.json()["slug"], "queues")
         self.assertFalse(created.json()["is_active"])
+
+    def test_update_topic_can_enable_disable_and_rename(self):
+        created = self.client.post(
+            "/topics", json={"slug": "queues", "name": "Queues", "is_active": False},
+            headers=self.headers,
+        ).json()
+
+        updated = self.client.patch(
+            f"/topics/{created['id']}",
+            json={"slug": "MESSAGING", "name": "Messaging", "is_active": True},
+            headers=self.headers,
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.json()["slug"], "messaging")
+        self.assertEqual(updated.json()["name"], "Messaging")
+        self.assertTrue(updated.json()["is_active"])
+        self.assertNotIn("created_at", updated.request.content.decode("utf-8"))
+        self.assertNotIn("updated_at", updated.request.content.decode("utf-8"))
+
+        self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers)
+        duplicate = self.client.patch(
+            f"/topics/{created['id']}", json={"slug": "kafka"}, headers=self.headers
+        )
+        self.assertEqual(duplicate.status_code, 409)
+        self.assertEqual(self.client.patch("/topics/999", json={"is_active": True}, headers=self.headers).status_code, 404)
+        self.assertEqual(self.client.patch(f"/topics/{created['id']}", json={}, headers=self.headers).status_code, 422)
 
     def test_create_user(self):
         payload = {
