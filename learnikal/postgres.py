@@ -500,16 +500,23 @@ class PostgresStore:
     def list_answers(self, topic_id: int | None, subtopic_id: int | None, limit: int, cursor: int) -> AnswerPage:
         try:
             with self._connect() as conn:
+                params = [self._user_id(conn)]
+                filters = ["user_id = %s"]
+                if topic_id is not None:
+                    filters.append("topic_id = %s")
+                    params.append(topic_id)
+                if subtopic_id is not None:
+                    filters.append("subtopic_id = %s")
+                    params.append(subtopic_id)
+                params.extend([limit + 1, cursor])
                 rows = conn.execute(
-                    """SELECT id, user_id, topic_id, subtopic_id, question_id, score, difficulty,
-                              independence_score, clarity_score, completeness_score, confidence_score,
-                              created_at, updated_at
-                       FROM answers
-                       WHERE user_id = %s
-                         AND (%s IS NULL OR topic_id = %s)
-                         AND (%s IS NULL OR subtopic_id = %s)
-                       ORDER BY created_at DESC, id DESC LIMIT %s OFFSET %s""",
-                    (self._user_id(conn), topic_id, topic_id, subtopic_id, subtopic_id, limit + 1, cursor),
+                    f"""SELECT id, user_id, topic_id, subtopic_id, question_id, score, difficulty,
+                               independence_score, clarity_score, completeness_score, confidence_score,
+                               created_at, updated_at
+                        FROM answers
+                        WHERE {' AND '.join(filters)}
+                        ORDER BY created_at DESC, id DESC LIMIT %s OFFSET %s""",
+                    params,
                 ).fetchall()
                 return AnswerPage(
                     items=[self._answer(row) for row in rows[:limit]],
