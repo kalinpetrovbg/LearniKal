@@ -13,11 +13,21 @@ from learnikal.models import Entry
 from learnikal.postgres import DOCUMENTS, STUDY_RULES
 
 
-TOPICS = (
-    "airflow", "ai_rag", "clickhouse", "data_engineering", "design_patterns",
-    "docker", "kafka", "pandas_polars", "postgresql", "python", "redis",
-    "rest_api", "testing",
-)
+TOPIC_NAMES = {
+    "ai": "AI",
+    "airflow": "Airflow",
+    "clickhouse": "ClickHouse",
+    "data_engineering": "Data Engineering",
+    "design_patterns": "Design Patterns",
+    "docker": "Docker",
+    "kafka": "Kafka",
+    "pandas_polars": "Pandas / Polars",
+    "postgresql": "PostgreSQL",
+    "python": "Python",
+    "redis": "Redis",
+    "rest_api": "REST API",
+    "testing": "Testing",
+}
 
 
 def history_sections(content: str):
@@ -76,8 +86,16 @@ def migrate(conn, documents, entries, username):
         (STUDY_RULES,),
     )
 
-    for slug in sorted(set(TOPICS) | {entry.technology for _legacy_id, entry in entries}):
-        conn.execute("INSERT INTO topics (slug) VALUES (%s) ON CONFLICT DO NOTHING", (slug,))
+    entry_topics = {entry.technology for _legacy_id, entry in entries}
+    unknown_topics = entry_topics - TOPIC_NAMES.keys()
+    if unknown_topics:
+        raise ValueError(f"Missing topic metadata for: {', '.join(sorted(unknown_topics))}")
+    for slug, name in TOPIC_NAMES.items():
+        conn.execute(
+            """INSERT INTO topics (slug, name) VALUES (%s, %s)
+               ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name""",
+            (slug, name),
+        )
     topic_ids = dict(conn.execute("SELECT slug, id FROM topics").fetchall())
 
     for name, content in documents.items():

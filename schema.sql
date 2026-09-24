@@ -27,8 +27,19 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE IF NOT EXISTS topics (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    slug text NOT NULL UNIQUE CHECK (slug ~ '^[a-z][a-z0-9_-]{0,39}$')
+    slug text NOT NULL UNIQUE CHECK (slug ~ '^[a-z][a-z0-9_-]{0,39}$'),
+    name text NOT NULL CHECK (btrim(name) <> ''),
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS topics_name_lower_key ON topics (lower(name));
+
+DROP TRIGGER IF EXISTS topics_set_updated_at ON topics;
+CREATE TRIGGER topics_set_updated_at
+BEFORE UPDATE ON topics
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE IF NOT EXISTS learning_documents (
     name text PRIMARY KEY CHECK (name IN ('plan', 'knowledge', 'handoff', 'history', 'patterns')),

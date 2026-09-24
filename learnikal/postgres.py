@@ -4,7 +4,7 @@ import psycopg
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
-from .models import Entry, EntryPage, StartContext, TopicProgress
+from .models import Entry, EntryPage, StartContext, Topic, TopicInput, TopicProgress
 
 
 DOCUMENTS = {
@@ -31,6 +31,10 @@ class NotFoundError(Exception):
 
 
 class ConflictError(Exception):
+    pass
+
+
+class TopicConflictError(Exception):
     pass
 
 
@@ -63,6 +67,14 @@ class PostgresStore:
             difficulty=row["difficulty"], score=row["score"], created_at=row["created_at"],
         )
 
+    @staticmethod
+    def _topic(row):
+        return Topic(
+            id=row["id"], slug=row["slug"], name=row["name"],
+            is_active=row["is_active"], created_at=row["created_at"],
+            updated_at=row["updated_at"],
+        )
+
     def ping(self) -> None:
         try:
             with self._connect() as conn:
@@ -87,10 +99,11 @@ class PostgresStore:
             with self._connect() as conn:
                 user_id = self._user_id(conn)
                 topic = conn.execute(
-                    "INSERT INTO topics (slug) VALUES (%s) "
-                    "ON CONFLICT (slug) DO UPDATE SET slug = EXCLUDED.slug RETURNING id",
+                    "SELECT id FROM topics WHERE slug = %s AND is_active = true",
                     (entry.technology,),
                 ).fetchone()
+                if topic is None:
+                    raise NotFoundError
                 values = (user_id, topic["id"], entry.question, entry.answer,
                           Jsonb(entry.evaluation.model_dump()) if entry.evaluation else None,
                           entry.next_question, entry.difficulty, entry.score, entry.created_at)
@@ -125,6 +138,42 @@ class PostgresStore:
                     (user_id, topic["id"] if entry.next_question else None, entry.next_question),
                 )
                 return Entry(**entry.model_dump(exclude={"entry_id"}), entry_id=inserted["id"])
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def create_topic(self, topic: TopicInput) -> Topic:
+        try:
+            with self._connect() as conn:
+                try:
+                    row = conn.execute(
+                        """INSERT INTO topics (slug, name) VALUES (%s, %s)
+                           RETURNING id, slug, name, is_active, created_at, updated_at""",
+                        (topic.slug, topic.name),
+                    ).fetchone()
+                except psycopg.errors.UniqueViolation as exc:
+                    raise TopicConflictError from exc
+                return self._topic(row)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def disable_topic(self, topic_id: int) -> Topic:
+        try:
+            with self._connect() as conn:
+                row = conn.execute(
+                    """UPDATE topics SET is_active = false
+                       WHERE id = %s AND is_active = true
+                       RETURNING id, slug, name, is_active, created_at, updated_at""",
+                    (topic_id,),
+                ).fetchone()
+                if row is None:
+                    row = conn.execute(
+                        """SELECT id, slug, name, is_active, created_at, updated_at
+                           FROM topics WHERE id = %s""",
+                        (topic_id,),
+                    ).fetchone()
+                if row is None:
+                    raise NotFoundError
+                return self._topic(row)
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
@@ -177,12 +226,14 @@ class PostgresStore:
                 ).fetchone()
                 state = conn.execute(
                     """SELECT s.next_question, t.slug AS next_topic FROM learning_state s
-                       LEFT JOIN topics t ON t.id = s.next_topic_id WHERE s.user_id = %s""",
+                       LEFT JOIN topics t ON t.id = s.next_topic_id AND t.is_active = true
+                       WHERE s.user_id = %s""",
                     (user_id,),
                 ).fetchone()
                 topic = conn.execute(
                     """SELECT t.slug FROM topics t
                        LEFT JOIN learning_entries e ON e.topic_id = t.id AND e.user_id = %s
+                       WHERE t.is_active = true
                        GROUP BY t.id, t.slug
                        ORDER BY max(e.created_at) ASC NULLS FIRST, t.slug ASC LIMIT 1""",
                     (user_id,),
@@ -192,6 +243,7 @@ class PostgresStore:
                               AVG(e.score) AS average_score
                        FROM topics t LEFT JOIN learning_entries e
                          ON e.topic_id = t.id AND e.user_id = %s
+                       WHERE t.is_active = true
                        GROUP BY t.id, t.slug ORDER BY t.slug""",
                     (user_id,),
                 ).fetchall()

@@ -4,13 +4,14 @@ import unittest
 from fastapi.testclient import TestClient
 
 from learnikal.api import app, get_store, require_api_key
-from learnikal.models import EntryPage, StartContext
-from learnikal.postgres import ConflictError, NotFoundError
+from learnikal.models import EntryPage, StartContext, Topic
+from learnikal.postgres import ConflictError, NotFoundError, TopicConflictError
 
 
 class FakeStore:
     def __init__(self):
         self.entries = {}
+        self.topics = {}
 
     def start(self):
         return StartContext(
@@ -36,6 +37,25 @@ class FakeStore:
             raise ConflictError
         self.entries[entry.entry_id] = old or entry
         return self.entries[entry.entry_id]
+
+    def create_topic(self, topic):
+        if any(item.slug == topic.slug or item.name.lower() == topic.name.lower()
+               for item in self.topics.values()):
+            raise TopicConflictError
+        topic_id = len(self.topics) + 1
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        created = Topic(id=topic_id, **topic.model_dump(), is_active=True,
+                        created_at=now, updated_at=now)
+        self.topics[topic_id] = created
+        return created
+
+    def disable_topic(self, topic_id):
+        topic = self.topics.get(topic_id)
+        if topic is None:
+            raise NotFoundError
+        disabled = topic.model_copy(update={"is_active": False})
+        self.topics[topic_id] = disabled
+        return disabled
 
     def get_entry(self, technology, entry_id):
         entry = self.entries.get(entry_id)
@@ -118,6 +138,22 @@ class ApiTests(unittest.TestCase):
         created = self.client.post("/entries", json=payload, headers=self.headers)
         self.assertEqual(created.status_code, 201)
         self.assertEqual(created.json()["entry_id"], 1)
+
+    def test_create_and_disable_topic(self):
+        created = self.client.post(
+            "/topics", json={"slug": "MONGODB", "name": "MongoDB"}, headers=self.headers
+        )
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.json()["slug"], "mongodb")
+        self.assertTrue(created.json()["is_active"])
+        duplicate = self.client.post(
+            "/topics", json={"slug": "mongodb", "name": "Mongo DB"}, headers=self.headers
+        )
+        self.assertEqual(duplicate.status_code, 409)
+        disabled = self.client.patch("/topics/1/disable", headers=self.headers)
+        self.assertEqual(disabled.status_code, 200)
+        self.assertFalse(disabled.json()["is_active"])
+        self.assertEqual(self.client.patch("/topics/999/disable", headers=self.headers).status_code, 404)
 
     def test_invalid_input_and_missing_entry(self):
         payload = {"technology": "kafka", "question": "Q", "answer": "A"}

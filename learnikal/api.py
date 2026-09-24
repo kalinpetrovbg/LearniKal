@@ -6,11 +6,14 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
-from .models import Document, Entry, EntryInput, EntryPage, StartContext
-from .postgres import DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError
+from .models import Document, Entry, EntryInput, EntryPage, StartContext, Topic, TopicInput
+from .postgres import (
+    DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError,
+    TopicConflictError,
+)
 
 
-app = FastAPI(title="LearniKal API", version="0.3.0")
+app = FastAPI(title="LearniKal API", version="0.4.0")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -38,6 +41,11 @@ async def not_found_handler(_request, _exc):
 @app.exception_handler(ConflictError)
 async def conflict_handler(_request, _exc):
     return JSONResponse(status_code=409, content={"detail": "Entry ID already exists with different content"})
+
+
+@app.exception_handler(TopicConflictError)
+async def topic_conflict_handler(_request, _exc):
+    return JSONResponse(status_code=409, content={"detail": "Topic slug or name already exists"})
 
 
 @app.exception_handler(StorageError)
@@ -76,6 +84,21 @@ def create_entry(payload: EntryInput, store: PostgresStore = Depends(get_store))
         created_at=datetime.now(timezone.utc),
     )
     return store.save_entry(entry)
+
+
+@app.post("/topics", response_model=Topic, status_code=status.HTTP_201_CREATED,
+          dependencies=[Depends(require_api_key)])
+def create_topic(payload: TopicInput, store: PostgresStore = Depends(get_store)) -> Topic:
+    return store.create_topic(payload)
+
+
+@app.patch("/topics/{topic_id}/disable", response_model=Topic,
+           dependencies=[Depends(require_api_key)])
+def disable_topic(
+    topic_id: Annotated[int, Path(ge=1)],
+    store: PostgresStore = Depends(get_store),
+) -> Topic:
+    return store.disable_topic(topic_id)
 
 
 @app.get("/entries/{technology}/{entry_id}", response_model=Entry, dependencies=[Depends(require_api_key)])

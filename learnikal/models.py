@@ -41,6 +41,31 @@ class EntryPage(BaseModel):
     next_cursor: str | None = None
 
 
+class TopicInput(BaseModel):
+    slug: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")
+    name: str = Field(min_length=1, max_length=100)
+
+    @field_validator("slug")
+    @classmethod
+    def normalize_slug(cls, value: str) -> str:
+        return value.lower()
+
+    @field_validator("name")
+    @classmethod
+    def normalize_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Must contain non-whitespace text")
+        return value
+
+
+class Topic(TopicInput):
+    id: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
 class Document(BaseModel):
     name: str
     content: str
