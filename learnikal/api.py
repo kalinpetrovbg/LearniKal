@@ -7,8 +7,9 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
 from .models import (
-    Document, Entry, EntryInput, EntryPage, StartContext, Topic, TopicInput, TopicUpdate,
-    User, UserInput, UserUpdate,
+    Document, Entry, EntryInput, EntryPage, Instruction, InstructionInput,
+    InstructionUpdate, StartContext, Topic, TopicInput, TopicUpdate, User, UserInput,
+    UserUpdate,
 )
 from .postgres import (
     DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError,
@@ -16,7 +17,7 @@ from .postgres import (
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.5.5")
+app = FastAPI(title="LearniKal API", version="0.6.0")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -158,6 +159,40 @@ def delete_user(
     store: PostgresStore = Depends(get_store),
 ) -> None:
     store.delete_user(user_id)
+
+
+@app.post("/instructions", response_model=Instruction, status_code=status.HTTP_201_CREATED,
+          tags=["Instructions"], dependencies=[Depends(require_api_key)])
+def create_instruction(
+    payload: InstructionInput,
+    store: PostgresStore = Depends(get_store),
+) -> Instruction:
+    return store.create_instruction(payload)
+
+
+@app.get("/instructions/list", response_model=list[Instruction], tags=["Instructions"],
+         dependencies=[Depends(require_api_key)])
+def list_instructions(store: PostgresStore = Depends(get_store)) -> list[Instruction]:
+    return store.list_instructions()
+
+
+@app.patch("/instructions/{instruction_id}", response_model=Instruction, tags=["Instructions"],
+           dependencies=[Depends(require_api_key)])
+def update_instruction(
+    instruction_id: Annotated[int, Path(ge=1)],
+    payload: InstructionUpdate,
+    store: PostgresStore = Depends(get_store),
+) -> Instruction:
+    return store.update_instruction(instruction_id, payload)
+
+
+@app.delete("/instructions/{instruction_id}", status_code=status.HTTP_204_NO_CONTENT,
+            tags=["Instructions"], dependencies=[Depends(require_api_key)])
+def delete_instruction(
+    instruction_id: Annotated[int, Path(ge=1)],
+    store: PostgresStore = Depends(get_store),
+) -> None:
+    store.delete_instruction(instruction_id)
 
 
 @app.get("/entries/{technology}/{entry_id}", response_model=Entry, dependencies=[Depends(require_api_key)])

@@ -4,7 +4,7 @@ import unittest
 from fastapi.testclient import TestClient
 
 from learnikal.api import app, get_store, require_api_key
-from learnikal.models import EntryPage, StartContext, Topic, User
+from learnikal.models import EntryPage, Instruction, StartContext, Topic, User
 from learnikal.postgres import (
     ConflictError, NotFoundError, TopicConflictError, TopicInUseError, UserConflictError,
 )
@@ -15,10 +15,11 @@ class FakeStore:
         self.entries = {}
         self.topics = {}
         self.users = {}
+        self.instructions = {}
 
     def start(self):
         return StartContext(
-            instructions="Всички технологии са равнопоставени.",
+            instructions="Всички технологии са равнопоставени.\nБез код по подразбиране.",
             knowledge_summary="Kafka е начална тема.",
             suggested_technology="kafka",
             next_question="Как избираш message key?",
@@ -124,6 +125,39 @@ class FakeStore:
         if user_id not in self.users:
             raise NotFoundError
         del self.users[user_id]
+
+    def create_instruction(self, instruction):
+        instruction_id = len(self.instructions) + 1
+        position = instruction.position or instruction_id
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        created = Instruction(
+            id=instruction_id, text=instruction.text, position=position,
+            is_active=instruction.is_active, created_at=now, updated_at=now,
+        )
+        self.instructions[instruction_id] = created
+        return created
+
+    def list_instructions(self):
+        return sorted(self.instructions.values(), key=lambda item: (item.position, item.id))
+
+    def update_instruction(self, instruction_id, instruction):
+        old = self.instructions.get(instruction_id)
+        if old is None:
+            raise NotFoundError
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        updated = old.model_copy(update={
+            "text": instruction.text if instruction.text is not None else old.text,
+            "position": instruction.position if instruction.position is not None else old.position,
+            "is_active": instruction.is_active if instruction.is_active is not None else old.is_active,
+            "updated_at": now,
+        })
+        self.instructions[instruction_id] = updated
+        return updated
+
+    def delete_instruction(self, instruction_id):
+        if instruction_id not in self.instructions:
+            raise NotFoundError
+        del self.instructions[instruction_id]
 
     def get_entry(self, technology, entry_id):
         entry = self.entries.get(entry_id)
@@ -346,6 +380,37 @@ class ApiTests(unittest.TestCase):
 
         self.assertEqual(self.client.delete(f"/users/{created['id']}", headers=self.headers).status_code, 204)
         self.assertEqual(self.client.delete(f"/users/{created['id']}", headers=self.headers).status_code, 404)
+
+    def test_create_list_update_and_delete_instruction(self):
+        first = self.client.post(
+            "/instructions",
+            json={"text": "Първо правило.", "position": 2, "is_active": True},
+            headers=self.headers,
+        )
+        self.assertEqual(first.status_code, 201)
+        second = self.client.post(
+            "/instructions",
+            json={"text": "Второ правило.", "position": 1, "is_active": False},
+            headers=self.headers,
+        ).json()
+
+        listed = self.client.get("/instructions/list", headers=self.headers)
+        self.assertEqual(listed.status_code, 200)
+        self.assertEqual([item["id"] for item in listed.json()], [second["id"], first.json()["id"]])
+
+        updated = self.client.patch(
+            f"/instructions/{first.json()['id']}",
+            json={"text": "Обновено правило.", "is_active": False},
+            headers=self.headers,
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.json()["text"], "Обновено правило.")
+        self.assertFalse(updated.json()["is_active"])
+        self.assertEqual(self.client.patch(f"/instructions/{first.json()['id']}", json={}, headers=self.headers).status_code, 422)
+        self.assertEqual(self.client.patch("/instructions/999", json={"text": "Missing"}, headers=self.headers).status_code, 404)
+
+        self.assertEqual(self.client.delete(f"/instructions/{first.json()['id']}", headers=self.headers).status_code, 204)
+        self.assertEqual(self.client.delete(f"/instructions/{first.json()['id']}", headers=self.headers).status_code, 404)
 
     def test_invalid_input_and_missing_entry(self):
         payload = {"technology": "kafka", "question": "Q", "answer": "A"}

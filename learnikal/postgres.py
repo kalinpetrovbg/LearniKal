@@ -6,8 +6,8 @@ from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
 from .models import (
-    Entry, EntryPage, StartContext, Topic, TopicInput, TopicProgress, TopicUpdate, User,
-    UserInput, UserUpdate,
+    Entry, EntryPage, Instruction, InstructionInput, InstructionUpdate, StartContext,
+    Topic, TopicInput, TopicProgress, TopicUpdate, User, UserInput, UserUpdate,
 )
 
 
@@ -19,15 +19,18 @@ DOCUMENTS = {
     "patterns": "design_patterns.md",
 }
 
-STUDY_RULES = (
-    "Обучение за Python/Data Engineering Team Lead на български, без код по подразбиране. "
-    "Задавай по един кратък сценарий за архитектурна преценка, trade-offs, диагностика, "
-    "коректност, производителност или design review. Всички технологии са равнопоставени. "
-    "Редувай темите и не повтаряй наскоро проверени сценарии. Дай възможност за "
-    "самостоятелен отговор преди подсказки. След отговора отдели показаното самостоятелно "
-    "от изясненото с помощ и от непровереното. Прочетено обяснение не доказва усвоено "
-    "знание. Не следи учебно време."
-)
+DEFAULT_INSTRUCTIONS = [
+    "Обучение за Python/Data Engineering Team Lead на български.",
+    "Без код по подразбиране.",
+    "Задавай по един кратък сценарий за архитектурна преценка, trade-offs, диагностика, коректност, производителност или design review.",
+    "Всички технологии са равнопоставени.",
+    "Редувай темите и не повтаряй наскоро проверени сценарии.",
+    "Дай възможност за самостоятелен отговор преди подсказки.",
+    "След отговора отдели показаното самостоятелно от изясненото с помощ и от непровереното.",
+    "Прочетено обяснение не доказва усвоено знание.",
+    "Не следи учебно време.",
+]
+STUDY_RULES = " ".join(DEFAULT_INSTRUCTIONS)
 
 
 class NotFoundError(Exception):
@@ -95,6 +98,14 @@ class PostgresStore:
         return User(
             id=row["id"], username=row["username"], first_name=row["first_name"],
             last_name=row["last_name"], email=row["email"], created_at=row["created_at"],
+            updated_at=row["updated_at"],
+        )
+
+    @staticmethod
+    def _instruction(row):
+        return Instruction(
+            id=row["id"], text=row["text"], position=row["position"],
+            is_active=row["is_active"], created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
 
@@ -301,6 +312,64 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
+    def create_instruction(self, instruction: InstructionInput) -> Instruction:
+        try:
+            with self._connect() as conn:
+                position = instruction.position
+                if position is None:
+                    row = conn.execute("SELECT COALESCE(MAX(position), 0) + 1 AS position FROM instructions").fetchone()
+                    position = row["position"]
+                row = conn.execute(
+                    """INSERT INTO instructions (text, position, is_active)
+                       VALUES (%s, %s, %s)
+                       RETURNING id, text, position, is_active, created_at, updated_at""",
+                    (instruction.text, position, instruction.is_active),
+                ).fetchone()
+                return self._instruction(row)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def list_instructions(self) -> list[Instruction]:
+        try:
+            with self._connect() as conn:
+                rows = conn.execute(
+                    """SELECT id, text, position, is_active, created_at, updated_at
+                       FROM instructions ORDER BY position, id"""
+                ).fetchall()
+                return [self._instruction(row) for row in rows]
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
+    def update_instruction(self, instruction_id: int, instruction: InstructionUpdate) -> Instruction:
+        try:
+            with self._connect() as conn:
+                row = conn.execute(
+                    """UPDATE instructions SET
+                       text = COALESCE(%s, text),
+                       position = COALESCE(%s, position),
+                       is_active = COALESCE(%s, is_active)
+                       WHERE id = %s
+                       RETURNING id, text, position, is_active, created_at, updated_at""",
+                    (instruction.text, instruction.position, instruction.is_active, instruction_id),
+                ).fetchone()
+                if row is None:
+                    raise NotFoundError
+                return self._instruction(row)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def delete_instruction(self, instruction_id: int) -> None:
+        try:
+            with self._connect() as conn:
+                deleted = conn.execute(
+                    "DELETE FROM instructions WHERE id = %s RETURNING id",
+                    (instruction_id,),
+                ).fetchone()
+                if deleted is None:
+                    raise NotFoundError
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
     def _get_entry(self, conn, user_id, technology, entry_id):
         row = conn.execute(
             """SELECT e.*, t.slug AS technology FROM learning_entries e
@@ -340,11 +409,12 @@ class PostgresStore:
         try:
             with self._connect() as conn:
                 user_id = self._user_id(conn)
-                policy = conn.execute(
-                    "SELECT instructions FROM learning_policy WHERE id = true"
-                ).fetchone()
-                if policy is None:
-                    raise StorageError("Learning policy is not initialized")
+                instruction_rows = conn.execute(
+                    """SELECT text FROM instructions WHERE is_active = true
+                       ORDER BY position, id"""
+                ).fetchall()
+                if not instruction_rows:
+                    raise StorageError("Learning instructions are not initialized")
                 knowledge = conn.execute(
                     "SELECT content FROM learning_documents WHERE name = 'knowledge'"
                 ).fetchone()
@@ -375,7 +445,7 @@ class PostgresStore:
                 if summary:
                     summary = re.split(r"(?m)^## Текуща посока\s*$", summary)[0].strip()
                 return StartContext(
-                    instructions=policy["instructions"],
+                    instructions="\n".join(row["text"] for row in instruction_rows),
                     knowledge_summary=summary,
                     suggested_technology=(state["next_topic"] if state and state["next_question"] else None)
                     or (topic["slug"] if topic else None),

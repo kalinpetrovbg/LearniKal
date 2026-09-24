@@ -10,7 +10,7 @@ import boto3
 import psycopg
 
 from learnikal.models import Entry
-from learnikal.postgres import DOCUMENTS, STUDY_RULES
+from learnikal.postgres import DEFAULT_INSTRUCTIONS, DOCUMENTS
 
 
 TOPIC_NAMES = {
@@ -81,10 +81,12 @@ def migrate(conn, documents, entries, username):
     if user is None:
         raise ValueError(f"User {username!r} must be created before importing S3 data")
     user_id = user[0]
-    conn.execute(
-        "INSERT INTO learning_policy (id, instructions) VALUES (true, %s) ON CONFLICT (id) DO NOTHING",
-        (STUDY_RULES,),
-    )
+    for position, text in enumerate(DEFAULT_INSTRUCTIONS, start=1):
+        conn.execute(
+            """INSERT INTO instructions (text, position)
+               VALUES (%s, %s) ON CONFLICT DO NOTHING""",
+            (text, position),
+        )
 
     entry_topics = {entry.technology for _legacy_id, entry in entries}
     unknown_topics = entry_topics - TOPIC_NAMES.keys()

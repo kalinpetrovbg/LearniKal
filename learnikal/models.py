@@ -93,6 +93,48 @@ class Topic(TopicInput):
     updated_at: datetime
 
 
+class InstructionInput(BaseModel):
+    text: str = Field(min_length=1, max_length=5000)
+    position: int | None = Field(default=None, ge=1)
+    is_active: bool = True
+
+    @field_validator("text")
+    @classmethod
+    def normalize_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Must contain non-whitespace text")
+        return value
+
+
+class InstructionUpdate(BaseModel):
+    text: str | None = Field(default=None, min_length=1, max_length=5000)
+    position: int | None = Field(default=None, ge=1)
+    is_active: bool | None = None
+
+    @field_validator("text")
+    @classmethod
+    def normalize_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("Must contain non-whitespace text")
+        return value
+
+    @model_validator(mode="after")
+    def require_update_field(self):
+        if not self.model_fields_set:
+            raise ValueError("At least one instruction field must be provided")
+        return self
+
+
+class Instruction(InstructionInput):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+
 class UserInput(BaseModel):
     username: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_-]{2,39}$")
     first_name: str = Field(min_length=1, max_length=100)
