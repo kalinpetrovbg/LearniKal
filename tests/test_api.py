@@ -5,7 +5,9 @@ from fastapi.testclient import TestClient
 
 from learnikal.api import app, get_store, require_api_key
 from learnikal.models import EntryPage, StartContext, Topic, User
-from learnikal.postgres import ConflictError, NotFoundError, TopicConflictError, UserConflictError
+from learnikal.postgres import (
+    ConflictError, NotFoundError, TopicConflictError, TopicInUseError, UserConflictError,
+)
 
 
 class FakeStore:
@@ -70,6 +72,17 @@ class FakeStore:
         self.topics[topic_id] = updated
         return updated
 
+    def list_topics(self):
+        return list(self.topics.values())
+
+    def delete_topic(self, topic_id):
+        topic = self.topics.get(topic_id)
+        if topic is None:
+            raise NotFoundError
+        if any(entry.technology == topic.slug for entry in self.entries.values()):
+            raise TopicInUseError
+        del self.topics[topic_id]
+
     def create_user(self, user):
         if any(item.username == user.username or item.email == user.email for item in self.users.values()):
             raise UserConflictError
@@ -103,6 +116,14 @@ class FakeStore:
         })
         self.users[user_id] = updated
         return updated
+
+    def list_users(self):
+        return list(self.users.values())
+
+    def delete_user(self, user_id):
+        if user_id not in self.users:
+            raise NotFoundError
+        del self.users[user_id]
 
     def get_entry(self, technology, entry_id):
         entry = self.entries.get(entry_id)
@@ -212,6 +233,14 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(created.json()["slug"], "queues")
         self.assertFalse(created.json()["is_active"])
 
+    def test_list_topics_without_pagination(self):
+        first = self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers).json()
+        second = self.client.post("/topics", json={"slug": "python", "name": "Python"}, headers=self.headers).json()
+
+        response = self.client.get("/topics/list", headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [first, second])
+
     def test_update_topic_can_enable_disable_and_rename(self):
         created = self.client.post(
             "/topics", json={"slug": "queues", "name": "Queues", "is_active": False},
@@ -238,6 +267,19 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.patch("/topics/999", json={"is_active": True}, headers=self.headers).status_code, 404)
         self.assertEqual(self.client.patch(f"/topics/{created['id']}", json={}, headers=self.headers).status_code, 422)
 
+    def test_delete_topic_by_id(self):
+        created = self.client.post(
+            "/topics", json={"slug": "temporary", "name": "Temporary"}, headers=self.headers
+        ).json()
+        self.assertEqual(self.client.delete(f"/topics/{created['id']}", headers=self.headers).status_code, 204)
+        self.assertEqual(self.client.delete(f"/topics/{created['id']}", headers=self.headers).status_code, 404)
+
+        used = self.client.post(
+            "/topics", json={"slug": "used", "name": "Used"}, headers=self.headers
+        ).json()
+        self.client.post("/entries", json={"technology": "used", "question": "Q", "answer": "A"}, headers=self.headers)
+        self.assertEqual(self.client.delete(f"/topics/{used['id']}", headers=self.headers).status_code, 409)
+
     def test_create_user(self):
         payload = {
             "username": "MARTIN", "first_name": "Martin", "last_name": "Ivanov",
@@ -252,6 +294,20 @@ class ApiTests(unittest.TestCase):
 
         duplicate = self.client.post("/users", json=payload, headers=self.headers)
         self.assertEqual(duplicate.status_code, 409)
+
+    def test_list_users_without_pagination(self):
+        first = self.client.post("/users", json={
+            "username": "martin", "first_name": "Martin", "last_name": "Ivanov",
+            "email": "martin@example.com", "password": "secret",
+        }, headers=self.headers).json()
+        second = self.client.post("/users", json={
+            "username": "ivan", "first_name": "Ivan", "last_name": "Petrov",
+            "email": "ivan@example.com", "password": "secret",
+        }, headers=self.headers).json()
+
+        response = self.client.get("/users/list", headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [first, second])
 
     def test_update_user(self):
         created = self.client.post("/users", json={
@@ -281,6 +337,15 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(duplicate.status_code, 409)
         self.assertEqual(self.client.patch("/users/999", json={"first_name": "Nobody"}, headers=self.headers).status_code, 404)
         self.assertEqual(self.client.patch(f"/users/{created['id']}", json={}, headers=self.headers).status_code, 422)
+
+    def test_delete_user_by_id(self):
+        created = self.client.post("/users", json={
+            "username": "MARTIN", "first_name": "Martin", "last_name": "Ivanov",
+            "email": "MARTIN@example.com", "password": "secret",
+        }, headers=self.headers).json()
+
+        self.assertEqual(self.client.delete(f"/users/{created['id']}", headers=self.headers).status_code, 204)
+        self.assertEqual(self.client.delete(f"/users/{created['id']}", headers=self.headers).status_code, 404)
 
     def test_invalid_input_and_missing_entry(self):
         payload = {"technology": "kafka", "question": "Q", "answer": "A"}

@@ -12,11 +12,11 @@ from .models import (
 )
 from .postgres import (
     DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError,
-    TopicConflictError, UserConflictError,
+    TopicConflictError, TopicInUseError, UserConflictError,
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.5.4")
+app = FastAPI(title="LearniKal API", version="0.5.5")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -49,6 +49,11 @@ async def conflict_handler(_request, _exc):
 @app.exception_handler(TopicConflictError)
 async def topic_conflict_handler(_request, _exc):
     return JSONResponse(status_code=409, content={"detail": "Topic slug or name already exists"})
+
+
+@app.exception_handler(TopicInUseError)
+async def topic_in_use_handler(_request, _exc):
+    return JSONResponse(status_code=409, content={"detail": "Topic has learning entries; disable it instead"})
 
 
 @app.exception_handler(UserConflictError)
@@ -100,6 +105,12 @@ def create_topic(payload: TopicInput, store: PostgresStore = Depends(get_store))
     return store.create_topic(payload)
 
 
+@app.get("/topics/list", response_model=list[Topic], tags=["Topics"],
+         dependencies=[Depends(require_api_key)])
+def list_topics(store: PostgresStore = Depends(get_store)) -> list[Topic]:
+    return store.list_topics()
+
+
 @app.patch("/topics/{topic_id}", response_model=Topic, tags=["Topics"],
            dependencies=[Depends(require_api_key)])
 def update_topic(
@@ -110,10 +121,25 @@ def update_topic(
     return store.update_topic(topic_id, payload)
 
 
+@app.delete("/topics/{topic_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Topics"],
+            dependencies=[Depends(require_api_key)])
+def delete_topic(
+    topic_id: Annotated[int, Path(ge=1)],
+    store: PostgresStore = Depends(get_store),
+) -> None:
+    store.delete_topic(topic_id)
+
+
 @app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED, tags=["Users"],
           dependencies=[Depends(require_api_key)])
 def create_user(payload: UserInput, store: PostgresStore = Depends(get_store)) -> User:
     return store.create_user(payload)
+
+
+@app.get("/users/list", response_model=list[User], tags=["Users"],
+         dependencies=[Depends(require_api_key)])
+def list_users(store: PostgresStore = Depends(get_store)) -> list[User]:
+    return store.list_users()
 
 
 @app.patch("/users/{user_id}", response_model=User, tags=["Users"], dependencies=[Depends(require_api_key)])
@@ -123,6 +149,15 @@ def update_user(
     store: PostgresStore = Depends(get_store),
 ) -> User:
     return store.update_user(user_id, payload)
+
+
+@app.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Users"],
+            dependencies=[Depends(require_api_key)])
+def delete_user(
+    user_id: Annotated[int, Path(ge=1)],
+    store: PostgresStore = Depends(get_store),
+) -> None:
+    store.delete_user(user_id)
 
 
 @app.get("/entries/{technology}/{entry_id}", response_model=Entry, dependencies=[Depends(require_api_key)])

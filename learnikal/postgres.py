@@ -42,6 +42,10 @@ class TopicConflictError(Exception):
     pass
 
 
+class TopicInUseError(Exception):
+    pass
+
+
 class UserConflictError(Exception):
     pass
 
@@ -175,6 +179,17 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
+    def list_topics(self) -> list[Topic]:
+        try:
+            with self._connect() as conn:
+                rows = conn.execute(
+                    """SELECT id, slug, name, is_active, created_at, updated_at
+                       FROM topics ORDER BY id"""
+                ).fetchall()
+                return [self._topic(row) for row in rows]
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
     def update_topic(self, topic_id: int, topic: TopicUpdate) -> Topic:
         try:
             with self._connect() as conn:
@@ -193,6 +208,26 @@ class PostgresStore:
                 if row is None:
                     raise NotFoundError
                 return self._topic(row)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def delete_topic(self, topic_id: int) -> None:
+        try:
+            with self._connect() as conn:
+                topic = conn.execute("SELECT id FROM topics WHERE id = %s", (topic_id,)).fetchone()
+                if topic is None:
+                    raise NotFoundError
+                entry_count = conn.execute(
+                    "SELECT COUNT(*) AS count FROM learning_entries WHERE topic_id = %s",
+                    (topic_id,),
+                ).fetchone()["count"]
+                if entry_count:
+                    raise TopicInUseError
+                conn.execute(
+                    "UPDATE learning_state SET next_topic_id = NULL WHERE next_topic_id = %s",
+                    (topic_id,),
+                )
+                conn.execute("DELETE FROM topics WHERE id = %s", (topic_id,))
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
@@ -215,6 +250,17 @@ class PostgresStore:
                 return self._user(row)
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
+
+    def list_users(self) -> list[User]:
+        try:
+            with self._connect() as conn:
+                rows = conn.execute(
+                    """SELECT id, username, first_name, last_name, email, created_at, updated_at
+                       FROM users ORDER BY id"""
+                ).fetchall()
+                return [self._user(row) for row in rows]
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
 
     def update_user(self, user_id: int, user: UserUpdate) -> User:
         password_hash = PASSWORD_HASHER.hash(user.password) if user.password is not None else None
@@ -240,6 +286,18 @@ class PostgresStore:
                 if row is None:
                     raise NotFoundError
                 return self._user(row)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def delete_user(self, user_id: int) -> None:
+        try:
+            with self._connect() as conn:
+                user = conn.execute("SELECT id FROM users WHERE id = %s", (user_id,)).fetchone()
+                if user is None:
+                    raise NotFoundError
+                conn.execute("DELETE FROM learning_state WHERE user_id = %s", (user_id,))
+                conn.execute("DELETE FROM learning_entries WHERE user_id = %s", (user_id,))
+                conn.execute("DELETE FROM users WHERE id = %s", (user_id,))
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
