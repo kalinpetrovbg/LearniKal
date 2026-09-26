@@ -1,38 +1,118 @@
 # LearniKal API
 
-FastAPI service for Team Lead learning sessions. PostgreSQL holds the learning
-documents, historical sections, answers, and per-user state. Technologies share
-one relational model and are treated equally.
+LearniKal is a FastAPI service for Python and Data Engineering Team Lead learning sessions. It stores users, learning topics and subtopics, study instructions, scored answers, progress, and imported learning documents in PostgreSQL.
 
-## Current migration stage
+The production service runs on AWS EC2. Nginx terminates HTTPS and proxies the API to Uvicorn on `127.0.0.1:8000`; PostgreSQL runs locally on the same EC2 instance. A push to the `main` branch deploys the current code automatically through GitHub Actions.
 
-The live EC2 deployment still uses S3. This checkout contains the PostgreSQL
-cutover code; do not deploy it until the RDS database has been created and
-imported. Follow [the RDS setup guide](deploy/postgres.md).
+## API documentation
 
-## API
+FastAPI provides interactive API documentation at:
 
-- GET /health checks the PostgreSQL connection.
-- GET /start returns study rules, imported knowledge, per-topic progress, a
-  suggested technology, and an optional pending question.
-- GET /documents and GET /documents/{name} read imported source documents from
-  PostgreSQL.
-- POST /entries saves an answer and evaluation. An entry_id can be reused for
-  an idempotent retry. Optional difficulty is low, medium, or high; optional
-  score is 0 through 5. Missing scores stay null.
-- GET /entries?technology=kafka lists answers, with limit and numeric cursor.
-- GET /entries/{technology}/{entry_id} reads one answer.
+- `/docs` — Swagger UI
+- `/redoc` — ReDoc
+- `/openapi.json` — OpenAPI schema
 
-All routes except /health use the existing X-API-Key header. The key is read
-from LEARNIKAL_API_KEY. The current single-user name is read from
-LEARNIKAL_USERNAME (default: kalin); callers cannot choose another user.
-LEARNIKAL_DATABASE_URL provides the PostgreSQL connection string.
+## Authentication and configuration
 
-## Local checks
+Every endpoint except `GET /health` requires an `X-API-Key` request header.
 
-Install requirements.txt in a virtual environment and run:
+The service reads these environment variables:
 
-    python -m unittest discover -s tests
+- `LEARNIKAL_API_KEY` — shared API key required by protected routes.
+- `LEARNIKAL_DATABASE_URL` — PostgreSQL connection string.
+- `LEARNIKAL_USERNAME` — default learning user used by `/start` and answer reads; defaults to `kalin`.
 
-The unit tests use a fake store. A live PostgreSQL connection and S3 import
-must be checked separately during cutover.
+Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must not be committed to the repository.
+
+## Endpoints
+
+### Health and learning context
+
+- `GET /health` checks the PostgreSQL connection.
+- `GET /start` returns active study instructions, the knowledge summary, per-topic progress, a suggested topic, and an optional pending question.
+- `GET /documents` lists the supported imported learning documents.
+- `GET /documents/{name}` returns one imported document.
+
+### Answers
+
+- `POST /answers` records an evaluated answer.
+- `GET /answers/list` lists answers for the configured learning user. Results can be filtered by `topic_id` and `subtopic_id` and paginated with `limit` and `cursor`.
+- `GET /answers/{answer_id}` returns one answer belonging to the configured learning user.
+
+An answer records its topic and optional subtopic and question, plus score, difficulty, independence, clarity, completeness, and confidence values. Supplying an existing answer `id` with identical data is treated as an idempotent retry; different data returns `409 Conflict`.
+
+### Topics and subtopics
+
+- `POST /topics`
+- `GET /topics/list`
+- `PATCH /topics/{topic_id}`
+- `DELETE /topics/{topic_id}`
+- `POST /subtopics`
+- `GET /subtopics/list`
+- `PATCH /subtopics/{subtopic_id}`
+- `DELETE /subtopics/{subtopic_id}`
+
+Topic and subtopic slugs are normalized to lowercase. Topics that already have answers cannot be deleted and should be disabled with `is_active: false` instead.
+
+### Users
+
+- `POST /users`
+- `GET /users/list`
+- `PATCH /users/{user_id}`
+- `DELETE /users/{user_id}`
+
+Passwords are hashed with Argon2id and are never returned by the API. The current API uses the shared API key and does not expose a user login endpoint.
+
+### Study instructions
+
+- `POST /instructions`
+- `GET /instructions/list`
+- `PATCH /instructions/{instruction_id}`
+- `DELETE /instructions/{instruction_id}`
+
+Only active instructions are included in `/start`, ordered by position and ID.
+
+## Local development
+
+Create and activate a virtual environment, then install the development requirements:
+
+```powershell
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+```
+
+Set the required environment variables and start the API:
+
+```powershell
+$env:LEARNIKAL_DATABASE_URL = "postgresql://USER:PASSWORD@127.0.0.1:5432/learnikal"
+$env:LEARNIKAL_API_KEY = "your-local-api-key"
+$env:LEARNIKAL_USERNAME = "kalin"
+uvicorn main:app --reload
+```
+
+The local API is available at `http://127.0.0.1:8000`, with Swagger UI at `http://127.0.0.1:8000/docs`.
+
+Run the unit tests with:
+
+```powershell
+python -m unittest discover -s tests
+```
+
+The API tests use an in-memory fake store. PostgreSQL connectivity and production migrations require separate integration checks.
+
+## Database
+
+[`schema.sql`](schema.sql) describes the complete PostgreSQL schema. The `deploy/migrate-*.py` scripts upgrade existing production tables and data during deployment. The historical S3 import utility remains in the repository for migration purposes; PostgreSQL is the active application database.
+
+## Deployment
+
+The workflow in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs on every push to `main` and can also be started manually. It connects to EC2 over SSH and:
+
+1. Fast-forwards `/opt/learnikal` to the latest `main` commit.
+2. Installs the current Python requirements.
+3. Runs the topic, subtopic, instruction, and answer migrations.
+4. Restarts the `learnikal` systemd service.
+5. Checks `http://127.0.0.1:8000/health` and prints recent service logs if the check fails.
+
+Because `main` deploys automatically, changes should be tested before they are pushed or merged into that branch.
