@@ -1,6 +1,5 @@
 """One-time, repeatable import from the old S3 store into PostgreSQL."""
 
-import hashlib
 import json
 import os
 import re
@@ -11,7 +10,16 @@ import boto3
 import psycopg
 from pydantic import BaseModel, Field, field_validator
 
-from learnikal.postgres import DEFAULT_INSTRUCTIONS, DOCUMENTS
+from learnikal.postgres import DEFAULT_INSTRUCTIONS
+
+
+DOCUMENTS = {
+    "plan": "TEAM_LEAD_LEARNING_PLAN.md",
+    "knowledge": "LEARNING_KNOWLEDGE_SUMMARY.md",
+    "handoff": "learning_handoff.md",
+    "history": "LEARNING_HISTORY.md",
+    "patterns": "design_patterns.md",
+}
 
 
 class LegacyEntry(BaseModel):
@@ -108,17 +116,19 @@ def migrate(conn, documents, entries, username):
     topic_ids = dict(conn.execute("SELECT slug, id FROM topics").fetchall())
 
     for name, content in documents.items():
-        digest = hashlib.sha256(content.encode("utf-8")).hexdigest()
         existing = conn.execute(
-            "SELECT sha256 FROM learning_documents WHERE name = %s", (name,)
+            'SELECT text FROM instructions WHERE "type" = %s AND is_active = true '
+            'ORDER BY position, id LIMIT 1',
+            (name,),
         ).fetchone()
-        if existing and existing[0] != digest:
+        if existing and existing[0] != content:
             raise ValueError(f"PostgreSQL document {name} differs from S3; refusing overwrite")
-        conn.execute(
-            """INSERT INTO learning_documents (name, content, sha256)
-               VALUES (%s, %s, %s) ON CONFLICT (name) DO NOTHING""",
-            (name, content, digest),
-        )
+        if not existing:
+            conn.execute(
+                '''INSERT INTO instructions ("type", text, position, is_active)
+                   VALUES (%s, %s, 1, true)''',
+                (name, content),
+            )
 
     for _legacy_id, entry in entries:
         existing = conn.execute(
@@ -141,9 +151,11 @@ def migrate(conn, documents, entries, username):
 
     for name, content in documents.items():
         row = conn.execute(
-            "SELECT content, sha256 FROM learning_documents WHERE name = %s", (name,)
+            'SELECT text FROM instructions WHERE "type" = %s AND is_active = true '
+            'ORDER BY position, id LIMIT 1',
+            (name,),
         ).fetchone()
-        if row != (content, hashlib.sha256(content.encode("utf-8")).hexdigest()):
+        if row is None or row[0] != content:
             raise ValueError(f"Verification failed for document {name}")
     imported = conn.execute(
         "SELECT COUNT(*) FROM answers WHERE user_id = %s",

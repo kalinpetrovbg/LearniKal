@@ -36,14 +36,18 @@ jobs:
             sudo -u postgres .venv/bin/python deploy/migrate-instructions.py
             sudo -u postgres .venv/bin/python deploy/migrate-answers.py
             sudo -u postgres .venv/bin/python deploy/migrate-questions.py
-            sudo -u postgres .venv/bin/python deploy/drop-obsolete-learning-tables.py
             sudo systemctl restart learnikal
             sudo systemctl status learnikal --no-pager
+            healthy=0
             for attempt in {1..10}; do
               if curl -fsS http://127.0.0.1:8000/health; then
-                exit 0
+                healthy=1
+                break
               fi
               sleep 2
             done
-            sudo journalctl -u learnikal -n 80 --no-pager
-            exit 1
+            if [ "$healthy" -ne 1 ]; then
+              sudo journalctl -u learnikal -n 80 --no-pager
+              exit 1
+            fi
+            sudo -u postgres .venv/bin/python deploy/drop-obsolete-learning-tables.py

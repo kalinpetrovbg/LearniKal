@@ -22,18 +22,12 @@ class FakeStore:
 
     def start(self):
         return StartContext(
-            instructions="Всички технологии са равнопоставени.\nБез код по подразбиране.",
+            instructions="Обучение на български.\nБез код по подразбиране.",
             knowledge_summary="Kafka е начална тема.",
-            suggested_technology="kafka",
         )
 
     def ping(self):
         return None
-
-    def get_document(self, name):
-        if name != "handoff":
-            raise NotFoundError
-        return "Следващ въпрос: Kafka ordering"
 
     def create_answer(self, answer):
         now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
@@ -285,14 +279,17 @@ class FakeStore:
         position = instruction.position or instruction_id
         now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
         created = Instruction(
-            id=instruction_id, text=instruction.text, position=position,
+            id=instruction_id, type=instruction.type, text=instruction.text, position=position,
             is_active=instruction.is_active, created_at=now, updated_at=now,
         )
         self.instructions[instruction_id] = created
         return created
 
-    def list_instructions(self):
-        return sorted(self.instructions.values(), key=lambda item: (item.position, item.id))
+    def list_instructions(self, instruction_type=None):
+        rows = self.instructions.values()
+        if instruction_type is not None:
+            rows = [item for item in rows if item.type == instruction_type]
+        return sorted(rows, key=lambda item: (item.type, item.position, item.id))
 
     def update_instruction(self, instruction_id, instruction):
         old = self.instructions.get(instruction_id)
@@ -300,6 +297,7 @@ class FakeStore:
             raise NotFoundError
         now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
         updated = old.model_copy(update={
+            "type": instruction.type if instruction.type is not None else old.type,
             "text": instruction.text if instruction.text is not None else old.text,
             "position": instruction.position if instruction.position is not None else old.position,
             "is_active": instruction.is_active if instruction.is_active is not None else old.is_active,
@@ -348,19 +346,17 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.get("/start").status_code, 401)
         response = self.client.get("/start", headers=self.headers)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["suggested_technology"], "kafka")
-        self.assertIn("равнопоставени", response.json()["instructions"])
+        self.assertIn("Обучение на български", response.json()["instructions"])
+        self.assertNotIn("suggested_technology", response.json())
 
     def test_non_ascii_wrong_key_is_unauthorized(self):
         with self.assertRaises(Exception) as caught:
             require_api_key("грешен")
         self.assertEqual(caught.exception.status_code, 401)
 
-    def test_documents_are_allowlisted(self):
-        response = self.client.get("/documents/handoff", headers=self.headers)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Kafka ordering", response.json()["content"])
-        self.assertEqual(self.client.get("/documents/unknown", headers=self.headers).status_code, 404)
+    def test_documents_endpoints_are_not_exposed(self):
+        self.assertEqual(self.client.get("/documents", headers=self.headers).status_code, 404)
+        self.assertEqual(self.client.get("/documents/handoff", headers=self.headers).status_code, 404)
 
     def test_create_read_list_and_idempotent_retry(self):
         topic = self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers).json()
@@ -688,19 +684,22 @@ class ApiTests(unittest.TestCase):
     def test_create_list_update_and_delete_instruction(self):
         first = self.client.post(
             "/instructions",
-            json={"text": "Първо правило.", "position": 2, "is_active": True},
+            json={"type": "behavior", "text": "Първо правило.", "position": 2, "is_active": True},
             headers=self.headers,
         )
         self.assertEqual(first.status_code, 201)
         second = self.client.post(
             "/instructions",
-            json={"text": "Второ правило.", "position": 1, "is_active": False},
+            json={"type": "knowledge", "text": "Второ правило.", "position": 1, "is_active": False},
             headers=self.headers,
         ).json()
 
         listed = self.client.get("/instructions/list", headers=self.headers)
         self.assertEqual(listed.status_code, 200)
-        self.assertEqual([item["id"] for item in listed.json()], [second["id"], first.json()["id"]])
+        self.assertEqual([item["id"] for item in listed.json()], [first.json()["id"], second["id"]])
+        typed = self.client.get("/instructions/list?type=knowledge", headers=self.headers)
+        self.assertEqual([item["id"] for item in typed.json()], [second["id"]])
+        self.assertEqual(second["type"], "knowledge")
 
         updated = self.client.patch(
             f"/instructions/{first.json()['id']}",

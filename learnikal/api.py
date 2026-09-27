@@ -6,13 +6,13 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
 from .models import (
-    Answer, AnswerInput, AnswerPage, Document, Instruction, InstructionInput,
+    Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionType,
     InstructionUpdate, Question, QuestionInput, QuestionUpdate, StartContext,
     Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicUpdate, User,
     UserInput, UserUpdate,
 )
 from .postgres import (
-    DOCUMENTS, ConflictError, NotFoundError, PostgresStore, StorageError,
+    ConflictError, NotFoundError, PostgresStore, StorageError,
     QuestionConflictError, SubtopicConflictError, TopicConflictError, TopicInUseError,
     UserConflictError,
 )
@@ -87,18 +87,6 @@ def health(store: PostgresStore = Depends(get_store)) -> dict[str, str]:
 @app.get("/start", response_model=StartContext, dependencies=[Depends(require_api_key)])
 def start(store: PostgresStore = Depends(get_store)) -> StartContext:
     return store.start()
-
-
-@app.get("/documents", dependencies=[Depends(require_api_key)])
-def list_documents() -> list[str]:
-    return list(DOCUMENTS)
-
-
-@app.get("/documents/{name}", response_model=Document, dependencies=[Depends(require_api_key)])
-def get_document(name: str, store: PostgresStore = Depends(get_store)) -> Document:
-    if name not in DOCUMENTS:
-        raise HTTPException(status_code=404, detail="Document not found")
-    return Document(name=name, content=store.get_document(name))
 
 
 @app.post("/answers", response_model=Answer, status_code=status.HTTP_201_CREATED,
@@ -246,8 +234,11 @@ def create_instruction(
 
 @app.get("/instructions/list", response_model=list[Instruction], tags=["Instructions"],
          dependencies=[Depends(require_api_key)])
-def list_instructions(store: PostgresStore = Depends(get_store)) -> list[Instruction]:
-    return store.list_instructions()
+def list_instructions(
+    instruction_type: Annotated[InstructionType | None, Query(alias="type")] = None,
+    store: PostgresStore = Depends(get_store),
+) -> list[Instruction]:
+    return store.list_instructions(instruction_type)
 
 
 @app.patch("/instructions/{instruction_id}", response_model=Instruction, tags=["Instructions"],

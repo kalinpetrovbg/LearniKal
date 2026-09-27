@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -187,8 +188,12 @@ class Question(QuestionInput):
     updated_at: datetime
 
 
+InstructionType = Literal["behavior", "plan", "knowledge", "handoff", "history", "patterns"]
+
+
 class InstructionInput(BaseModel):
-    text: str = Field(min_length=1, max_length=5000)
+    type: InstructionType = "behavior"
+    text: str = Field(min_length=1, max_length=250_000)
     position: int | None = Field(default=None, ge=1)
     is_active: bool = True
 
@@ -202,7 +207,8 @@ class InstructionInput(BaseModel):
 
 
 class InstructionUpdate(BaseModel):
-    text: str | None = Field(default=None, min_length=1, max_length=5000)
+    type: InstructionType | None = None
+    text: str | None = Field(default=None, min_length=1, max_length=250_000)
     position: int | None = Field(default=None, ge=1)
     is_active: bool | None = None
 
@@ -299,15 +305,9 @@ class User(BaseModel):
     updated_at: datetime
 
 
-class Document(BaseModel):
-    name: str
-    content: str
-
-
 class StartContext(BaseModel):
     instructions: str
     knowledge_summary: str | None
-    suggested_technology: str | None
     topic_progress: list["TopicProgress"] = Field(default_factory=list)
 
 

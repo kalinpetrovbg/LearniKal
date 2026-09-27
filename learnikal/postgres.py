@@ -12,24 +12,14 @@ from .models import (
 )
 
 
-DOCUMENTS = {
-    "plan": "TEAM_LEAD_LEARNING_PLAN.md",
-    "knowledge": "LEARNING_KNOWLEDGE_SUMMARY.md",
-    "handoff": "learning_handoff.md",
-    "history": "LEARNING_HISTORY.md",
-    "patterns": "design_patterns.md",
-}
-
 DEFAULT_INSTRUCTIONS = [
-    "Обучение за Python/Data Engineering Team Lead на български.",
-    "Без код по подразбиране.",
-    "Задавай по един кратък сценарий за архитектурна преценка, trade-offs, диагностика, коректност, производителност или design review.",
-    "Всички технологии са равнопоставени.",
-    "Редувай темите и не повтаряй наскоро проверени сценарии.",
-    "Дай възможност за самостоятелен отговор преди подсказки.",
-    "След отговора отдели показаното самостоятелно от изясненото с помощ и от непровереното.",
-    "Прочетено обяснение не доказва усвоено знание.",
-    "Не следи учебно време.",
+    "Обучението е за Python/Data Engineering Team Lead и развива техническа и архитектурна преценка чрез реални trade-offs, диагностика, коректност, производителност и code/design review.",
+    "Води обучението на български. Използвай английски технически термини, когато са по-точни. Не включвай код по подразбиране.",
+    "Задавай по един кратък практически сценарий и искай аргументиран избор.",
+    "За следващия въпрос избирай на случаен принцип topic, след това случаен subtopic към него, и задай въпрос от този subtopic.",
+    "Дай възможност за самостоятелен отговор преди подсказки, насочващи въпроси или обяснение.",
+    "След всеки отговор оцени ясно какво потребителят показа самостоятелно, какво се изясни с помощ и какво остава непроверено.",
+    "Не считай прочетено обяснение, съгласие или „разбрах“ за доказателство за усвоено знание. Оценявай само наблюдаван отговор.",
 ]
 STUDY_RULES = " ".join(DEFAULT_INSTRUCTIONS)
 
@@ -116,7 +106,7 @@ class PostgresStore:
     @staticmethod
     def _instruction(row):
         return Instruction(
-            id=row["id"], text=row["text"], position=row["position"],
+            id=row["id"], type=row["type"], text=row["text"], position=row["position"],
             is_active=row["is_active"], created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
@@ -146,18 +136,6 @@ class PostgresStore:
                 conn.execute("SELECT 1")
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL health check failed") from exc
-
-    def get_document(self, name: str) -> str:
-        try:
-            with self._connect() as conn:
-                row = conn.execute(
-                    "SELECT content FROM learning_documents WHERE name = %s", (name,)
-                ).fetchone()
-                if row is None:
-                    raise NotFoundError
-                return row["content"]
-        except psycopg.Error as exc:
-            raise StorageError("PostgreSQL read failed") from exc
 
     def create_answer(self, answer: AnswerInput) -> Answer:
         try:
@@ -581,25 +559,35 @@ class PostgresStore:
             with self._connect() as conn:
                 position = instruction.position
                 if position is None:
-                    row = conn.execute("SELECT COALESCE(MAX(position), 0) + 1 AS position FROM instructions").fetchone()
+                    row = conn.execute(
+                        'SELECT COALESCE(MAX(position), 0) + 1 AS position FROM instructions WHERE "type" = %s',
+                        (instruction.type,),
+                    ).fetchone()
                     position = row["position"]
                 row = conn.execute(
-                    """INSERT INTO instructions (text, position, is_active)
-                       VALUES (%s, %s, %s)
-                       RETURNING id, text, position, is_active, created_at, updated_at""",
-                    (instruction.text, position, instruction.is_active),
+                    '''INSERT INTO instructions ("type", text, position, is_active)
+                       VALUES (%s, %s, %s, %s)
+                       RETURNING id, "type", text, position, is_active, created_at, updated_at''',
+                    (instruction.type, instruction.text, position, instruction.is_active),
                 ).fetchone()
                 return self._instruction(row)
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
 
-    def list_instructions(self) -> list[Instruction]:
+    def list_instructions(self, instruction_type: str | None = None) -> list[Instruction]:
         try:
             with self._connect() as conn:
-                rows = conn.execute(
-                    """SELECT id, text, position, is_active, created_at, updated_at
-                       FROM instructions ORDER BY position, id"""
-                ).fetchall()
+                if instruction_type is None:
+                    rows = conn.execute(
+                        '''SELECT id, "type", text, position, is_active, created_at, updated_at
+                           FROM instructions ORDER BY "type", position, id'''
+                    ).fetchall()
+                else:
+                    rows = conn.execute(
+                        '''SELECT id, "type", text, position, is_active, created_at, updated_at
+                           FROM instructions WHERE "type" = %s ORDER BY position, id''',
+                        (instruction_type,),
+                    ).fetchall()
                 return [self._instruction(row) for row in rows]
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
@@ -609,12 +597,13 @@ class PostgresStore:
             with self._connect() as conn:
                 row = conn.execute(
                     """UPDATE instructions SET
+                       "type" = COALESCE(%s, "type"),
                        text = COALESCE(%s, text),
                        position = COALESCE(%s, position),
                        is_active = COALESCE(%s, is_active)
                        WHERE id = %s
-                       RETURNING id, text, position, is_active, created_at, updated_at""",
-                    (instruction.text, instruction.position, instruction.is_active, instruction_id),
+                       RETURNING id, "type", text, position, is_active, created_at, updated_at""",
+                    (instruction.type, instruction.text, instruction.position, instruction.is_active, instruction_id),
                 ).fetchone()
                 if row is None:
                     raise NotFoundError
@@ -686,21 +675,14 @@ class PostgresStore:
             with self._connect() as conn:
                 user_id = self._user_id(conn)
                 instruction_rows = conn.execute(
-                    """SELECT text FROM instructions WHERE is_active = true
-                       ORDER BY position, id"""
+                    '''SELECT text FROM instructions WHERE "type" = 'behavior' AND is_active = true
+                       ORDER BY position, id'''
                 ).fetchall()
                 if not instruction_rows:
                     raise StorageError("Learning instructions are not initialized")
                 knowledge = conn.execute(
-                    "SELECT content FROM learning_documents WHERE name = 'knowledge'"
-                ).fetchone()
-                topic = conn.execute(
-                    """SELECT t.slug FROM topics t
-                       LEFT JOIN answers e ON e.topic_id = t.id AND e.user_id = %s
-                       WHERE t.is_active = true
-                       GROUP BY t.id, t.slug
-                       ORDER BY max(e.created_at) ASC NULLS FIRST, t.slug ASC LIMIT 1""",
-                    (user_id,),
+                    '''SELECT text FROM instructions WHERE "type" = 'knowledge' AND is_active = true
+                       ORDER BY position, id LIMIT 1'''
                 ).fetchone()
                 progress_rows = conn.execute(
                     """SELECT t.slug, COUNT(e.id) AS answer_count,
@@ -711,13 +693,12 @@ class PostgresStore:
                        GROUP BY t.id, t.slug ORDER BY t.slug""",
                     (user_id,),
                 ).fetchall()
-                summary = knowledge["content"] if knowledge else None
+                summary = knowledge["text"] if knowledge else None
                 if summary:
                     summary = re.split(r"(?m)^## Текуща посока\s*$", summary)[0].strip()
                 return StartContext(
                     instructions="\n".join(row["text"] for row in instruction_rows),
                     knowledge_summary=summary,
-                    suggested_technology=topic["slug"] if topic else None,
                     topic_progress=[TopicProgress(
                         technology=row["slug"], answer_count=row["answer_count"],
                         average_score=float(row["average_score"]) if row["average_score"] is not None else None,

@@ -1,6 +1,6 @@
 # LearniKal API
 
-LearniKal is a FastAPI service for Python and Data Engineering Team Lead learning sessions. It stores users, learning topics and subtopics, study instructions, scored answers, progress, and imported learning documents in PostgreSQL.
+LearniKal is a FastAPI service for Python and Data Engineering Team Lead learning sessions. It stores users, learning topics and subtopics, typed instructions, scored answers, and progress in PostgreSQL.
 
 The production service runs on AWS EC2. Nginx terminates HTTPS and proxies the API to Uvicorn on `127.0.0.1:8000`; PostgreSQL runs locally on the same EC2 instance. A push to the `main` branch deploys the current code automatically through GitHub Actions.
 
@@ -29,9 +29,7 @@ Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must n
 ### Health and learning context
 
 - `GET /health` checks the PostgreSQL connection.
-- `GET /start` returns active study instructions, the knowledge summary, per-topic progress, and a suggested topic based on answer history.
-- `GET /documents` lists the supported imported learning documents.
-- `GET /documents/{name}` returns one imported document.
+- `GET /start` returns active `behavior` instructions, the `knowledge` summary, and per-topic progress. It does not choose the next question; future question selection will use separate logic.
 
 ### Answers
 
@@ -77,11 +75,11 @@ Passwords are hashed with Argon2id and are never returned by the API. The curren
 ### Study instructions
 
 - `POST /instructions`
-- `GET /instructions/list`
+- `GET /instructions/list` (filter by type, for example `?type=knowledge` or `?type=history`)
 - `PATCH /instructions/{instruction_id}`
 - `DELETE /instructions/{instruction_id}`
 
-Only active instructions are included in `/start`, ordered by position and ID.
+Only active `behavior` instructions are included in `/start`, ordered by position and ID. Other instruction types hold the learning plan, knowledge summary, handoff, history, and design-pattern notes.
 
 ## Local development
 

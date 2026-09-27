@@ -75,34 +75,17 @@ one-time import:
     sudo systemd-run --collect --unit=learnikal-import --wait -p User=ec2-user -p WorkingDirectory=/opt/learnikal-migration -p EnvironmentFile=/etc/learnikal/learnikal.env /opt/learnikal/.venv/bin/python /opt/learnikal-migration/migrate_s3.py
     sudo journalctl -u learnikal-import --no-pager
 
-The import runs in a PostgreSQL transaction, checks the five document hashes
-and imported entry count, and keeps the complete history in
-`learning_documents.history`. It does not delete S3 objects. Run it again after
-pausing new writes to the old API, then verify the output. The current deploy
-also removes the unused `history_sections` and `learning_state` tables;
-`/start` chooses its suggested topic from answer history.
+The import writes the five learning documents into `instructions` with their
+type, verifies their stored content and imported entry count, and does not
+delete S3 objects. Run it after pausing new writes to the old API, then verify
+the output. The deploy migration also transfers existing PostgreSQL documents
+into typed instructions and removes the replaced `learning_documents`,
+`history_sections`, and `learning_state` tables only after the new API passes
+its health check. `/start` reads active `behavior` rules and the `knowledge`
+instruction. Other types can be read from `/instructions/list?type=history`
+or the corresponding type filter.
 
 Deploy the PostgreSQL API only after the import succeeds. Check
-https://api.learnikal.com/health and authenticated /start, /documents/handoff,
+https://api.learnikal.com/health and authenticated /start, typed instructions,
 and create/read/list answers. Remove S3 learning data and local Markdown copies
 only after those checks.
-*** Update File: NEXT_STEPS.md
-@@
--1. Create a private PostgreSQL RDS database in eu-north-1 and connect it to
--   the existing EC2 instance. See deploy/postgres.md.
-+1. Install PostgreSQL 16 on the existing EC2 instance. Keep it local on
-+   127.0.0.1:5432 and do not open PostgreSQL to the internet. See
-+   deploy/postgres.md.
-@@
- 5. Deploy the PostgreSQL API and check /health, /start, /documents, and the
-    create/read/list flow. Only after these checks, remove the old S3 learning
-    objects and the local Markdown copies.
-*** Update File: README.md
-@@
--The live EC2 deployment still uses S3. This checkout contains the PostgreSQL
--cutover code; do not deploy it until the RDS database has been created and
--imported. Follow [the RDS setup guide](deploy/postgres.md).
-+The live EC2 deployment still uses S3. This checkout contains the PostgreSQL
-+cutover code; do not deploy it until PostgreSQL has been installed locally on
-+the EC2 instance and the S3 data has been imported. Follow
-+[the PostgreSQL setup guide](deploy/postgres.md).
