@@ -116,6 +116,8 @@ The API tests use an in-memory fake store. PostgreSQL connectivity and productio
 
 [`schema.sql`](schema.sql) describes the complete PostgreSQL schema. The `deploy/migrate-*.py` scripts upgrade existing production tables and data during deployment. The historical S3 import utility remains in the repository for migration purposes; PostgreSQL is the active application database.
 
+`deploy/import-legacy-questions.py` is a one-time, repeatable recovery tool for legacy S3 entries. It matches each entry to an existing answer by user, topic, and creation timestamp, then creates an inactive legacy subtopic and question and links the answer. It performs a read-only dry run unless called with `--apply`.
+
 ## Deployment
 
 The workflow in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs on every push to `main` and can also be started manually. It connects to EC2 over SSH and:
