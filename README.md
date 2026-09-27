@@ -52,6 +52,16 @@ An answer records its topic and optional subtopic and question, plus score, diff
 
 Topic and subtopic slugs are normalized to lowercase. Topics that already have answers cannot be deleted and should be disabled with `is_active: false` instead.
 
+The curated [subtopic catalog](docs/subtopics-catalog.md) contains 715 entries: 55 for each of the 13 topics, including the 21 existing subtopics. The canonical [CSV](deploy/subtopics-catalog.csv) can be validated without a database:
+
+```sh
+python deploy/import-subtopics-catalog.py --validate
+```
+
+The importer previews changes by default and inserts missing entries only with `--apply`. It preserves existing IDs, names and active flags and stops on conflicting mappings. This catalog import is manual and is not part of the deployment workflow. See the catalog guide for EC2 commands.
+
+The proposed flow from `/start` through random question selection, generation and evaluation is documented in [Learning flow proposal](docs/learning-flow-proposal.md). It describes future behavior; the new question-selection and evaluation endpoints are not implemented yet.
+
 ### Questions
 
 - `POST /questions`
