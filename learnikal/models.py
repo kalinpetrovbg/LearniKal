@@ -308,7 +308,6 @@ class StartContext(BaseModel):
     instructions: str
     knowledge_summary: str | None
     suggested_technology: str | None
-    next_question: str | None
     topic_progress: list["TopicProgress"] = Field(default_factory=list)
 
 

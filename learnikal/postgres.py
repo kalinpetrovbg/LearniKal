@@ -294,10 +294,6 @@ class PostgresStore:
                 ).fetchone()["count"]
                 if entry_count:
                     raise TopicInUseError
-                conn.execute(
-                    "UPDATE learning_state SET next_topic_id = NULL WHERE next_topic_id = %s",
-                    (topic_id,),
-                )
                 conn.execute("DELETE FROM topics WHERE id = %s", (topic_id,))
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL write failed") from exc
@@ -575,7 +571,6 @@ class PostgresStore:
                 user = conn.execute("SELECT id FROM users WHERE id = %s", (user_id,)).fetchone()
                 if user is None:
                     raise NotFoundError
-                conn.execute("DELETE FROM learning_state WHERE user_id = %s", (user_id,))
                 conn.execute("DELETE FROM answers WHERE user_id = %s", (user_id,))
                 conn.execute("DELETE FROM users WHERE id = %s", (user_id,))
         except psycopg.Error as exc:
@@ -699,12 +694,6 @@ class PostgresStore:
                 knowledge = conn.execute(
                     "SELECT content FROM learning_documents WHERE name = 'knowledge'"
                 ).fetchone()
-                state = conn.execute(
-                    """SELECT s.next_question, t.slug AS next_topic FROM learning_state s
-                       LEFT JOIN topics t ON t.id = s.next_topic_id AND t.is_active = true
-                       WHERE s.user_id = %s""",
-                    (user_id,),
-                ).fetchone()
                 topic = conn.execute(
                     """SELECT t.slug FROM topics t
                        LEFT JOIN answers e ON e.topic_id = t.id AND e.user_id = %s
@@ -728,9 +717,7 @@ class PostgresStore:
                 return StartContext(
                     instructions="\n".join(row["text"] for row in instruction_rows),
                     knowledge_summary=summary,
-                    suggested_technology=(state["next_topic"] if state and state["next_question"] else None)
-                    or (topic["slug"] if topic else None),
-                    next_question=state["next_question"] if state else None,
+                    suggested_technology=topic["slug"] if topic else None,
                     topic_progress=[TopicProgress(
                         technology=row["slug"], answer_count=row["answer_count"],
                         average_score=float(row["average_score"]) if row["average_score"] is not None else None,

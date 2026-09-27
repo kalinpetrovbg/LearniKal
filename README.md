@@ -29,7 +29,7 @@ Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must n
 ### Health and learning context
 
 - `GET /health` checks the PostgreSQL connection.
-- `GET /start` returns active study instructions, the knowledge summary, per-topic progress, a suggested topic, and an optional pending question.
+- `GET /start` returns active study instructions, the knowledge summary, per-topic progress, and a suggested topic based on answer history.
 - `GET /documents` lists the supported imported learning documents.
 - `GET /documents/{name}` returns one imported document.
 

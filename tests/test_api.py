@@ -25,7 +25,6 @@ class FakeStore:
             instructions="Всички технологии са равнопоставени.\nБез код по подразбиране.",
             knowledge_summary="Kafka е начална тема.",
             suggested_technology="kafka",
-            next_question="Как избираш message key?",
         )
 
     def ping(self):

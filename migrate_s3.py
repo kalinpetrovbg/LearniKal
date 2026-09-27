@@ -19,7 +19,6 @@ class LegacyEntry(BaseModel):
     question: str
     answer: str
     evaluation: dict | None = None
-    next_question: str | None = None
     difficulty: str | None = Field(default=None, pattern=r"^(low|medium|high)$")
     score: int | None = Field(default=None, ge=0, le=5)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -54,15 +53,6 @@ def history_sections(content: str):
          content[match.end():headings[position + 1].start() if position + 1 < len(headings) else len(content)].strip())
         for position, match in enumerate(headings)
     ]
-
-
-def pending_question(content: str):
-    match = re.search(r"^## Следващ въпрос\s*\n(.*?)(?=^## |\Z)", content, re.MULTILINE | re.DOTALL)
-    if not match:
-        return None
-    lines = [line.strip() for line in match.group(1).strip().splitlines()]
-    question = " ".join(line for line in lines if line and not line.startswith("Без код."))
-    return question or None
 
 
 def read_source(s3, bucket):
@@ -130,14 +120,6 @@ def migrate(conn, documents, entries, username):
             (name, content, digest),
         )
 
-    for position, heading, body in history_sections(documents["history"]):
-        conn.execute(
-            """INSERT INTO history_sections (position, heading, body)
-               VALUES (%s, %s, %s) ON CONFLICT (position) DO UPDATE SET
-               heading = EXCLUDED.heading, body = EXCLUDED.body""",
-            (position, heading, body),
-        )
-
     for _legacy_id, entry in entries:
         existing = conn.execute(
             """SELECT id FROM answers
@@ -157,14 +139,6 @@ def migrate(conn, documents, entries, username):
             (user_id, topic_ids[entry.technology], score, difficulty, metric, metric, metric, metric, entry.created_at),
         )
 
-    question = pending_question(documents["handoff"])
-    topic_id = topic_ids["kafka"] if question and "kafka" in question.lower() else None
-    conn.execute(
-        """INSERT INTO learning_state (user_id, next_topic_id, next_question)
-           VALUES (%s, %s, %s) ON CONFLICT (user_id) DO NOTHING""",
-        (user_id, topic_id, question),
-    )
-
     for name, content in documents.items():
         row = conn.execute(
             "SELECT content, sha256 FROM learning_documents WHERE name = %s", (name,)
@@ -177,10 +151,7 @@ def migrate(conn, documents, entries, username):
     ).fetchone()[0]
     if imported < len(entries):
         raise ValueError("Verification failed for S3 entries")
-    sections = conn.execute("SELECT COUNT(*) FROM history_sections").fetchone()[0]
-    if sections != len(history_sections(documents["history"])):
-        raise ValueError("Verification failed for history sections")
-    return len(documents), sections, imported
+    return len(documents), imported
 
 
 def main():
@@ -190,7 +161,7 @@ def main():
     documents, entries = read_source(boto3.client("s3"), bucket)
     with psycopg.connect(dsn, connect_timeout=5) as conn:
         counts = migrate(conn, documents, entries, username)
-    print(f"Verified in PostgreSQL: {counts[0]} documents, {counts[1]} history sections, {counts[2]} entries")
+    print(f"Verified in PostgreSQL: {counts[0]} documents, {counts[1]} entries")
     print("S3 was not modified.")
 
 

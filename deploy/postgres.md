@@ -75,10 +75,12 @@ one-time import:
     sudo systemd-run --collect --unit=learnikal-import --wait -p User=ec2-user -p WorkingDirectory=/opt/learnikal-migration -p EnvironmentFile=/etc/learnikal/learnikal.env /opt/learnikal/.venv/bin/python /opt/learnikal-migration/migrate_s3.py
     sudo journalctl -u learnikal-import --no-pager
 
-The import runs in a PostgreSQL transaction, checks the five document hashes,
-historical-section count, and imported entry count. It does not delete S3
-objects. Run it again after pausing new writes to the old API, then verify the
-output.
+The import runs in a PostgreSQL transaction, checks the five document hashes
+and imported entry count, and keeps the complete history in
+`learning_documents.history`. It does not delete S3 objects. Run it again after
+pausing new writes to the old API, then verify the output. The current deploy
+also removes the unused `history_sections` and `learning_state` tables;
+`/start` chooses its suggested topic from answer history.
 
 Deploy the PostgreSQL API only after the import succeeds. Check
 https://api.learnikal.com/health and authenticated /start, /documents/handoff,
