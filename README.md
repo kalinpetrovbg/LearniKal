@@ -52,7 +52,7 @@ An answer records its topic and optional subtopic and question, plus score, diff
 
 Topic and subtopic slugs are normalized to lowercase. Topics that already have answers cannot be deleted and should be disabled with `is_active: false` instead.
 
-The curated [subtopic catalog](docs/subtopics-catalog.md) contains 715 entries: 55 for each of the 13 topics, including the 21 existing subtopics. The canonical [CSV](deploy/subtopics-catalog.csv) can be validated without a database:
+The curated [subtopic catalog](docs/subtopics-catalog.md) contains 715 entries: 55 for each of the 13 topics, including the 21 existing subtopics. The canonical [CSV](docs/subtopics-catalog.csv) can be validated without a database:
 
 ```sh
 python deploy/import-subtopics-catalog.py --validate
