@@ -30,6 +30,7 @@ Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must n
 
 - `GET /health` checks the PostgreSQL connection.
 - `GET /start?username=kalin` returns the username and active topic subscriptions for that user. The query parameter is optional and falls back to `LEARNIKAL_USERNAME`. It does not choose a question; clients call `POST /questions/next?username=kalin` afterwards.
+- `GET /dashboard?username=kalin` returns the user's ID and name, plus active subscribed topics with answer counts and average score, independence, clarity, and completeness. Topics without answers have count `0` and `null` averages. It excludes unsubscribed topics and does not return answer text.
 
 The response has `username` and `subscriptions`; each subscription contains `topic_id` and `topic_name`. It does not include a subtopic count, topic progress, or the shared instruction and knowledge texts. Use `/instructions/list` when those texts are needed. The `knowledge` instruction currently contains historical notes about the original learner and must not be treated as Martin's profile.
 

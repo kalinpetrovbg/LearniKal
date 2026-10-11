@@ -4,7 +4,10 @@ import unittest
 from fastapi.testclient import TestClient
 
 from learnikal.api import app, get_store, require_api_key
-from learnikal.models import Answer, AnswerPage, Instruction, Question, StartContext, Subtopic, Topic, TopicSubscription, User
+from learnikal.models import (
+    Answer, AnswerPage, DashboardContext, DashboardRatings, DashboardSubscription,
+    DashboardUser, Instruction, Question, StartContext, Subtopic, Topic, TopicSubscription, User,
+)
 from learnikal.postgres import (
     ConflictError, NotFoundError, QuestionConflictError, SubtopicConflictError,
     TopicConflictError, TopicInUseError, UserConflictError,
@@ -30,6 +33,36 @@ class FakeStore:
             subscriptions=[TopicSubscription(topic_id=topic.id, topic_name=topic.name)
                            for topic in self.topics.values()
                            if topic.id in self.subscription_ids.get(username, set()) and topic.is_active],
+        )
+
+    def dashboard(self, username=None):
+        from learnikal.postgres import UserNotFoundError
+
+        username = username or "kalin"
+        user = next((item for item in self.users.values() if item.username == username), None)
+        if user is None:
+            raise UserNotFoundError
+        subscriptions = []
+        for topic in self.topics.values():
+            if topic.id not in self.subscription_ids.get(username, set()) or not topic.is_active:
+                continue
+            answers = [item for item in self.answers.values()
+                       if item.user_id == user.id and item.topic_id == topic.id]
+            def average(field):
+                return round(sum(getattr(item, field) for item in answers) / len(answers), 2) if answers else None
+            subscriptions.append(DashboardSubscription(
+                topic_id=topic.id, topic_name=topic.name,
+                ratings=DashboardRatings(
+                    answer_count=len(answers), average_score=average("score"),
+                    average_independence_score=average("independence_score"),
+                    average_clarity_score=average("clarity_score"),
+                    average_completeness_score=average("completeness_score"),
+                ),
+            ))
+        return DashboardContext(
+            user=DashboardUser(id=user.id, username=user.username,
+                               first_name=user.first_name, last_name=user.last_name),
+            subscriptions=sorted(subscriptions, key=lambda item: (item.topic_name, item.topic_id)),
         )
 
     def subscribe_topic(self, user_id, topic_id):
@@ -416,6 +449,41 @@ class ApiTests(unittest.TestCase):
         response = self.client.get("/start?username=missing", headers=self.headers)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {"detail": "Username not found"})
+
+    def test_dashboard_shows_only_subscribed_topic_ratings(self):
+        martin = self.client.post("/users", json={
+            "username": "martin", "first_name": "Martin", "last_name": "Ivanov",
+            "email": "martin@example.com", "password": "test password",
+        }, headers=self.headers).json()
+        python = self.client.post("/topics", json={"slug": "python", "name": "Python"},
+                                  headers=self.headers).json()
+        kafka = self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"},
+                                 headers=self.headers).json()
+        self.client.put(f"/users/{martin['id']}/subscriptions/{python['id']}", headers=self.headers)
+        self.assertEqual(self.client.get("/dashboard?username=martin").status_code, 401)
+        empty = self.client.get("/dashboard?username=Martin", headers=self.headers).json()
+        self.assertEqual(empty["user"], {
+            "id": martin["id"], "username": "martin", "first_name": "Martin", "last_name": "Ivanov",
+        })
+        self.assertEqual(empty["subscriptions"], [{
+            "topic_id": python["id"], "topic_name": "Python",
+            "ratings": {"answer_count": 0, "average_score": None,
+                        "average_independence_score": None, "average_clarity_score": None,
+                        "average_completeness_score": None},
+        }])
+        for topic in (python, kafka):
+            self.client.post("/answers", json={
+                "user_id": martin["id"], "topic_id": topic["id"], "score": 4,
+                "difficulty": 2, "independence_score": 5, "clarity_score": 3,
+                "completeness_score": 2,
+            }, headers=self.headers)
+        rated = self.client.get("/dashboard?username=martin", headers=self.headers).json()
+        self.assertEqual(len(rated["subscriptions"]), 1)
+        self.assertEqual(rated["subscriptions"][0]["ratings"], {
+            "answer_count": 1, "average_score": 4.0, "average_independence_score": 5.0,
+            "average_clarity_score": 3.0, "average_completeness_score": 2.0,
+        })
+        self.assertEqual(self.client.get("/dashboard?username=missing", headers=self.headers).status_code, 404)
 
     def test_non_ascii_wrong_key_is_unauthorized(self):
         with self.assertRaises(Exception) as caught:

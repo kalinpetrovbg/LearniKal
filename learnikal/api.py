@@ -6,7 +6,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
 from .models import (
-    Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionType,
+    Answer, AnswerInput, AnswerPage, DashboardContext, Instruction, InstructionInput, InstructionType,
     InstructionUpdate, LearnerResponseInput, NextQuestionContext, Question, QuestionInput,
     QuestionUpdate, ReviewRequest, StartContext,
     Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicSubscription,
@@ -108,6 +108,16 @@ def start(
     store: PostgresStore = Depends(get_store),
 ) -> StartContext:
     return store.start(username=username.lower() if username is not None else None)
+
+
+@app.get("/dashboard", response_model=DashboardContext, dependencies=[Depends(require_api_key)])
+def dashboard(
+    username: Annotated[str | None, Query(
+        min_length=3, max_length=40, pattern=r"^[A-Za-z][A-Za-z0-9_-]{2,39}$"
+    )] = None,
+    store: PostgresStore = Depends(get_store),
+) -> DashboardContext:
+    return store.dashboard(username=username.lower() if username is not None else None)
 
 
 @app.post("/answers", response_model=Answer, status_code=status.HTTP_201_CREATED,

@@ -338,3 +338,27 @@ class StartContext(BaseModel):
 class TopicSubscription(BaseModel):
     topic_id: int
     topic_name: str
+
+
+class DashboardUser(BaseModel):
+    id: int
+    username: str
+    first_name: str
+    last_name: str
+
+
+class DashboardRatings(BaseModel):
+    answer_count: int = Field(ge=0)
+    average_score: float | None = None
+    average_independence_score: float | None = None
+    average_clarity_score: float | None = None
+    average_completeness_score: float | None = None
+
+
+class DashboardSubscription(TopicSubscription):
+    ratings: DashboardRatings
+
+
+class DashboardContext(BaseModel):
+    user: DashboardUser
+    subscriptions: list[DashboardSubscription] = Field(default_factory=list)

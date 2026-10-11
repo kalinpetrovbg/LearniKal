@@ -3,7 +3,8 @@ from argon2 import PasswordHasher, Type
 from psycopg.rows import dict_row
 
 from .models import (
-    Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionUpdate,
+    Answer, AnswerInput, AnswerPage, DashboardContext, DashboardRatings,
+    DashboardSubscription, DashboardUser, Instruction, InstructionInput, InstructionUpdate,
     Question, QuestionInput, QuestionUpdate, StartContext, Subtopic, SubtopicInput,
     SubtopicUpdate, Topic, TopicInput, TopicSubscription, TopicUpdate, User, UserInput,
     UserUpdate,
@@ -745,6 +746,41 @@ class PostgresStore:
                 return StartContext(
                     username=username or self.username,
                     subscriptions=[TopicSubscription(**row) for row in rows],
+                )
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
+    def dashboard(self, username: str | None = None) -> DashboardContext:
+        try:
+            with self._connect() as conn:
+                user_id = self._user_id(conn, username=username)
+                user = conn.execute(
+                    "SELECT id, username, first_name, last_name FROM users WHERE id = %s",
+                    (user_id,),
+                ).fetchone()
+                rows = conn.execute(
+                    """SELECT t.id AS topic_id, t.name AS topic_name,
+                              COUNT(a.id) AS answer_count,
+                              ROUND(AVG(a.score)::numeric, 2) AS average_score,
+                              ROUND(AVG(a.independence_score)::numeric, 2) AS average_independence_score,
+                              ROUND(AVG(a.clarity_score)::numeric, 2) AS average_clarity_score,
+                              ROUND(AVG(a.completeness_score)::numeric, 2) AS average_completeness_score
+                       FROM user_topic_subscriptions uts
+                       JOIN topics t ON t.id = uts.topic_id AND t.is_active = true
+                       LEFT JOIN answers a ON a.user_id = uts.user_id AND a.topic_id = t.id
+                       WHERE uts.user_id = %s
+                       GROUP BY t.id, t.name
+                       ORDER BY t.name, t.id""",
+                    (user_id,),
+                ).fetchall()
+                return DashboardContext(
+                    user=DashboardUser(**user),
+                    subscriptions=[DashboardSubscription(
+                        topic_id=row["topic_id"], topic_name=row["topic_name"],
+                        ratings=DashboardRatings(**{
+                            field: row[field] for field in DashboardRatings.model_fields
+                        }),
+                    ) for row in rows],
                 )
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
