@@ -32,7 +32,7 @@ flowchart TD
 3. Избери равномерно случайна активна subtopic от този topic.
 4. Определи difficulty в диапазона 1–5. При липса на данни предложена начална стойност е 2.
 
-Endpoint-ът връща `topic_id`, `topic_slug`, `topic_name`, `subtopic_id`, `subtopic_slug`, `subtopic_name` и `difficulty`. Той не създава ред в `questions` и все още не връща текст на въпрос.
+Endpoint-ът връща `topic_id`, `topic_name`, `subtopic_id`, `subtopic_name` и `difficulty`. Той не създава ред в `questions` и все още не връща текст на въпрос.
 
 Така topic с повече въпроси или подтеми не получава по-голям шанс само заради размера на каталога. Редът на CSV не е учебен ред. Няма фиксиран план за редуване на технологии. В следващия етап моделът ще получава вече избраните topic/subtopic/difficulty и ще формулира въпрос в тези граници.
 

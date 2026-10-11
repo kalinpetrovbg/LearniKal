@@ -190,10 +190,8 @@ class Question(QuestionInput):
 
 class NextQuestionContext(BaseModel):
     topic_id: int
-    topic_slug: str
     topic_name: str
     subtopic_id: int
-    subtopic_slug: str
     subtopic_name: str
     difficulty: int = Field(ge=1, le=5)
 
@@ -322,5 +320,4 @@ class StartContext(BaseModel):
 
 class TopicSubscription(BaseModel):
     topic_id: int
-    topic_slug: str
     topic_name: str

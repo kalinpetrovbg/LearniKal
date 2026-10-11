@@ -31,7 +31,7 @@ Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must n
 - `GET /health` checks the PostgreSQL connection.
 - `GET /start?username=kalin` returns the username and active topic subscriptions for that user. The query parameter is optional and falls back to `LEARNIKAL_USERNAME`. It does not choose a question; clients call `POST /questions/next?username=kalin` afterwards.
 
-The response has `username` and `subscriptions`; each subscription contains `topic_id`, `topic_slug`, and `topic_name`. It does not include a subtopic count, topic progress, or the shared instruction and knowledge texts. Use `/instructions/list` when those texts are needed. The `knowledge` instruction currently contains historical notes about the original learner and must not be treated as Martin's profile.
+The response has `username` and `subscriptions`; each subscription contains `topic_id` and `topic_name`. It does not include a subtopic count, topic progress, or the shared instruction and knowledge texts. Use `/instructions/list` when those texts are needed. The `knowledge` instruction currently contains historical notes about the original learner and must not be treated as Martin's profile.
 
 If the supplied username does not exist, the endpoint returns `404` with `{"detail": "Username not found"}`.
 
@@ -76,7 +76,7 @@ The flow from `/start` through random question selection, generation and evaluat
 
 Each question belongs to a topic and one of that topic's subtopics, has a difficulty from 1 to 5, and can be enabled or disabled with `is_active`. The list endpoint can filter by `topic_id`, `subtopic_id`, and `is_active`. Question text must be unique within a subtopic, ignoring letter case.
 
-`POST /questions/next?username=kalin` first selects one of that user's subscribed active topics uniformly, then selects one of its active subtopics uniformly. The username is optional and falls back to `LEARNIKAL_USERNAME`. It returns the selected IDs, slugs, names, and initial difficulty `2`. This keeps eligible topics equally likely even if they have different subtopic counts. It returns `409 Conflict` when the user has no subscribed topic with an active subtopic, or `404` when the username does not exist. The endpoint selects context only; it does not yet generate or persist question text.
+`POST /questions/next?username=kalin` first selects one of that user's subscribed active topics uniformly, then selects one of its active subtopics uniformly. The username is optional and falls back to `LEARNIKAL_USERNAME`. It returns the selected IDs, names, and initial difficulty `2`. This keeps eligible topics equally likely even if they have different subtopic counts. It returns `409 Conflict` when the user has no subscribed topic with an active subtopic, or `404` when the username does not exist. The endpoint selects context only; it does not yet generate or persist question text.
 
 Answers can reference a question with `question_id`. When the question is valid and `subtopic_id` is omitted from the answer, the API takes the subtopic from the question. Deleting a question keeps its historical answers and clears their `question_id` reference.
 

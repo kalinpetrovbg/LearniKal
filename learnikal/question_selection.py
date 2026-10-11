@@ -42,10 +42,8 @@ class QuestionSelectionService:
         subtopic = self.choice(tuple(by_topic[topic_id]))
         return NextQuestionContext(
             topic_id=subtopic.topic_id,
-            topic_slug=subtopic.topic_slug,
             topic_name=subtopic.topic_name,
             subtopic_id=subtopic.id,
-            subtopic_slug=subtopic.slug,
             subtopic_name=subtopic.name,
             difficulty=self.initial_difficulty,
         )

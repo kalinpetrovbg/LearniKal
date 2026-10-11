@@ -26,7 +26,7 @@ class FakeStore:
         username = username or "kalin"
         return StartContext(
             username=username,
-            subscriptions=[TopicSubscription(topic_id=topic.id, topic_slug=topic.slug, topic_name=topic.name)
+            subscriptions=[TopicSubscription(topic_id=topic.id, topic_name=topic.name)
                            for topic in self.topics.values()
                            if topic.id in self.subscription_ids.get(username, set()) and topic.is_active],
         )
@@ -37,7 +37,7 @@ class FakeStore:
         if user is None or topic is None or not topic.is_active:
             raise NotFoundError
         self.subscription_ids.setdefault(user.username, set()).add(topic_id)
-        return TopicSubscription(topic_id=topic.id, topic_slug=topic.slug, topic_name=topic.name)
+        return TopicSubscription(topic_id=topic.id, topic_name=topic.name)
 
     def unsubscribe_topic(self, user_id, topic_id):
         user = self.users.get(user_id)
@@ -426,10 +426,8 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {
             "topic_id": active_topic["id"],
-            "topic_slug": "postgresql",
             "topic_name": "PostgreSQL",
             "subtopic_id": eligible["id"],
-            "subtopic_slug": "indexes",
             "subtopic_name": "Indexes",
             "difficulty": 2,
         })
@@ -463,7 +461,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(subscribed.status_code, 200)
         self.assertEqual(self.client.get("/start?username=martin", headers=self.headers).json(), {
             "username": "martin", "subscriptions": [{
-                "topic_id": python["id"], "topic_slug": "python", "topic_name": "Python",
+                "topic_id": python["id"], "topic_name": "Python",
             }],
         })
         self.assertEqual(self.client.post("/questions/next?username=martin", headers=self.headers)

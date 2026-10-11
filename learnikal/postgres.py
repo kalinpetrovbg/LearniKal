@@ -698,7 +698,7 @@ class PostgresStore:
             with self._connect() as conn:
                 user_id = self._user_id(conn, username=username)
                 rows = conn.execute(
-                    """SELECT t.id AS topic_id, t.slug AS topic_slug, t.name AS topic_name
+                    """SELECT t.id AS topic_id, t.name AS topic_name
                        FROM user_topic_subscriptions uts
                        JOIN topics t ON t.id = uts.topic_id
                        WHERE uts.user_id = %s AND t.is_active = true
@@ -718,7 +718,7 @@ class PostgresStore:
                 if conn.execute("SELECT 1 FROM users WHERE id = %s", (user_id,)).fetchone() is None:
                     raise UserNotFoundError
                 topic = conn.execute(
-                    "SELECT id AS topic_id, slug AS topic_slug, name AS topic_name FROM topics WHERE id = %s AND is_active = true",
+                    "SELECT id AS topic_id, name AS topic_name FROM topics WHERE id = %s AND is_active = true",
                     (topic_id,),
                 ).fetchone()
                 if topic is None:
