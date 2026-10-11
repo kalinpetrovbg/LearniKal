@@ -7,10 +7,11 @@ from fastapi.responses import JSONResponse
 
 from .models import (
     Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionType,
-    InstructionUpdate, Question, QuestionInput, QuestionUpdate, StartContext,
+    InstructionUpdate, NextQuestionContext, Question, QuestionInput, QuestionUpdate, StartContext,
     Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicUpdate, User,
     UserInput, UserUpdate,
 )
+from .question_selection import EmptyQuestionCatalogError, QuestionSelectionService
 from .postgres import (
     ConflictError, NotFoundError, PostgresStore, StorageError,
     QuestionConflictError, SubtopicConflictError, TopicConflictError, TopicInUseError,
@@ -18,7 +19,7 @@ from .postgres import (
 )
 
 
-app = FastAPI(title="LearniKal API", version="0.8.0")
+app = FastAPI(title="LearniKal API", version="0.9.0")
 
 
 def require_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
@@ -76,6 +77,14 @@ async def user_conflict_handler(_request, _exc):
 @app.exception_handler(StorageError)
 async def storage_error_handler(_request, _exc):
     return JSONResponse(status_code=503, content={"detail": "PostgreSQL is unavailable"})
+
+
+@app.exception_handler(EmptyQuestionCatalogError)
+async def empty_question_catalog_handler(_request, _exc):
+    return JSONResponse(
+        status_code=409,
+        content={"detail": "No active topics with active subtopics are available"},
+    )
 
 
 @app.get("/health")
@@ -161,6 +170,12 @@ def delete_subtopic(
           tags=["Questions"], dependencies=[Depends(require_api_key)])
 def create_question(payload: QuestionInput, store: PostgresStore = Depends(get_store)) -> Question:
     return store.create_question(payload)
+
+
+@app.post("/questions/next", response_model=NextQuestionContext, tags=["Questions"],
+          dependencies=[Depends(require_api_key)])
+def next_question(store: PostgresStore = Depends(get_store)) -> NextQuestionContext:
+    return QuestionSelectionService(store).select()
 
 
 @app.get("/questions/list", response_model=list[Question], tags=["Questions"],

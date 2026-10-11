@@ -124,6 +124,12 @@ class FakeStore:
     def list_subtopics(self):
         return list(self.subtopics.values())
 
+    def list_active_topic_subtopics(self):
+        return [
+            subtopic for subtopic in self.subtopics.values()
+            if subtopic.is_active and self.topics[subtopic.topic_id].is_active
+        ]
+
     def update_subtopic(self, subtopic_id, subtopic):
         old = self.subtopics.get(subtopic_id)
         if old is None:
@@ -357,6 +363,51 @@ class ApiTests(unittest.TestCase):
     def test_documents_endpoints_are_not_exposed(self):
         self.assertEqual(self.client.get("/documents", headers=self.headers).status_code, 404)
         self.assertEqual(self.client.get("/documents/handoff", headers=self.headers).status_code, 404)
+
+    def test_next_question_selects_active_topic_and_subtopic(self):
+        inactive_topic = self.client.post(
+            "/topics", json={"slug": "kafka", "name": "Kafka", "is_active": False},
+            headers=self.headers,
+        ).json()
+        self.client.post(
+            "/subtopics", json={"topic_id": inactive_topic["id"], "slug": "consumers", "name": "Consumers"},
+            headers=self.headers,
+        )
+        active_topic = self.client.post(
+            "/topics", json={"slug": "postgresql", "name": "PostgreSQL"}, headers=self.headers,
+        ).json()
+        self.client.post(
+            "/subtopics",
+            json={"topic_id": active_topic["id"], "slug": "locks", "name": "Locks", "is_active": False},
+            headers=self.headers,
+        )
+        eligible = self.client.post(
+            "/subtopics",
+            json={"topic_id": active_topic["id"], "slug": "indexes", "name": "Indexes"},
+            headers=self.headers,
+        ).json()
+
+        response = self.client.post("/questions/next", headers=self.headers)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            "topic_id": active_topic["id"],
+            "topic_slug": "postgresql",
+            "topic_name": "PostgreSQL",
+            "subtopic_id": eligible["id"],
+            "subtopic_slug": "indexes",
+            "subtopic_name": "Indexes",
+            "difficulty": 2,
+        })
+
+    def test_next_question_requires_key_and_active_catalog(self):
+        self.assertEqual(self.client.post("/questions/next").status_code, 401)
+        response = self.client.post("/questions/next", headers=self.headers)
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(
+            response.json(),
+            {"detail": "No active topics with active subtopics are available"},
+        )
 
     def test_create_read_list_and_idempotent_retry(self):
         topic = self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers).json()

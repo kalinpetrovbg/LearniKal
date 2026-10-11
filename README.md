@@ -29,7 +29,7 @@ Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must n
 ### Health and learning context
 
 - `GET /health` checks the PostgreSQL connection.
-- `GET /start` returns active `behavior` instructions, the `knowledge` summary, and per-topic progress. It does not choose the next question; future question selection will use separate logic.
+- `GET /start` returns active `behavior` instructions, the `knowledge` summary, and per-topic progress. It does not choose the next question; clients call `POST /questions/next` afterwards.
 
 ### Answers
 
@@ -60,16 +60,19 @@ python deploy/import-subtopics-catalog.py --validate
 
 The importer previews changes by default and inserts missing entries only with `--apply`. It preserves existing IDs, names and active flags and stops on conflicting mappings. This catalog import is manual and is not part of the deployment workflow. See the catalog guide for EC2 commands.
 
-The proposed flow from `/start` through random question selection, generation and evaluation is documented in [Learning flow proposal](docs/learning-flow-proposal.md). It describes future behavior; the new question-selection and evaluation endpoints are not implemented yet.
+The flow from `/start` through random question selection, generation and evaluation is documented in [Learning flow proposal](docs/learning-flow-proposal.md). The initial random topic/subtopic selection is implemented; question generation and evaluation remain future work.
 
 ### Questions
 
 - `POST /questions`
+- `POST /questions/next`
 - `GET /questions/list`
 - `PATCH /questions/{question_id}`
 - `DELETE /questions/{question_id}`
 
 Each question belongs to a topic and one of that topic's subtopics, has a difficulty from 1 to 5, and can be enabled or disabled with `is_active`. The list endpoint can filter by `topic_id`, `subtopic_id`, and `is_active`. Question text must be unique within a subtopic, ignoring letter case.
+
+`POST /questions/next` first selects an active topic uniformly, then selects one of its active subtopics uniformly. It returns the selected IDs, slugs, names, and initial difficulty `2`. This keeps topics equally likely even if they have different subtopic counts. It returns `409 Conflict` when no active topic has an active subtopic. The endpoint selects context only; it does not yet generate or persist question text.
 
 Answers can reference a question with `question_id`. When the question is valid and `subtopic_id` is omitted from the answer, the API takes the subtopic from the question. Deleting a question keeps its historical answers and clears their `question_id` reference.
 

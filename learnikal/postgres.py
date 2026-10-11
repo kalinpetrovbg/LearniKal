@@ -307,6 +307,20 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
 
+    def list_active_topic_subtopics(self) -> list[Subtopic]:
+        try:
+            with self._connect() as conn:
+                rows = conn.execute(
+                    """SELECT s.id, s.topic_id, t.slug AS topic_slug, t.name AS topic_name,
+                              s.slug, s.name, s.is_active, s.created_at, s.updated_at
+                       FROM subtopics s JOIN topics t ON t.id = s.topic_id
+                       WHERE t.is_active = true AND s.is_active = true
+                       ORDER BY t.id, s.id"""
+                ).fetchall()
+                return [self._subtopic(row) for row in rows]
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
     def update_subtopic(self, subtopic_id: int, subtopic: SubtopicUpdate) -> Subtopic:
         try:
             with self._connect() as conn:

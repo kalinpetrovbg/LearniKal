@@ -19,7 +19,7 @@ TOPICS = frozenset((
     "rest_api", "testing",
 ))
 SLUG = re.compile(r"[a-z][a-z0-9_-]{0,39}\Z")
-DEFAULT_CATALOG = Path(__file__).with_name("subtopics-catalog.csv")
+DEFAULT_CATALOG = Path(__file__).resolve().parents[1] / "docs" / "subtopics-catalog.csv"
 Entry = namedtuple("Entry", FIELDS)
 
 
