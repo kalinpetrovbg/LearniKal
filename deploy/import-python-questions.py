@@ -5,31 +5,37 @@ import csv
 import os
 from pathlib import Path
 
-import psycopg
-
-
-CSV_PATH = Path(__file__).resolve().parents[1] / "docs" / "python-questions.csv"
+CSV_PATHS = [
+    Path(__file__).resolve().parents[1] / "docs" / "python-questions.csv",
+    Path(__file__).resolve().parents[1] / "docs" / "python-questions-extra.csv",
+]
 CATALOG_PATH = Path(__file__).resolve().parents[1] / "docs" / "subtopics-catalog.csv"
 DSN = os.getenv("LEARNIKAL_DATABASE_URL", "dbname=learnikal user=postgres")
 
 
 def load_bank():
-    with CSV_PATH.open(encoding="utf-8-sig", newline="") as source:
-        reader = csv.DictReader(source)
-        if reader.fieldnames != ["subtopic_slug", "difficulty", "text"]:
-            raise ValueError("Unexpected Python question bank columns")
-        rows = list(reader)
+    rows = []
+    for csv_path in CSV_PATHS:
+        with csv_path.open(encoding="utf-8-sig", newline="") as source:
+            reader = csv.DictReader(source)
+            if reader.fieldnames != ["subtopic_slug", "difficulty", "text"]:
+                raise ValueError(f"Unexpected Python question bank columns in {csv_path.name}")
+            rows.extend(reader)
     with CATALOG_PATH.open(encoding="utf-8-sig", newline="") as source:
         expected = {row["subtopic_slug"] for row in csv.DictReader(source)
                     if row["topic_slug"] == "python"}
-    slugs = [row["subtopic_slug"] for row in rows]
-    if len(rows) != len(expected) or set(slugs) != expected:
-        raise ValueError("Bank must contain one question for every Python subtopic")
-    if len(slugs) != len(set(slugs)):
-        raise ValueError("Duplicate Python subtopic in bank")
+    expected_pairs = {(slug, difficulty) for slug in expected for difficulty in range(1, 6)}
+    pairs = [(row["subtopic_slug"], int(row["difficulty"])) for row in rows]
+    if len(pairs) != len(expected_pairs) or set(pairs) != expected_pairs:
+        raise ValueError("Bank must contain one question per difficulty for every Python subtopic")
+    seen_texts = set()
     for row in rows:
-        if row["difficulty"] != "2" or not row["text"].strip():
+        if not row["text"].strip():
             raise ValueError(f"Invalid question for {row['subtopic_slug']}")
+        text_key = (row["subtopic_slug"], row["text"].strip().casefold())
+        if text_key in seen_texts:
+            raise ValueError(f"Duplicate question text for {row['subtopic_slug']}")
+        seen_texts.add(text_key)
     return rows
 
 
@@ -51,13 +57,15 @@ def import_bank(conn, rows, *, apply=False):
     for row in rows:
         subtopic_id = subtopics[row["subtopic_slug"]]
         existing = conn.execute(
-            """SELECT is_active FROM questions
+            """SELECT is_active, difficulty FROM questions
                WHERE subtopic_id = %s AND lower(text) = lower(%s)""",
             (subtopic_id, row["text"]),
         ).fetchone()
         if existing is not None:
             if not existing[0]:
                 raise ValueError(f"Question is inactive: {row['subtopic_slug']}")
+            if existing[1] != int(row["difficulty"]):
+                raise ValueError(f"Question has different difficulty: {row['subtopic_slug']}")
             continue
         inserted += 1
         if apply:
@@ -80,6 +88,8 @@ def main():
     if args.validate:
         print(f"Validated {len(rows)} Python questions")
         return
+    import psycopg
+
     with psycopg.connect(DSN) as conn:
         count = import_bank(conn, rows, apply=args.apply)
     action = "Inserted" if args.apply else "Would insert"
