@@ -1,6 +1,6 @@
 # LearniKal API
 
-LearniKal is a FastAPI service for Python and Data Engineering Team Lead learning sessions. It stores users, learning topics and subtopics, typed instructions, scored answers, and progress in PostgreSQL.
+LearniKal is a FastAPI service for learning sessions. It stores users, learning topics and subtopics, per-user topic subscriptions, typed instructions, and scored answers in PostgreSQL.
 
 The production service runs on AWS EC2. Nginx terminates HTTPS and proxies the API to Uvicorn on `127.0.0.1:8000`; PostgreSQL runs locally on the same EC2 instance. A push to the `main` branch deploys the current code automatically through GitHub Actions.
 
@@ -20,7 +20,7 @@ The service reads these environment variables:
 
 - `LEARNIKAL_API_KEY` — shared API key required by protected routes.
 - `LEARNIKAL_DATABASE_URL` — PostgreSQL connection string.
-- `LEARNIKAL_USERNAME` — default learning user used by `/start` and answer reads; defaults to `kalin`.
+- `LEARNIKAL_USERNAME` — default learning user used by `/start`, `/questions/next`, and answer reads; defaults to `kalin`.
 
 Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must not be committed to the repository.
 
@@ -29,7 +29,9 @@ Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must n
 ### Health and learning context
 
 - `GET /health` checks the PostgreSQL connection.
-- `GET /start?username=kalin` returns active `behavior` instructions, the `knowledge` summary, and per-topic progress for that user. The query parameter is optional for backward compatibility and falls back to `LEARNIKAL_USERNAME`. It does not choose the next question; clients call `POST /questions/next` afterwards.
+- `GET /start?username=kalin` returns the username and active topic subscriptions for that user. The query parameter is optional and falls back to `LEARNIKAL_USERNAME`. It does not choose a question; clients call `POST /questions/next?username=kalin` afterwards.
+
+The response has `username` and `subscriptions`; each subscription contains `topic_id`, `topic_slug`, and `topic_name`. It does not include a subtopic count, topic progress, or the shared instruction and knowledge texts. Use `/instructions/list` when those texts are needed. The `knowledge` instruction currently contains historical notes about the original learner and must not be treated as Martin's profile.
 
 If the supplied username does not exist, the endpoint returns `404` with `{"detail": "Username not found"}`.
 
@@ -74,7 +76,7 @@ The flow from `/start` through random question selection, generation and evaluat
 
 Each question belongs to a topic and one of that topic's subtopics, has a difficulty from 1 to 5, and can be enabled or disabled with `is_active`. The list endpoint can filter by `topic_id`, `subtopic_id`, and `is_active`. Question text must be unique within a subtopic, ignoring letter case.
 
-`POST /questions/next` first selects an active topic uniformly, then selects one of its active subtopics uniformly. It returns the selected IDs, slugs, names, and initial difficulty `2`. This keeps topics equally likely even if they have different subtopic counts. It returns `409 Conflict` when no active topic has an active subtopic. The endpoint selects context only; it does not yet generate or persist question text.
+`POST /questions/next?username=kalin` first selects one of that user's subscribed active topics uniformly, then selects one of its active subtopics uniformly. The username is optional and falls back to `LEARNIKAL_USERNAME`. It returns the selected IDs, slugs, names, and initial difficulty `2`. This keeps eligible topics equally likely even if they have different subtopic counts. It returns `409 Conflict` when the user has no subscribed topic with an active subtopic, or `404` when the username does not exist. The endpoint selects context only; it does not yet generate or persist question text.
 
 Answers can reference a question with `question_id`. When the question is valid and `subtopic_id` is omitted from the answer, the API takes the subtopic from the question. Deleting a question keeps its historical answers and clears their `question_id` reference.
 
@@ -84,6 +86,10 @@ Answers can reference a question with `question_id`. When the question is valid 
 - `GET /users/list`
 - `PATCH /users/{user_id}`
 - `DELETE /users/{user_id}`
+- `PUT /users/{user_id}/subscriptions/{topic_id}` — subscribe to an active topic; safe to repeat.
+- `DELETE /users/{user_id}/subscriptions/{topic_id}` — unsubscribe; historical answers remain.
+
+New users start with no topic subscriptions. The deployment migration seeds the configured learning user's current active topics once, preserving existing behavior. Later deployments do not restore removed subscriptions.
 
 Passwords are hashed with Argon2id and are never returned by the API. The current API uses the shared API key and does not expose a user login endpoint.
 
@@ -94,7 +100,7 @@ Passwords are hashed with Argon2id and are never returned by the API. The curren
 - `PATCH /instructions/{instruction_id}`
 - `DELETE /instructions/{instruction_id}`
 
-Only active `behavior` instructions are included in `/start`, ordered by position and ID. Other instruction types hold the learning plan, knowledge summary, handoff, history, and design-pattern notes.
+Instruction types hold behavior, learning plan, knowledge summary, handoff, history, and design-pattern notes. `/start` does not return these texts.
 
 ## Local development
 

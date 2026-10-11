@@ -41,6 +41,13 @@ CREATE TRIGGER topics_set_updated_at
 BEFORE UPDATE ON topics
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+CREATE TABLE IF NOT EXISTS user_topic_subscriptions (
+    user_id integer NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    topic_id bigint NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, topic_id)
+);
+
 CREATE TABLE IF NOT EXISTS subtopics (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     topic_id bigint NOT NULL REFERENCES topics(id) ON DELETE CASCADE,

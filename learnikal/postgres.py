@@ -1,5 +1,3 @@
-import re
-
 import psycopg
 from argon2 import PasswordHasher, Type
 from psycopg.rows import dict_row
@@ -7,7 +5,7 @@ from psycopg.rows import dict_row
 from .models import (
     Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionUpdate,
     Question, QuestionInput, QuestionUpdate, StartContext, Subtopic, SubtopicInput,
-    SubtopicUpdate, Topic, TopicInput, TopicProgress, TopicUpdate, User, UserInput,
+    SubtopicUpdate, Topic, TopicInput, TopicSubscription, TopicUpdate, User, UserInput,
     UserUpdate,
 )
 
@@ -314,15 +312,19 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
 
-    def list_active_topic_subtopics(self) -> list[Subtopic]:
+    def list_active_topic_subtopics(self, username: str | None = None) -> list[Subtopic]:
         try:
             with self._connect() as conn:
+                user_id = self._user_id(conn, username=username)
                 rows = conn.execute(
                     """SELECT s.id, s.topic_id, t.slug AS topic_slug, t.name AS topic_name,
                               s.slug, s.name, s.is_active, s.created_at, s.updated_at
-                       FROM subtopics s JOIN topics t ON t.id = s.topic_id
-                       WHERE t.is_active = true AND s.is_active = true
-                       ORDER BY t.id, s.id"""
+                       FROM user_topic_subscriptions uts
+                       JOIN topics t ON t.id = uts.topic_id
+                       JOIN subtopics s ON s.topic_id = t.id
+                       WHERE uts.user_id = %s AND t.is_active = true AND s.is_active = true
+                       ORDER BY t.id, s.id""",
+                    (user_id,),
                 ).fetchall()
                 return [self._subtopic(row) for row in rows]
         except psycopg.Error as exc:
@@ -695,35 +697,52 @@ class PostgresStore:
         try:
             with self._connect() as conn:
                 user_id = self._user_id(conn, username=username)
-                instruction_rows = conn.execute(
-                    '''SELECT text FROM instructions WHERE "type" = 'behavior' AND is_active = true
-                       ORDER BY position, id'''
-                ).fetchall()
-                if not instruction_rows:
-                    raise StorageError("Learning instructions are not initialized")
-                knowledge = conn.execute(
-                    '''SELECT text FROM instructions WHERE "type" = 'knowledge' AND is_active = true
-                       ORDER BY position, id LIMIT 1'''
-                ).fetchone()
-                progress_rows = conn.execute(
-                    """SELECT t.slug, COUNT(e.id) AS answer_count,
-                              AVG(e.score) AS average_score
-                       FROM topics t LEFT JOIN answers e
-                         ON e.topic_id = t.id AND e.user_id = %s
-                       WHERE t.is_active = true
-                       GROUP BY t.id, t.slug ORDER BY t.slug""",
+                rows = conn.execute(
+                    """SELECT t.id AS topic_id, t.slug AS topic_slug, t.name AS topic_name
+                       FROM user_topic_subscriptions uts
+                       JOIN topics t ON t.id = uts.topic_id
+                       WHERE uts.user_id = %s AND t.is_active = true
+                       ORDER BY t.name, t.id""",
                     (user_id,),
                 ).fetchall()
-                summary = knowledge["text"] if knowledge else None
-                if summary:
-                    summary = re.split(r"(?m)^## Текуща посока\s*$", summary)[0].strip()
                 return StartContext(
-                    instructions="\n".join(row["text"] for row in instruction_rows),
-                    knowledge_summary=summary,
-                    topic_progress=[TopicProgress(
-                        technology=row["slug"], answer_count=row["answer_count"],
-                        average_score=float(row["average_score"]) if row["average_score"] is not None else None,
-                    ) for row in progress_rows],
+                    username=username or self.username,
+                    subscriptions=[TopicSubscription(**row) for row in rows],
                 )
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
+
+    def subscribe_topic(self, user_id: int, topic_id: int) -> TopicSubscription:
+        try:
+            with self._connect() as conn:
+                if conn.execute("SELECT 1 FROM users WHERE id = %s", (user_id,)).fetchone() is None:
+                    raise UserNotFoundError
+                topic = conn.execute(
+                    "SELECT id AS topic_id, slug AS topic_slug, name AS topic_name FROM topics WHERE id = %s AND is_active = true",
+                    (topic_id,),
+                ).fetchone()
+                if topic is None:
+                    raise NotFoundError
+                conn.execute(
+                    """INSERT INTO user_topic_subscriptions (user_id, topic_id) VALUES (%s, %s)
+                       ON CONFLICT (user_id, topic_id) DO NOTHING""",
+                    (user_id, topic_id),
+                )
+                return TopicSubscription(**topic)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc
+
+    def unsubscribe_topic(self, user_id: int, topic_id: int) -> None:
+        try:
+            with self._connect() as conn:
+                if conn.execute("SELECT 1 FROM users WHERE id = %s", (user_id,)).fetchone() is None:
+                    raise UserNotFoundError
+                deleted = conn.execute(
+                    """DELETE FROM user_topic_subscriptions
+                       WHERE user_id = %s AND topic_id = %s RETURNING topic_id""",
+                    (user_id, topic_id),
+                ).fetchone()
+                if deleted is None:
+                    raise NotFoundError
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL write failed") from exc

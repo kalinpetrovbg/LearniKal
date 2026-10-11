@@ -316,12 +316,11 @@ class User(BaseModel):
 
 
 class StartContext(BaseModel):
-    instructions: str
-    knowledge_summary: str | None
-    topic_progress: list["TopicProgress"] = Field(default_factory=list)
+    username: str
+    subscriptions: list["TopicSubscription"] = Field(default_factory=list)
 
 
-class TopicProgress(BaseModel):
-    technology: str
-    answer_count: int
-    average_score: float | None
+class TopicSubscription(BaseModel):
+    topic_id: int
+    topic_slug: str
+    topic_name: str

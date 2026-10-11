@@ -8,7 +8,8 @@ from fastapi.responses import JSONResponse
 from .models import (
     Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionType,
     InstructionUpdate, NextQuestionContext, Question, QuestionInput, QuestionUpdate, StartContext,
-    Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicUpdate, User,
+    Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicSubscription,
+    TopicUpdate, User,
     UserInput, UserUpdate,
 )
 from .question_selection import EmptyQuestionCatalogError, QuestionSelectionService
@@ -88,7 +89,7 @@ async def storage_error_handler(_request, _exc):
 async def empty_question_catalog_handler(_request, _exc):
     return JSONResponse(
         status_code=409,
-        content={"detail": "No active topics with active subtopics are available"},
+        content={"detail": "No subscribed topics with active subtopics are available"},
     )
 
 
@@ -184,8 +185,13 @@ def create_question(payload: QuestionInput, store: PostgresStore = Depends(get_s
 
 @app.post("/questions/next", response_model=NextQuestionContext, tags=["Questions"],
           dependencies=[Depends(require_api_key)])
-def next_question(store: PostgresStore = Depends(get_store)) -> NextQuestionContext:
-    return QuestionSelectionService(store).select()
+def next_question(
+    username: Annotated[str | None, Query(
+        min_length=3, max_length=40, pattern=r"^[A-Za-z][A-Za-z0-9_-]{2,39}$"
+    )] = None,
+    store: PostgresStore = Depends(get_store),
+) -> NextQuestionContext:
+    return QuestionSelectionService(store).select(username=username.lower() if username else None)
 
 
 @app.get("/questions/list", response_model=list[Question], tags=["Questions"],
@@ -228,6 +234,26 @@ def create_user(payload: UserInput, store: PostgresStore = Depends(get_store)) -
          dependencies=[Depends(require_api_key)])
 def list_users(store: PostgresStore = Depends(get_store)) -> list[User]:
     return store.list_users()
+
+
+@app.put("/users/{user_id}/subscriptions/{topic_id}", response_model=TopicSubscription,
+         tags=["Users"], dependencies=[Depends(require_api_key)])
+def subscribe_topic(
+    user_id: Annotated[int, Path(ge=1)],
+    topic_id: Annotated[int, Path(ge=1)],
+    store: PostgresStore = Depends(get_store),
+) -> TopicSubscription:
+    return store.subscribe_topic(user_id, topic_id)
+
+
+@app.delete("/users/{user_id}/subscriptions/{topic_id}", status_code=status.HTTP_204_NO_CONTENT,
+            tags=["Users"], dependencies=[Depends(require_api_key)])
+def unsubscribe_topic(
+    user_id: Annotated[int, Path(ge=1)],
+    topic_id: Annotated[int, Path(ge=1)],
+    store: PostgresStore = Depends(get_store),
+) -> None:
+    store.unsubscribe_topic(user_id, topic_id)
 
 
 @app.patch("/users/{user_id}", response_model=User, tags=["Users"], dependencies=[Depends(require_api_key)])

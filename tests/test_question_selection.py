@@ -9,7 +9,7 @@ class Store:
     def __init__(self, subtopics):
         self.subtopics = subtopics
 
-    def list_active_topic_subtopics(self):
+    def list_active_topic_subtopics(self, username=None):
         return self.subtopics
 
 

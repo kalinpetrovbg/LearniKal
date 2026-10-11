@@ -29,9 +29,9 @@ class QuestionSelectionService:
         self.choice = choice
         self.initial_difficulty = initial_difficulty
 
-    def select(self) -> NextQuestionContext:
+    def select(self, username: str | None = None) -> NextQuestionContext:
         by_topic: dict[int, list[Subtopic]] = defaultdict(list)
-        for subtopic in self.store.list_active_topic_subtopics():
+        for subtopic in self.store.list_active_topic_subtopics(username=username):
             by_topic[subtopic.topic_id].append(subtopic)
         if not by_topic:
             raise EmptyQuestionCatalogError

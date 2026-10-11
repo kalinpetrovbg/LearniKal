@@ -4,7 +4,7 @@ import unittest
 from fastapi.testclient import TestClient
 
 from learnikal.api import app, get_store, require_api_key
-from learnikal.models import Answer, AnswerPage, Instruction, Question, StartContext, Subtopic, Topic, User
+from learnikal.models import Answer, AnswerPage, Instruction, Question, StartContext, Subtopic, Topic, TopicSubscription, User
 from learnikal.postgres import (
     ConflictError, NotFoundError, QuestionConflictError, SubtopicConflictError,
     TopicConflictError, TopicInUseError, UserConflictError,
@@ -19,13 +19,31 @@ class FakeStore:
         self.questions = {}
         self.users = {}
         self.instructions = {}
+        self.subscription_ids = {"kalin": set()}
 
     def start(self, username=None):
         self.started_username = username
+        username = username or "kalin"
         return StartContext(
-            instructions="Обучение на български.\nБез код по подразбиране.",
-            knowledge_summary="Kafka е начална тема.",
+            username=username,
+            subscriptions=[TopicSubscription(topic_id=topic.id, topic_slug=topic.slug, topic_name=topic.name)
+                           for topic in self.topics.values()
+                           if topic.id in self.subscription_ids.get(username, set()) and topic.is_active],
         )
+
+    def subscribe_topic(self, user_id, topic_id):
+        user = self.users.get(user_id)
+        topic = self.topics.get(topic_id)
+        if user is None or topic is None or not topic.is_active:
+            raise NotFoundError
+        self.subscription_ids.setdefault(user.username, set()).add(topic_id)
+        return TopicSubscription(topic_id=topic.id, topic_slug=topic.slug, topic_name=topic.name)
+
+    def unsubscribe_topic(self, user_id, topic_id):
+        user = self.users.get(user_id)
+        if user is None or topic_id not in self.subscription_ids.get(user.username, set()):
+            raise NotFoundError
+        self.subscription_ids[user.username].remove(topic_id)
 
     def ping(self):
         return None
@@ -125,10 +143,12 @@ class FakeStore:
     def list_subtopics(self):
         return list(self.subtopics.values())
 
-    def list_active_topic_subtopics(self):
+    def list_active_topic_subtopics(self, username=None):
+        username = username or "kalin"
         return [
             subtopic for subtopic in self.subtopics.values()
             if subtopic.is_active and self.topics[subtopic.topic_id].is_active
+            and subtopic.topic_id in self.subscription_ids.get(username, set())
         ]
 
     def update_subtopic(self, subtopic_id, subtopic):
@@ -353,11 +373,11 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.get("/start").status_code, 401)
         response = self.client.get("/start", headers=self.headers)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Обучение на български", response.json()["instructions"])
-        self.assertNotIn("suggested_technology", response.json())
+        self.assertEqual(response.json(), {"username": "kalin", "subscriptions": []})
         named_response = self.client.get("/start?username=Martin", headers=self.headers)
         self.assertEqual(named_response.status_code, 200)
         self.assertEqual(self.store.started_username, "martin")
+        self.assertEqual(named_response.json(), {"username": "martin", "subscriptions": []})
 
     def test_start_reports_unknown_username(self):
         from learnikal.postgres import UserNotFoundError
@@ -399,6 +419,8 @@ class ApiTests(unittest.TestCase):
             headers=self.headers,
         ).json()
 
+        self.store.subscription_ids["kalin"].add(active_topic["id"])
+
         response = self.client.post("/questions/next", headers=self.headers)
 
         self.assertEqual(response.status_code, 200)
@@ -418,8 +440,39 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 409)
         self.assertEqual(
             response.json(),
-            {"detail": "No active topics with active subtopics are available"},
+            {"detail": "No subscribed topics with active subtopics are available"},
         )
+
+    def test_martin_only_sees_and_selects_subscribed_python(self):
+        martin = self.client.post("/users", json={
+            "username": "martin", "first_name": "Martin", "last_name": "Ivanov",
+            "email": "martin@example.com", "password": "test password",
+        }, headers=self.headers).json()
+        python = self.client.post("/topics", json={"slug": "python", "name": "Python"}, headers=self.headers).json()
+        kafka = self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers).json()
+        for topic in (python, kafka):
+            self.client.post("/subtopics", json={
+                "topic_id": topic["id"], "slug": "basics", "name": "Basics",
+            }, headers=self.headers)
+
+        self.assertEqual(self.client.get("/start?username=martin", headers=self.headers).json(),
+                         {"username": "martin", "subscriptions": []})
+        subscribed = self.client.put(
+            f"/users/{martin['id']}/subscriptions/{python['id']}", headers=self.headers,
+        )
+        self.assertEqual(subscribed.status_code, 200)
+        self.assertEqual(self.client.get("/start?username=martin", headers=self.headers).json(), {
+            "username": "martin", "subscriptions": [{
+                "topic_id": python["id"], "topic_slug": "python", "topic_name": "Python",
+            }],
+        })
+        self.assertEqual(self.client.post("/questions/next?username=martin", headers=self.headers)
+                         .json()["topic_id"], python["id"])
+        self.assertEqual(self.client.delete(
+            f"/users/{martin['id']}/subscriptions/{python['id']}", headers=self.headers,
+        ).status_code, 204)
+        self.assertEqual(self.client.post("/questions/next?username=martin", headers=self.headers)
+                         .status_code, 409)
 
     def test_create_read_list_and_idempotent_retry(self):
         topic = self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers).json()
