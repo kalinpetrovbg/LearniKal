@@ -200,7 +200,6 @@ class NextQuestionContext(BaseModel):
 
 class LearnerResponseInput(BaseModel):
     text: str = Field(min_length=1, max_length=20000)
-    used_hint: bool = False
 
     @field_validator("text")
     @classmethod

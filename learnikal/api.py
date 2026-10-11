@@ -213,7 +213,6 @@ def prepare_response_for_review(
         f"subtopic_id={question.subtopic_id}, difficulty={question.difficulty}).\n"
         f"Въпрос: {question.text}\n"
         f"Отговор: {payload.text}\n"
-        f"Ползвана подсказка: {'да' if payload.used_hint else 'не'}.\n"
         "Върни числовите оценки за POST /answers; не записвай текста на отговора."
     ))
 
