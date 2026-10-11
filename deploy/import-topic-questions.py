@@ -1,4 +1,4 @@
-"""Import the expanded question bank without replacing existing questions."""
+"""Import the expanded question bank and retire exact obsolete Redis templates."""
 
 import argparse
 import csv
@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BANK_PATH = ROOT / "docs" / "topic-questions.csv"
+OBSOLETE_REDIS_PATH = ROOT / "docs" / "redis-questions-obsolete.csv"
 CATALOG_PATH = ROOT / "docs" / "subtopics-catalog.csv"
 PYTHON_PATHS = [ROOT / "docs" / "python-questions.csv",
                 ROOT / "docs" / "python-questions-extra.csv"]
@@ -57,7 +58,18 @@ def load_bank():
     return rows, included
 
 
-def import_bank(conn, rows, included, *, apply=False):
+def load_obsolete_redis(rows):
+    with OBSOLETE_REDIS_PATH.open(encoding="utf-8-sig", newline="") as source:
+        obsolete = list(csv.DictReader(source))
+    if len(obsolete) != 1375 or any(row["topic_slug"] != "redis" for row in obsolete):
+        raise ValueError("Expected 1375 exact obsolete Redis template questions")
+    current = {(row["topic_slug"], row["subtopic_slug"], row["text"]) for row in rows}
+    if any((row["topic_slug"], row["subtopic_slug"], row["text"]) in current for row in obsolete):
+        raise ValueError("Obsolete Redis list overlaps the current bank")
+    return obsolete
+
+
+def import_bank(conn, rows, included, obsolete_redis, *, apply=False):
     conn.execute("SET ROLE learnikal")
     available = {(topic, subtopic): (topic_id, subtopic_id)
                  for topic, subtopic, topic_id, subtopic_id in conn.execute(
@@ -68,6 +80,25 @@ def import_bank(conn, rows, included, *, apply=False):
     missing = included - available.keys()
     if missing:
         raise ValueError(f"Active catalog entries missing: {len(missing)}")
+    retired = 0
+    for row in obsolete_redis:
+        topic_id, subtopic_id = available[("redis", row["subtopic_slug"])]
+        if apply:
+            result = conn.execute(
+                """UPDATE questions SET is_active = false
+                   WHERE topic_id = %s AND subtopic_id = %s
+                   AND text = %s AND is_active = true""",
+                (topic_id, subtopic_id, row["text"]),
+            )
+            retired += result.rowcount
+        else:
+            retired += conn.execute(
+                """SELECT count(*) FROM questions
+                   WHERE topic_id = %s AND subtopic_id = %s
+                   AND text = %s AND is_active = true""",
+                (topic_id, subtopic_id, row["text"]),
+            ).fetchone()[0]
+
     inserted = 0
     for row in rows:
         topic_id, subtopic_id = available[(row["topic_slug"], row["subtopic_slug"])]
@@ -89,7 +120,7 @@ def import_bank(conn, rows, included, *, apply=False):
             )
     if not apply:
         conn.rollback()
-    return inserted
+    return inserted, retired
 
 
 def main():
@@ -98,14 +129,16 @@ def main():
     parser.add_argument("--validate", action="store_true", help="Validate CSV without a database")
     args = parser.parse_args()
     rows, included = load_bank()
+    obsolete_redis = load_obsolete_redis(rows)
     if args.validate:
-        print(f"Validated {len(rows)} expanded questions across {len(included)} subtopics")
+        print(f"Validated {len(rows)} expanded questions across {len(included)} subtopics and {len(obsolete_redis)} obsolete Redis rows")
         return
     import psycopg
 
     with psycopg.connect(DSN) as conn:
-        count = import_bank(conn, rows, included, apply=args.apply)
-    print(f"{'Inserted' if args.apply else 'Would insert'} {count} of {len(rows)} questions")
+        count, retired = import_bank(conn, rows, included, obsolete_redis, apply=args.apply)
+    print(f"{'Retired' if args.apply else 'Would retire'} {retired} obsolete Redis questions; "
+          f"{'inserted' if args.apply else 'would insert'} {count} of {len(rows)} questions")
 
 
 if __name__ == "__main__":
