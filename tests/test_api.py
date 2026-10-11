@@ -359,6 +359,14 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(named_response.status_code, 200)
         self.assertEqual(self.store.started_username, "martin")
 
+    def test_start_reports_unknown_username(self):
+        from learnikal.postgres import UserNotFoundError
+
+        self.store.start = lambda username=None: (_ for _ in ()).throw(UserNotFoundError())
+        response = self.client.get("/start?username=missing", headers=self.headers)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": "Username not found"})
+
     def test_non_ascii_wrong_key_is_unauthorized(self):
         with self.assertRaises(Exception) as caught:
             require_api_key("грешен")

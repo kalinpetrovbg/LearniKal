@@ -13,7 +13,7 @@ from .models import (
 )
 from .question_selection import EmptyQuestionCatalogError, QuestionSelectionService
 from .postgres import (
-    ConflictError, NotFoundError, PostgresStore, StorageError,
+    ConflictError, NotFoundError, PostgresStore, StorageError, UserNotFoundError,
     QuestionConflictError, SubtopicConflictError, TopicConflictError, TopicInUseError,
     UserConflictError,
 )
@@ -42,6 +42,11 @@ def get_store() -> PostgresStore:
 @app.exception_handler(NotFoundError)
 async def not_found_handler(_request, _exc):
     return JSONResponse(status_code=404, content={"detail": "Not found"})
+
+
+@app.exception_handler(UserNotFoundError)
+async def user_not_found_handler(_request, _exc):
+    return JSONResponse(status_code=404, content={"detail": "Username not found"})
 
 
 @app.exception_handler(ConflictError)

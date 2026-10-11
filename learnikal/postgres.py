@@ -28,6 +28,10 @@ class NotFoundError(Exception):
     pass
 
 
+class UserNotFoundError(NotFoundError):
+    pass
+
+
 class ConflictError(Exception):
     pass
 
@@ -75,7 +79,7 @@ class PostgresStore:
         row = conn.execute("SELECT id FROM users WHERE username = %s", (requested_username,)).fetchone()
         if row is None:
             if username is not None:
-                raise NotFoundError
+                raise UserNotFoundError
             raise StorageError("Learning user is not initialized")
         return row["id"]
 

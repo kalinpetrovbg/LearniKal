@@ -31,6 +31,8 @@ Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must n
 - `GET /health` checks the PostgreSQL connection.
 - `GET /start?username=kalin` returns active `behavior` instructions, the `knowledge` summary, and per-topic progress for that user. The query parameter is optional for backward compatibility and falls back to `LEARNIKAL_USERNAME`. It does not choose the next question; clients call `POST /questions/next` afterwards.
 
+If the supplied username does not exist, the endpoint returns `404` with `{"detail": "Username not found"}`.
+
 ### Answers
 
 - `POST /answers` records an evaluated answer.
