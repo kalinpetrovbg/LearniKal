@@ -2149,3 +2149,1378 @@ redis,capacity_planning,5,Как ще въведеш нова схема за �
 redis,capacity_planning,5,При голямо натоварване „Capacity Planning“ има tail latency. Как ще намериш тесния участък и ще избереш корекция?
 redis,capacity_planning,5,"Как ще проектираш „Capacity Planning“ при отказ на възел, failover и възстановяване на данните?"
 redis,capacity_planning,5,"Как ще докажеш с тестове и наблюдение, че критичен Redis компонент с „Capacity Planning“ запазва гаранциите си?"
+kafka,fundamentals,1,Каква е основната роля на „Fundamentals“ в Kafka? Дай кратък пример.
+kafka,fundamentals,1,Кои два Kafka термина трябва да различаваш при „Fundamentals“?
+kafka,fundamentals,1,Как изглежда най-простият работещ пример с „Fundamentals“ в Kafka поток?
+kafka,fundamentals,1,Коя е честа грешка при използване на „Fundamentals“ и как я избягваш?
+kafka,fundamentals,1,Какво ограничение на „Fundamentals“ трябва да знаеш преди да го използваш в продукция?
+kafka,fundamentals,2,В система за събития трябва да приложиш „Fundamentals“. Какви настройки и проверки ще направиш първо?
+kafka,fundamentals,2,Дай практичен сценарий за „Fundamentals“ и обясни как ще провериш резултата.
+kafka,fundamentals,2,"Как ще обработиш нормалния неуспешен случай при „Fundamentals“, без да загубиш информация за събитието?"
+kafka,fundamentals,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Fundamentals“?"
+kafka,fundamentals,2,Как ще измериш дали „Fundamentals“ изпълнява очакваната гаранция за потока?
+kafka,fundamentals,3,Kafka поток около „Fundamentals“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,fundamentals,3,След промяна в „Fundamentals“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,fundamentals,3,Какъв граничен случай при „Fundamentals“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,fundamentals,3,"Две конфигурации за „Fundamentals“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,fundamentals,3,"Потребител получава неочакван резултат при „Fundamentals“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,fundamentals,4,"Проектираш продукционен Kafka поток с „Fundamentals“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,fundamentals,4,"Как ще проектираш „Fundamentals“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,fundamentals,4,"Сравни два подхода за „Fundamentals“ по коректност, оперативна сложност и възстановяване."
+kafka,fundamentals,4,"Какви инварианти, метрики и аларми ще заложиш около „Fundamentals“?"
+kafka,fundamentals,4,Как ще мигрираш съществуващ Kafka поток към „Fundamentals“ без да нарушиш договора с producer-и и consumer-и?
+kafka,fundamentals,5,"В продукция възниква инцидент свързан с „Fundamentals“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,fundamentals,5,Как ще въведеш нова схема или конфигурация за „Fundamentals“ с паралелна работа и безопасен rollback?
+kafka,fundamentals,5,При голямо натоварване „Fundamentals“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,fundamentals,5,"Как ще проектираш „Fundamentals“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,fundamentals,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Fundamentals“ запазва гаранциите си?"
+kafka,consumers,1,Каква е основната роля на „Consumers“ в Kafka? Дай кратък пример.
+kafka,consumers,1,Кои два Kafka термина трябва да различаваш при „Consumers“?
+kafka,consumers,1,Как изглежда най-простият работещ пример с „Consumers“ в Kafka поток?
+kafka,consumers,1,Коя е честа грешка при използване на „Consumers“ и как я избягваш?
+kafka,consumers,1,Какво ограничение на „Consumers“ трябва да знаеш преди да го използваш в продукция?
+kafka,consumers,2,В система за събития трябва да приложиш „Consumers“. Какви настройки и проверки ще направиш първо?
+kafka,consumers,2,Дай практичен сценарий за „Consumers“ и обясни как ще провериш резултата.
+kafka,consumers,2,"Как ще обработиш нормалния неуспешен случай при „Consumers“, без да загубиш информация за събитието?"
+kafka,consumers,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Consumers“?"
+kafka,consumers,2,Как ще измериш дали „Consumers“ изпълнява очакваната гаранция за потока?
+kafka,consumers,3,Kafka поток около „Consumers“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,consumers,3,След промяна в „Consumers“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,consumers,3,Какъв граничен случай при „Consumers“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,consumers,3,"Две конфигурации за „Consumers“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,consumers,3,"Потребител получава неочакван резултат при „Consumers“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,consumers,4,"Проектираш продукционен Kafka поток с „Consumers“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,consumers,4,"Как ще проектираш „Consumers“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,consumers,4,"Сравни два подхода за „Consumers“ по коректност, оперативна сложност и възстановяване."
+kafka,consumers,4,"Какви инварианти, метрики и аларми ще заложиш около „Consumers“?"
+kafka,consumers,4,Как ще мигрираш съществуващ Kafka поток към „Consumers“ без да нарушиш договора с producer-и и consumer-и?
+kafka,consumers,5,"В продукция възниква инцидент свързан с „Consumers“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,consumers,5,Как ще въведеш нова схема или конфигурация за „Consumers“ с паралелна работа и безопасен rollback?
+kafka,consumers,5,При голямо натоварване „Consumers“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,consumers,5,"Как ще проектираш „Consumers“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,consumers,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Consumers“ запазва гаранциите си?"
+kafka,topics,1,Каква е основната роля на „Topics“ в Kafka? Дай кратък пример.
+kafka,topics,1,Кои два Kafka термина трябва да различаваш при „Topics“?
+kafka,topics,1,Как изглежда най-простият работещ пример с „Topics“ в Kafka поток?
+kafka,topics,1,Коя е честа грешка при използване на „Topics“ и как я избягваш?
+kafka,topics,1,Какво ограничение на „Topics“ трябва да знаеш преди да го използваш в продукция?
+kafka,topics,2,В система за събития трябва да приложиш „Topics“. Какви настройки и проверки ще направиш първо?
+kafka,topics,2,Дай практичен сценарий за „Topics“ и обясни как ще провериш резултата.
+kafka,topics,2,"Как ще обработиш нормалния неуспешен случай при „Topics“, без да загубиш информация за събитието?"
+kafka,topics,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Topics“?"
+kafka,topics,2,Как ще измериш дали „Topics“ изпълнява очакваната гаранция за потока?
+kafka,topics,3,Kafka поток около „Topics“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,topics,3,След промяна в „Topics“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,topics,3,Какъв граничен случай при „Topics“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,topics,3,"Две конфигурации за „Topics“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,topics,3,"Потребител получава неочакван резултат при „Topics“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,topics,4,"Проектираш продукционен Kafka поток с „Topics“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,topics,4,"Как ще проектираш „Topics“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,topics,4,"Сравни два подхода за „Topics“ по коректност, оперативна сложност и възстановяване."
+kafka,topics,4,"Какви инварианти, метрики и аларми ще заложиш около „Topics“?"
+kafka,topics,4,Как ще мигрираш съществуващ Kafka поток към „Topics“ без да нарушиш договора с producer-и и consumer-и?
+kafka,topics,5,"В продукция възниква инцидент свързан с „Topics“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,topics,5,Как ще въведеш нова схема или конфигурация за „Topics“ с паралелна работа и безопасен rollback?
+kafka,topics,5,При голямо натоварване „Topics“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,topics,5,"Как ще проектираш „Topics“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,topics,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Topics“ запазва гаранциите си?"
+kafka,partitions,1,Каква е основната роля на „Partitions“ в Kafka? Дай кратък пример.
+kafka,partitions,1,Кои два Kafka термина трябва да различаваш при „Partitions“?
+kafka,partitions,1,Как изглежда най-простият работещ пример с „Partitions“ в Kafka поток?
+kafka,partitions,1,Коя е честа грешка при използване на „Partitions“ и как я избягваш?
+kafka,partitions,1,Какво ограничение на „Partitions“ трябва да знаеш преди да го използваш в продукция?
+kafka,partitions,2,В система за събития трябва да приложиш „Partitions“. Какви настройки и проверки ще направиш първо?
+kafka,partitions,2,Дай практичен сценарий за „Partitions“ и обясни как ще провериш резултата.
+kafka,partitions,2,"Как ще обработиш нормалния неуспешен случай при „Partitions“, без да загубиш информация за събитието?"
+kafka,partitions,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Partitions“?"
+kafka,partitions,2,Как ще измериш дали „Partitions“ изпълнява очакваната гаранция за потока?
+kafka,partitions,3,Kafka поток около „Partitions“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,partitions,3,След промяна в „Partitions“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,partitions,3,Какъв граничен случай при „Partitions“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,partitions,3,"Две конфигурации за „Partitions“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,partitions,3,"Потребител получава неочакван резултат при „Partitions“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,partitions,4,"Проектираш продукционен Kafka поток с „Partitions“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,partitions,4,"Как ще проектираш „Partitions“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,partitions,4,"Сравни два подхода за „Partitions“ по коректност, оперативна сложност и възстановяване."
+kafka,partitions,4,"Какви инварианти, метрики и аларми ще заложиш около „Partitions“?"
+kafka,partitions,4,Как ще мигрираш съществуващ Kafka поток към „Partitions“ без да нарушиш договора с producer-и и consumer-и?
+kafka,partitions,5,"В продукция възниква инцидент свързан с „Partitions“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,partitions,5,Как ще въведеш нова схема или конфигурация за „Partitions“ с паралелна работа и безопасен rollback?
+kafka,partitions,5,При голямо натоварване „Partitions“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,partitions,5,"Как ще проектираш „Partitions“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,partitions,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Partitions“ запазва гаранциите си?"
+kafka,message_keys,1,Каква е основната роля на „Message Keys“ в Kafka? Дай кратък пример.
+kafka,message_keys,1,Кои два Kafka термина трябва да различаваш при „Message Keys“?
+kafka,message_keys,1,Как изглежда най-простият работещ пример с „Message Keys“ в Kafka поток?
+kafka,message_keys,1,Коя е честа грешка при използване на „Message Keys“ и как я избягваш?
+kafka,message_keys,1,Какво ограничение на „Message Keys“ трябва да знаеш преди да го използваш в продукция?
+kafka,message_keys,2,В система за събития трябва да приложиш „Message Keys“. Какви настройки и проверки ще направиш първо?
+kafka,message_keys,2,Дай практичен сценарий за „Message Keys“ и обясни как ще провериш резултата.
+kafka,message_keys,2,"Как ще обработиш нормалния неуспешен случай при „Message Keys“, без да загубиш информация за събитието?"
+kafka,message_keys,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Message Keys“?"
+kafka,message_keys,2,Как ще измериш дали „Message Keys“ изпълнява очакваната гаранция за потока?
+kafka,message_keys,3,Kafka поток около „Message Keys“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,message_keys,3,След промяна в „Message Keys“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,message_keys,3,Какъв граничен случай при „Message Keys“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,message_keys,3,"Две конфигурации за „Message Keys“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,message_keys,3,"Потребител получава неочакван резултат при „Message Keys“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,message_keys,4,"Проектираш продукционен Kafka поток с „Message Keys“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,message_keys,4,"Как ще проектираш „Message Keys“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,message_keys,4,"Сравни два подхода за „Message Keys“ по коректност, оперативна сложност и възстановяване."
+kafka,message_keys,4,"Какви инварианти, метрики и аларми ще заложиш около „Message Keys“?"
+kafka,message_keys,4,Как ще мигрираш съществуващ Kafka поток към „Message Keys“ без да нарушиш договора с producer-и и consumer-и?
+kafka,message_keys,5,"В продукция възниква инцидент свързан с „Message Keys“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,message_keys,5,Как ще въведеш нова схема или конфигурация за „Message Keys“ с паралелна работа и безопасен rollback?
+kafka,message_keys,5,При голямо натоварване „Message Keys“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,message_keys,5,"Как ще проектираш „Message Keys“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,message_keys,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Message Keys“ запазва гаранциите си?"
+kafka,event_ordering,1,Каква е основната роля на „Event Ordering“ в Kafka? Дай кратък пример.
+kafka,event_ordering,1,Кои два Kafka термина трябва да различаваш при „Event Ordering“?
+kafka,event_ordering,1,Как изглежда най-простият работещ пример с „Event Ordering“ в Kafka поток?
+kafka,event_ordering,1,Коя е честа грешка при използване на „Event Ordering“ и как я избягваш?
+kafka,event_ordering,1,Какво ограничение на „Event Ordering“ трябва да знаеш преди да го използваш в продукция?
+kafka,event_ordering,2,В система за събития трябва да приложиш „Event Ordering“. Какви настройки и проверки ще направиш първо?
+kafka,event_ordering,2,Дай практичен сценарий за „Event Ordering“ и обясни как ще провериш резултата.
+kafka,event_ordering,2,"Как ще обработиш нормалния неуспешен случай при „Event Ordering“, без да загубиш информация за събитието?"
+kafka,event_ordering,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Event Ordering“?"
+kafka,event_ordering,2,Как ще измериш дали „Event Ordering“ изпълнява очакваната гаранция за потока?
+kafka,event_ordering,3,Kafka поток около „Event Ordering“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,event_ordering,3,След промяна в „Event Ordering“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,event_ordering,3,Какъв граничен случай при „Event Ordering“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,event_ordering,3,"Две конфигурации за „Event Ordering“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,event_ordering,3,"Потребител получава неочакван резултат при „Event Ordering“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,event_ordering,4,"Проектираш продукционен Kafka поток с „Event Ordering“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,event_ordering,4,"Как ще проектираш „Event Ordering“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,event_ordering,4,"Сравни два подхода за „Event Ordering“ по коректност, оперативна сложност и възстановяване."
+kafka,event_ordering,4,"Какви инварианти, метрики и аларми ще заложиш около „Event Ordering“?"
+kafka,event_ordering,4,Как ще мигрираш съществуващ Kafka поток към „Event Ordering“ без да нарушиш договора с producer-и и consumer-и?
+kafka,event_ordering,5,"В продукция възниква инцидент свързан с „Event Ordering“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,event_ordering,5,Как ще въведеш нова схема или конфигурация за „Event Ordering“ с паралелна работа и безопасен rollback?
+kafka,event_ordering,5,При голямо натоварване „Event Ordering“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,event_ordering,5,"Как ще проектираш „Event Ordering“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,event_ordering,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Event Ordering“ запазва гаранциите си?"
+kafka,broker_architecture,1,Каква е основната роля на „Broker Architecture“ в Kafka? Дай кратък пример.
+kafka,broker_architecture,1,Кои два Kafka термина трябва да различаваш при „Broker Architecture“?
+kafka,broker_architecture,1,Как изглежда най-простият работещ пример с „Broker Architecture“ в Kafka поток?
+kafka,broker_architecture,1,Коя е честа грешка при използване на „Broker Architecture“ и как я избягваш?
+kafka,broker_architecture,1,Какво ограничение на „Broker Architecture“ трябва да знаеш преди да го използваш в продукция?
+kafka,broker_architecture,2,В система за събития трябва да приложиш „Broker Architecture“. Какви настройки и проверки ще направиш първо?
+kafka,broker_architecture,2,Дай практичен сценарий за „Broker Architecture“ и обясни как ще провериш резултата.
+kafka,broker_architecture,2,"Как ще обработиш нормалния неуспешен случай при „Broker Architecture“, без да загубиш информация за събитието?"
+kafka,broker_architecture,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Broker Architecture“?"
+kafka,broker_architecture,2,Как ще измериш дали „Broker Architecture“ изпълнява очакваната гаранция за потока?
+kafka,broker_architecture,3,Kafka поток около „Broker Architecture“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,broker_architecture,3,След промяна в „Broker Architecture“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,broker_architecture,3,Какъв граничен случай при „Broker Architecture“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,broker_architecture,3,"Две конфигурации за „Broker Architecture“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,broker_architecture,3,"Потребител получава неочакван резултат при „Broker Architecture“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,broker_architecture,4,"Проектираш продукционен Kafka поток с „Broker Architecture“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,broker_architecture,4,"Как ще проектираш „Broker Architecture“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,broker_architecture,4,"Сравни два подхода за „Broker Architecture“ по коректност, оперативна сложност и възстановяване."
+kafka,broker_architecture,4,"Какви инварианти, метрики и аларми ще заложиш около „Broker Architecture“?"
+kafka,broker_architecture,4,Как ще мигрираш съществуващ Kafka поток към „Broker Architecture“ без да нарушиш договора с producer-и и consumer-и?
+kafka,broker_architecture,5,"В продукция възниква инцидент свързан с „Broker Architecture“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,broker_architecture,5,Как ще въведеш нова схема или конфигурация за „Broker Architecture“ с паралелна работа и безопасен rollback?
+kafka,broker_architecture,5,При голямо натоварване „Broker Architecture“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,broker_architecture,5,"Как ще проектираш „Broker Architecture“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,broker_architecture,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Broker Architecture“ запазва гаранциите си?"
+kafka,kraft,1,Каква е основната роля на „KRaft“ в Kafka? Дай кратък пример.
+kafka,kraft,1,Кои два Kafka термина трябва да различаваш при „KRaft“?
+kafka,kraft,1,Как изглежда най-простият работещ пример с „KRaft“ в Kafka поток?
+kafka,kraft,1,Коя е честа грешка при използване на „KRaft“ и как я избягваш?
+kafka,kraft,1,Какво ограничение на „KRaft“ трябва да знаеш преди да го използваш в продукция?
+kafka,kraft,2,В система за събития трябва да приложиш „KRaft“. Какви настройки и проверки ще направиш първо?
+kafka,kraft,2,Дай практичен сценарий за „KRaft“ и обясни как ще провериш резултата.
+kafka,kraft,2,"Как ще обработиш нормалния неуспешен случай при „KRaft“, без да загубиш информация за събитието?"
+kafka,kraft,2,"Как ще избереш topic, partition и consumer поведение когато използваш „KRaft“?"
+kafka,kraft,2,Как ще измериш дали „KRaft“ изпълнява очакваната гаранция за потока?
+kafka,kraft,3,Kafka поток около „KRaft“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,kraft,3,След промяна в „KRaft“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,kraft,3,Какъв граничен случай при „KRaft“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,kraft,3,"Две конфигурации за „KRaft“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,kraft,3,"Потребител получава неочакван резултат при „KRaft“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,kraft,4,"Проектираш продукционен Kafka поток с „KRaft“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,kraft,4,"Как ще проектираш „KRaft“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,kraft,4,"Сравни два подхода за „KRaft“ по коректност, оперативна сложност и възстановяване."
+kafka,kraft,4,"Какви инварианти, метрики и аларми ще заложиш около „KRaft“?"
+kafka,kraft,4,Как ще мигрираш съществуващ Kafka поток към „KRaft“ без да нарушиш договора с producer-и и consumer-и?
+kafka,kraft,5,"В продукция възниква инцидент свързан с „KRaft“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,kraft,5,Как ще въведеш нова схема или конфигурация за „KRaft“ с паралелна работа и безопасен rollback?
+kafka,kraft,5,При голямо натоварване „KRaft“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,kraft,5,"Как ще проектираш „KRaft“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,kraft,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „KRaft“ запазва гаранциите си?"
+kafka,replication,1,Каква е основната роля на „Replication“ в Kafka? Дай кратък пример.
+kafka,replication,1,Кои два Kafka термина трябва да различаваш при „Replication“?
+kafka,replication,1,Как изглежда най-простият работещ пример с „Replication“ в Kafka поток?
+kafka,replication,1,Коя е честа грешка при използване на „Replication“ и как я избягваш?
+kafka,replication,1,Какво ограничение на „Replication“ трябва да знаеш преди да го използваш в продукция?
+kafka,replication,2,В система за събития трябва да приложиш „Replication“. Какви настройки и проверки ще направиш първо?
+kafka,replication,2,Дай практичен сценарий за „Replication“ и обясни как ще провериш резултата.
+kafka,replication,2,"Как ще обработиш нормалния неуспешен случай при „Replication“, без да загубиш информация за събитието?"
+kafka,replication,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Replication“?"
+kafka,replication,2,Как ще измериш дали „Replication“ изпълнява очакваната гаранция за потока?
+kafka,replication,3,Kafka поток около „Replication“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,replication,3,След промяна в „Replication“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,replication,3,Какъв граничен случай при „Replication“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,replication,3,"Две конфигурации за „Replication“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,replication,3,"Потребител получава неочакван резултат при „Replication“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,replication,4,"Проектираш продукционен Kafka поток с „Replication“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,replication,4,"Как ще проектираш „Replication“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,replication,4,"Сравни два подхода за „Replication“ по коректност, оперативна сложност и възстановяване."
+kafka,replication,4,"Какви инварианти, метрики и аларми ще заложиш около „Replication“?"
+kafka,replication,4,Как ще мигрираш съществуващ Kafka поток към „Replication“ без да нарушиш договора с producer-и и consumer-и?
+kafka,replication,5,"В продукция възниква инцидент свързан с „Replication“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,replication,5,Как ще въведеш нова схема или конфигурация за „Replication“ с паралелна работа и безопасен rollback?
+kafka,replication,5,При голямо натоварване „Replication“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,replication,5,"Как ще проектираш „Replication“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,replication,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Replication“ запазва гаранциите си?"
+kafka,leader_election,1,Каква е основната роля на „Leader Election“ в Kafka? Дай кратък пример.
+kafka,leader_election,1,Кои два Kafka термина трябва да различаваш при „Leader Election“?
+kafka,leader_election,1,Как изглежда най-простият работещ пример с „Leader Election“ в Kafka поток?
+kafka,leader_election,1,Коя е честа грешка при използване на „Leader Election“ и как я избягваш?
+kafka,leader_election,1,Какво ограничение на „Leader Election“ трябва да знаеш преди да го използваш в продукция?
+kafka,leader_election,2,В система за събития трябва да приложиш „Leader Election“. Какви настройки и проверки ще направиш първо?
+kafka,leader_election,2,Дай практичен сценарий за „Leader Election“ и обясни как ще провериш резултата.
+kafka,leader_election,2,"Как ще обработиш нормалния неуспешен случай при „Leader Election“, без да загубиш информация за събитието?"
+kafka,leader_election,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Leader Election“?"
+kafka,leader_election,2,Как ще измериш дали „Leader Election“ изпълнява очакваната гаранция за потока?
+kafka,leader_election,3,Kafka поток около „Leader Election“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,leader_election,3,След промяна в „Leader Election“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,leader_election,3,Какъв граничен случай при „Leader Election“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,leader_election,3,"Две конфигурации за „Leader Election“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,leader_election,3,"Потребител получава неочакван резултат при „Leader Election“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,leader_election,4,"Проектираш продукционен Kafka поток с „Leader Election“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,leader_election,4,"Как ще проектираш „Leader Election“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,leader_election,4,"Сравни два подхода за „Leader Election“ по коректност, оперативна сложност и възстановяване."
+kafka,leader_election,4,"Какви инварианти, метрики и аларми ще заложиш около „Leader Election“?"
+kafka,leader_election,4,Как ще мигрираш съществуващ Kafka поток към „Leader Election“ без да нарушиш договора с producer-и и consumer-и?
+kafka,leader_election,5,"В продукция възниква инцидент свързан с „Leader Election“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,leader_election,5,Как ще въведеш нова схема или конфигурация за „Leader Election“ с паралелна работа и безопасен rollback?
+kafka,leader_election,5,При голямо натоварване „Leader Election“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,leader_election,5,"Как ще проектираш „Leader Election“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,leader_election,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Leader Election“ запазва гаранциите си?"
+kafka,in_sync_replicas,1,Каква е основната роля на „In Sync Replicas“ в Kafka? Дай кратък пример.
+kafka,in_sync_replicas,1,Кои два Kafka термина трябва да различаваш при „In Sync Replicas“?
+kafka,in_sync_replicas,1,Как изглежда най-простият работещ пример с „In Sync Replicas“ в Kafka поток?
+kafka,in_sync_replicas,1,Коя е честа грешка при използване на „In Sync Replicas“ и как я избягваш?
+kafka,in_sync_replicas,1,Какво ограничение на „In Sync Replicas“ трябва да знаеш преди да го използваш в продукция?
+kafka,in_sync_replicas,2,В система за събития трябва да приложиш „In Sync Replicas“. Какви настройки и проверки ще направиш първо?
+kafka,in_sync_replicas,2,Дай практичен сценарий за „In Sync Replicas“ и обясни как ще провериш резултата.
+kafka,in_sync_replicas,2,"Как ще обработиш нормалния неуспешен случай при „In Sync Replicas“, без да загубиш информация за събитието?"
+kafka,in_sync_replicas,2,"Как ще избереш topic, partition и consumer поведение когато използваш „In Sync Replicas“?"
+kafka,in_sync_replicas,2,Как ще измериш дали „In Sync Replicas“ изпълнява очакваната гаранция за потока?
+kafka,in_sync_replicas,3,Kafka поток около „In Sync Replicas“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,in_sync_replicas,3,След промяна в „In Sync Replicas“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,in_sync_replicas,3,Какъв граничен случай при „In Sync Replicas“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,in_sync_replicas,3,"Две конфигурации за „In Sync Replicas“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,in_sync_replicas,3,"Потребител получава неочакван резултат при „In Sync Replicas“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,in_sync_replicas,4,"Проектираш продукционен Kafka поток с „In Sync Replicas“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,in_sync_replicas,4,"Как ще проектираш „In Sync Replicas“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,in_sync_replicas,4,"Сравни два подхода за „In Sync Replicas“ по коректност, оперативна сложност и възстановяване."
+kafka,in_sync_replicas,4,"Какви инварианти, метрики и аларми ще заложиш около „In Sync Replicas“?"
+kafka,in_sync_replicas,4,Как ще мигрираш съществуващ Kafka поток към „In Sync Replicas“ без да нарушиш договора с producer-и и consumer-и?
+kafka,in_sync_replicas,5,"В продукция възниква инцидент свързан с „In Sync Replicas“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,in_sync_replicas,5,Как ще въведеш нова схема или конфигурация за „In Sync Replicas“ с паралелна работа и безопасен rollback?
+kafka,in_sync_replicas,5,При голямо натоварване „In Sync Replicas“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,in_sync_replicas,5,"Как ще проектираш „In Sync Replicas“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,in_sync_replicas,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „In Sync Replicas“ запазва гаранциите си?"
+kafka,producer_acknowledgments,1,Каква е основната роля на „Producer Acknowledgments“ в Kafka? Дай кратък пример.
+kafka,producer_acknowledgments,1,Кои два Kafka термина трябва да различаваш при „Producer Acknowledgments“?
+kafka,producer_acknowledgments,1,Как изглежда най-простият работещ пример с „Producer Acknowledgments“ в Kafka поток?
+kafka,producer_acknowledgments,1,Коя е честа грешка при използване на „Producer Acknowledgments“ и как я избягваш?
+kafka,producer_acknowledgments,1,Какво ограничение на „Producer Acknowledgments“ трябва да знаеш преди да го използваш в продукция?
+kafka,producer_acknowledgments,2,В система за събития трябва да приложиш „Producer Acknowledgments“. Какви настройки и проверки ще направиш първо?
+kafka,producer_acknowledgments,2,Дай практичен сценарий за „Producer Acknowledgments“ и обясни как ще провериш резултата.
+kafka,producer_acknowledgments,2,"Как ще обработиш нормалния неуспешен случай при „Producer Acknowledgments“, без да загубиш информация за събитието?"
+kafka,producer_acknowledgments,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Producer Acknowledgments“?"
+kafka,producer_acknowledgments,2,Как ще измериш дали „Producer Acknowledgments“ изпълнява очакваната гаранция за потока?
+kafka,producer_acknowledgments,3,Kafka поток около „Producer Acknowledgments“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,producer_acknowledgments,3,След промяна в „Producer Acknowledgments“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,producer_acknowledgments,3,Какъв граничен случай при „Producer Acknowledgments“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,producer_acknowledgments,3,"Две конфигурации за „Producer Acknowledgments“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,producer_acknowledgments,3,"Потребител получава неочакван резултат при „Producer Acknowledgments“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,producer_acknowledgments,4,"Проектираш продукционен Kafka поток с „Producer Acknowledgments“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,producer_acknowledgments,4,"Как ще проектираш „Producer Acknowledgments“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,producer_acknowledgments,4,"Сравни два подхода за „Producer Acknowledgments“ по коректност, оперативна сложност и възстановяване."
+kafka,producer_acknowledgments,4,"Какви инварианти, метрики и аларми ще заложиш около „Producer Acknowledgments“?"
+kafka,producer_acknowledgments,4,Как ще мигрираш съществуващ Kafka поток към „Producer Acknowledgments“ без да нарушиш договора с producer-и и consumer-и?
+kafka,producer_acknowledgments,5,"В продукция възниква инцидент свързан с „Producer Acknowledgments“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,producer_acknowledgments,5,Как ще въведеш нова схема или конфигурация за „Producer Acknowledgments“ с паралелна работа и безопасен rollback?
+kafka,producer_acknowledgments,5,При голямо натоварване „Producer Acknowledgments“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,producer_acknowledgments,5,"Как ще проектираш „Producer Acknowledgments“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,producer_acknowledgments,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Producer Acknowledgments“ запазва гаранциите си?"
+kafka,idempotent_producers,1,Каква е основната роля на „Idempotent Producers“ в Kafka? Дай кратък пример.
+kafka,idempotent_producers,1,Кои два Kafka термина трябва да различаваш при „Idempotent Producers“?
+kafka,idempotent_producers,1,Как изглежда най-простият работещ пример с „Idempotent Producers“ в Kafka поток?
+kafka,idempotent_producers,1,Коя е честа грешка при използване на „Idempotent Producers“ и как я избягваш?
+kafka,idempotent_producers,1,Какво ограничение на „Idempotent Producers“ трябва да знаеш преди да го използваш в продукция?
+kafka,idempotent_producers,2,В система за събития трябва да приложиш „Idempotent Producers“. Какви настройки и проверки ще направиш първо?
+kafka,idempotent_producers,2,Дай практичен сценарий за „Idempotent Producers“ и обясни как ще провериш резултата.
+kafka,idempotent_producers,2,"Как ще обработиш нормалния неуспешен случай при „Idempotent Producers“, без да загубиш информация за събитието?"
+kafka,idempotent_producers,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Idempotent Producers“?"
+kafka,idempotent_producers,2,Как ще измериш дали „Idempotent Producers“ изпълнява очакваната гаранция за потока?
+kafka,idempotent_producers,3,Kafka поток около „Idempotent Producers“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,idempotent_producers,3,След промяна в „Idempotent Producers“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,idempotent_producers,3,Какъв граничен случай при „Idempotent Producers“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,idempotent_producers,3,"Две конфигурации за „Idempotent Producers“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,idempotent_producers,3,"Потребител получава неочакван резултат при „Idempotent Producers“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,idempotent_producers,4,"Проектираш продукционен Kafka поток с „Idempotent Producers“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,idempotent_producers,4,"Как ще проектираш „Idempotent Producers“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,idempotent_producers,4,"Сравни два подхода за „Idempotent Producers“ по коректност, оперативна сложност и възстановяване."
+kafka,idempotent_producers,4,"Какви инварианти, метрики и аларми ще заложиш около „Idempotent Producers“?"
+kafka,idempotent_producers,4,Как ще мигрираш съществуващ Kafka поток към „Idempotent Producers“ без да нарушиш договора с producer-и и consumer-и?
+kafka,idempotent_producers,5,"В продукция възниква инцидент свързан с „Idempotent Producers“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,idempotent_producers,5,Как ще въведеш нова схема или конфигурация за „Idempotent Producers“ с паралелна работа и безопасен rollback?
+kafka,idempotent_producers,5,При голямо натоварване „Idempotent Producers“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,idempotent_producers,5,"Как ще проектираш „Idempotent Producers“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,idempotent_producers,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Idempotent Producers“ запазва гаранциите си?"
+kafka,transactions,1,Каква е основната роля на „Transactions“ в Kafka? Дай кратък пример.
+kafka,transactions,1,Кои два Kafka термина трябва да различаваш при „Transactions“?
+kafka,transactions,1,Как изглежда най-простият работещ пример с „Transactions“ в Kafka поток?
+kafka,transactions,1,Коя е честа грешка при използване на „Transactions“ и как я избягваш?
+kafka,transactions,1,Какво ограничение на „Transactions“ трябва да знаеш преди да го използваш в продукция?
+kafka,transactions,2,В система за събития трябва да приложиш „Transactions“. Какви настройки и проверки ще направиш първо?
+kafka,transactions,2,Дай практичен сценарий за „Transactions“ и обясни как ще провериш резултата.
+kafka,transactions,2,"Как ще обработиш нормалния неуспешен случай при „Transactions“, без да загубиш информация за събитието?"
+kafka,transactions,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Transactions“?"
+kafka,transactions,2,Как ще измериш дали „Transactions“ изпълнява очакваната гаранция за потока?
+kafka,transactions,3,Kafka поток около „Transactions“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,transactions,3,След промяна в „Transactions“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,transactions,3,Какъв граничен случай при „Transactions“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,transactions,3,"Две конфигурации за „Transactions“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,transactions,3,"Потребител получава неочакван резултат при „Transactions“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,transactions,4,"Проектираш продукционен Kafka поток с „Transactions“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,transactions,4,"Как ще проектираш „Transactions“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,transactions,4,"Сравни два подхода за „Transactions“ по коректност, оперативна сложност и възстановяване."
+kafka,transactions,4,"Какви инварианти, метрики и аларми ще заложиш около „Transactions“?"
+kafka,transactions,4,Как ще мигрираш съществуващ Kafka поток към „Transactions“ без да нарушиш договора с producer-и и consumer-и?
+kafka,transactions,5,"В продукция възниква инцидент свързан с „Transactions“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,transactions,5,Как ще въведеш нова схема или конфигурация за „Transactions“ с паралелна работа и безопасен rollback?
+kafka,transactions,5,При голямо натоварване „Transactions“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,transactions,5,"Как ще проектираш „Transactions“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,transactions,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Transactions“ запазва гаранциите си?"
+kafka,delivery_semantics,1,Каква е основната роля на „Delivery Semantics“ в Kafka? Дай кратък пример.
+kafka,delivery_semantics,1,Кои два Kafka термина трябва да различаваш при „Delivery Semantics“?
+kafka,delivery_semantics,1,Как изглежда най-простият работещ пример с „Delivery Semantics“ в Kafka поток?
+kafka,delivery_semantics,1,Коя е честа грешка при използване на „Delivery Semantics“ и как я избягваш?
+kafka,delivery_semantics,1,Какво ограничение на „Delivery Semantics“ трябва да знаеш преди да го използваш в продукция?
+kafka,delivery_semantics,2,В система за събития трябва да приложиш „Delivery Semantics“. Какви настройки и проверки ще направиш първо?
+kafka,delivery_semantics,2,Дай практичен сценарий за „Delivery Semantics“ и обясни как ще провериш резултата.
+kafka,delivery_semantics,2,"Как ще обработиш нормалния неуспешен случай при „Delivery Semantics“, без да загубиш информация за събитието?"
+kafka,delivery_semantics,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Delivery Semantics“?"
+kafka,delivery_semantics,2,Как ще измериш дали „Delivery Semantics“ изпълнява очакваната гаранция за потока?
+kafka,delivery_semantics,3,Kafka поток около „Delivery Semantics“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,delivery_semantics,3,След промяна в „Delivery Semantics“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,delivery_semantics,3,Какъв граничен случай при „Delivery Semantics“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,delivery_semantics,3,"Две конфигурации за „Delivery Semantics“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,delivery_semantics,3,"Потребител получава неочакван резултат при „Delivery Semantics“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,delivery_semantics,4,"Проектираш продукционен Kafka поток с „Delivery Semantics“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,delivery_semantics,4,"Как ще проектираш „Delivery Semantics“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,delivery_semantics,4,"Сравни два подхода за „Delivery Semantics“ по коректност, оперативна сложност и възстановяване."
+kafka,delivery_semantics,4,"Какви инварианти, метрики и аларми ще заложиш около „Delivery Semantics“?"
+kafka,delivery_semantics,4,Как ще мигрираш съществуващ Kafka поток към „Delivery Semantics“ без да нарушиш договора с producer-и и consumer-и?
+kafka,delivery_semantics,5,"В продукция възниква инцидент свързан с „Delivery Semantics“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,delivery_semantics,5,Как ще въведеш нова схема или конфигурация за „Delivery Semantics“ с паралелна работа и безопасен rollback?
+kafka,delivery_semantics,5,При голямо натоварване „Delivery Semantics“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,delivery_semantics,5,"Как ще проектираш „Delivery Semantics“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,delivery_semantics,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Delivery Semantics“ запазва гаранциите си?"
+kafka,producer_batching,1,Каква е основната роля на „Producer Batching“ в Kafka? Дай кратък пример.
+kafka,producer_batching,1,Кои два Kafka термина трябва да различаваш при „Producer Batching“?
+kafka,producer_batching,1,Как изглежда най-простият работещ пример с „Producer Batching“ в Kafka поток?
+kafka,producer_batching,1,Коя е честа грешка при използване на „Producer Batching“ и как я избягваш?
+kafka,producer_batching,1,Какво ограничение на „Producer Batching“ трябва да знаеш преди да го използваш в продукция?
+kafka,producer_batching,2,В система за събития трябва да приложиш „Producer Batching“. Какви настройки и проверки ще направиш първо?
+kafka,producer_batching,2,Дай практичен сценарий за „Producer Batching“ и обясни как ще провериш резултата.
+kafka,producer_batching,2,"Как ще обработиш нормалния неуспешен случай при „Producer Batching“, без да загубиш информация за събитието?"
+kafka,producer_batching,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Producer Batching“?"
+kafka,producer_batching,2,Как ще измериш дали „Producer Batching“ изпълнява очакваната гаранция за потока?
+kafka,producer_batching,3,Kafka поток около „Producer Batching“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,producer_batching,3,След промяна в „Producer Batching“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,producer_batching,3,Какъв граничен случай при „Producer Batching“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,producer_batching,3,"Две конфигурации за „Producer Batching“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,producer_batching,3,"Потребител получава неочакван резултат при „Producer Batching“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,producer_batching,4,"Проектираш продукционен Kafka поток с „Producer Batching“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,producer_batching,4,"Как ще проектираш „Producer Batching“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,producer_batching,4,"Сравни два подхода за „Producer Batching“ по коректност, оперативна сложност и възстановяване."
+kafka,producer_batching,4,"Какви инварианти, метрики и аларми ще заложиш около „Producer Batching“?"
+kafka,producer_batching,4,Как ще мигрираш съществуващ Kafka поток към „Producer Batching“ без да нарушиш договора с producer-и и consumer-и?
+kafka,producer_batching,5,"В продукция възниква инцидент свързан с „Producer Batching“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,producer_batching,5,Как ще въведеш нова схема или конфигурация за „Producer Batching“ с паралелна работа и безопасен rollback?
+kafka,producer_batching,5,При голямо натоварване „Producer Batching“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,producer_batching,5,"Как ще проектираш „Producer Batching“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,producer_batching,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Producer Batching“ запазва гаранциите си?"
+kafka,compression,1,Каква е основната роля на „Compression“ в Kafka? Дай кратък пример.
+kafka,compression,1,Кои два Kafka термина трябва да различаваш при „Compression“?
+kafka,compression,1,Как изглежда най-простият работещ пример с „Compression“ в Kafka поток?
+kafka,compression,1,Коя е честа грешка при използване на „Compression“ и как я избягваш?
+kafka,compression,1,Какво ограничение на „Compression“ трябва да знаеш преди да го използваш в продукция?
+kafka,compression,2,В система за събития трябва да приложиш „Compression“. Какви настройки и проверки ще направиш първо?
+kafka,compression,2,Дай практичен сценарий за „Compression“ и обясни как ще провериш резултата.
+kafka,compression,2,"Как ще обработиш нормалния неуспешен случай при „Compression“, без да загубиш информация за събитието?"
+kafka,compression,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Compression“?"
+kafka,compression,2,Как ще измериш дали „Compression“ изпълнява очакваната гаранция за потока?
+kafka,compression,3,Kafka поток около „Compression“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,compression,3,След промяна в „Compression“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,compression,3,Какъв граничен случай при „Compression“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,compression,3,"Две конфигурации за „Compression“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,compression,3,"Потребител получава неочакван резултат при „Compression“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,compression,4,"Проектираш продукционен Kafka поток с „Compression“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,compression,4,"Как ще проектираш „Compression“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,compression,4,"Сравни два подхода за „Compression“ по коректност, оперативна сложност и възстановяване."
+kafka,compression,4,"Какви инварианти, метрики и аларми ще заложиш около „Compression“?"
+kafka,compression,4,Как ще мигрираш съществуващ Kafka поток към „Compression“ без да нарушиш договора с producer-и и consumer-и?
+kafka,compression,5,"В продукция възниква инцидент свързан с „Compression“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,compression,5,Как ще въведеш нова схема или конфигурация за „Compression“ с паралелна работа и безопасен rollback?
+kafka,compression,5,При голямо натоварване „Compression“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,compression,5,"Как ще проектираш „Compression“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,compression,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Compression“ запазва гаранциите си?"
+kafka,producer_partitioning,1,Каква е основната роля на „Producer Partitioning“ в Kafka? Дай кратък пример.
+kafka,producer_partitioning,1,Кои два Kafka термина трябва да различаваш при „Producer Partitioning“?
+kafka,producer_partitioning,1,Как изглежда най-простият работещ пример с „Producer Partitioning“ в Kafka поток?
+kafka,producer_partitioning,1,Коя е честа грешка при използване на „Producer Partitioning“ и как я избягваш?
+kafka,producer_partitioning,1,Какво ограничение на „Producer Partitioning“ трябва да знаеш преди да го използваш в продукция?
+kafka,producer_partitioning,2,В система за събития трябва да приложиш „Producer Partitioning“. Какви настройки и проверки ще направиш първо?
+kafka,producer_partitioning,2,Дай практичен сценарий за „Producer Partitioning“ и обясни как ще провериш резултата.
+kafka,producer_partitioning,2,"Как ще обработиш нормалния неуспешен случай при „Producer Partitioning“, без да загубиш информация за събитието?"
+kafka,producer_partitioning,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Producer Partitioning“?"
+kafka,producer_partitioning,2,Как ще измериш дали „Producer Partitioning“ изпълнява очакваната гаранция за потока?
+kafka,producer_partitioning,3,Kafka поток около „Producer Partitioning“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,producer_partitioning,3,След промяна в „Producer Partitioning“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,producer_partitioning,3,Какъв граничен случай при „Producer Partitioning“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,producer_partitioning,3,"Две конфигурации за „Producer Partitioning“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,producer_partitioning,3,"Потребител получава неочакван резултат при „Producer Partitioning“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,producer_partitioning,4,"Проектираш продукционен Kafka поток с „Producer Partitioning“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,producer_partitioning,4,"Как ще проектираш „Producer Partitioning“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,producer_partitioning,4,"Сравни два подхода за „Producer Partitioning“ по коректност, оперативна сложност и възстановяване."
+kafka,producer_partitioning,4,"Какви инварианти, метрики и аларми ще заложиш около „Producer Partitioning“?"
+kafka,producer_partitioning,4,Как ще мигрираш съществуващ Kafka поток към „Producer Partitioning“ без да нарушиш договора с producer-и и consumer-и?
+kafka,producer_partitioning,5,"В продукция възниква инцидент свързан с „Producer Partitioning“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,producer_partitioning,5,Как ще въведеш нова схема или конфигурация за „Producer Partitioning“ с паралелна работа и безопасен rollback?
+kafka,producer_partitioning,5,При голямо натоварване „Producer Partitioning“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,producer_partitioning,5,"Как ще проектираш „Producer Partitioning“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,producer_partitioning,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Producer Partitioning“ запазва гаранциите си?"
+kafka,record_headers,1,Каква е основната роля на „Record Headers“ в Kafka? Дай кратък пример.
+kafka,record_headers,1,Кои два Kafka термина трябва да различаваш при „Record Headers“?
+kafka,record_headers,1,Как изглежда най-простият работещ пример с „Record Headers“ в Kafka поток?
+kafka,record_headers,1,Коя е честа грешка при използване на „Record Headers“ и как я избягваш?
+kafka,record_headers,1,Какво ограничение на „Record Headers“ трябва да знаеш преди да го използваш в продукция?
+kafka,record_headers,2,В система за събития трябва да приложиш „Record Headers“. Какви настройки и проверки ще направиш първо?
+kafka,record_headers,2,Дай практичен сценарий за „Record Headers“ и обясни как ще провериш резултата.
+kafka,record_headers,2,"Как ще обработиш нормалния неуспешен случай при „Record Headers“, без да загубиш информация за събитието?"
+kafka,record_headers,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Record Headers“?"
+kafka,record_headers,2,Как ще измериш дали „Record Headers“ изпълнява очакваната гаранция за потока?
+kafka,record_headers,3,Kafka поток около „Record Headers“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,record_headers,3,След промяна в „Record Headers“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,record_headers,3,Какъв граничен случай при „Record Headers“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,record_headers,3,"Две конфигурации за „Record Headers“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,record_headers,3,"Потребител получава неочакван резултат при „Record Headers“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,record_headers,4,"Проектираш продукционен Kafka поток с „Record Headers“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,record_headers,4,"Как ще проектираш „Record Headers“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,record_headers,4,"Сравни два подхода за „Record Headers“ по коректност, оперативна сложност и възстановяване."
+kafka,record_headers,4,"Какви инварианти, метрики и аларми ще заложиш около „Record Headers“?"
+kafka,record_headers,4,Как ще мигрираш съществуващ Kafka поток към „Record Headers“ без да нарушиш договора с producer-и и consumer-и?
+kafka,record_headers,5,"В продукция възниква инцидент свързан с „Record Headers“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,record_headers,5,Как ще въведеш нова схема или конфигурация за „Record Headers“ с паралелна работа и безопасен rollback?
+kafka,record_headers,5,При голямо натоварване „Record Headers“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,record_headers,5,"Как ще проектираш „Record Headers“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,record_headers,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Record Headers“ запазва гаранциите си?"
+kafka,serialization,1,Каква е основната роля на „Serialization“ в Kafka? Дай кратък пример.
+kafka,serialization,1,Кои два Kafka термина трябва да различаваш при „Serialization“?
+kafka,serialization,1,Как изглежда най-простият работещ пример с „Serialization“ в Kafka поток?
+kafka,serialization,1,Коя е честа грешка при използване на „Serialization“ и как я избягваш?
+kafka,serialization,1,Какво ограничение на „Serialization“ трябва да знаеш преди да го използваш в продукция?
+kafka,serialization,2,В система за събития трябва да приложиш „Serialization“. Какви настройки и проверки ще направиш първо?
+kafka,serialization,2,Дай практичен сценарий за „Serialization“ и обясни как ще провериш резултата.
+kafka,serialization,2,"Как ще обработиш нормалния неуспешен случай при „Serialization“, без да загубиш информация за събитието?"
+kafka,serialization,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Serialization“?"
+kafka,serialization,2,Как ще измериш дали „Serialization“ изпълнява очакваната гаранция за потока?
+kafka,serialization,3,Kafka поток около „Serialization“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,serialization,3,След промяна в „Serialization“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,serialization,3,Какъв граничен случай при „Serialization“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,serialization,3,"Две конфигурации за „Serialization“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,serialization,3,"Потребител получава неочакван резултат при „Serialization“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,serialization,4,"Проектираш продукционен Kafka поток с „Serialization“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,serialization,4,"Как ще проектираш „Serialization“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,serialization,4,"Сравни два подхода за „Serialization“ по коректност, оперативна сложност и възстановяване."
+kafka,serialization,4,"Какви инварианти, метрики и аларми ще заложиш около „Serialization“?"
+kafka,serialization,4,Как ще мигрираш съществуващ Kafka поток към „Serialization“ без да нарушиш договора с producer-и и consumer-и?
+kafka,serialization,5,"В продукция възниква инцидент свързан с „Serialization“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,serialization,5,Как ще въведеш нова схема или конфигурация за „Serialization“ с паралелна работа и безопасен rollback?
+kafka,serialization,5,При голямо натоварване „Serialization“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,serialization,5,"Как ще проектираш „Serialization“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,serialization,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Serialization“ запазва гаранциите си?"
+kafka,schema_registries,1,Каква е основната роля на „Schema Registries“ в Kafka? Дай кратък пример.
+kafka,schema_registries,1,Кои два Kafka термина трябва да различаваш при „Schema Registries“?
+kafka,schema_registries,1,Как изглежда най-простият работещ пример с „Schema Registries“ в Kafka поток?
+kafka,schema_registries,1,Коя е честа грешка при използване на „Schema Registries“ и как я избягваш?
+kafka,schema_registries,1,Какво ограничение на „Schema Registries“ трябва да знаеш преди да го използваш в продукция?
+kafka,schema_registries,2,В система за събития трябва да приложиш „Schema Registries“. Какви настройки и проверки ще направиш първо?
+kafka,schema_registries,2,Дай практичен сценарий за „Schema Registries“ и обясни как ще провериш резултата.
+kafka,schema_registries,2,"Как ще обработиш нормалния неуспешен случай при „Schema Registries“, без да загубиш информация за събитието?"
+kafka,schema_registries,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Schema Registries“?"
+kafka,schema_registries,2,Как ще измериш дали „Schema Registries“ изпълнява очакваната гаранция за потока?
+kafka,schema_registries,3,Kafka поток около „Schema Registries“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,schema_registries,3,След промяна в „Schema Registries“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,schema_registries,3,Какъв граничен случай при „Schema Registries“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,schema_registries,3,"Две конфигурации за „Schema Registries“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,schema_registries,3,"Потребител получава неочакван резултат при „Schema Registries“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,schema_registries,4,"Проектираш продукционен Kafka поток с „Schema Registries“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,schema_registries,4,"Как ще проектираш „Schema Registries“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,schema_registries,4,"Сравни два подхода за „Schema Registries“ по коректност, оперативна сложност и възстановяване."
+kafka,schema_registries,4,"Какви инварианти, метрики и аларми ще заложиш около „Schema Registries“?"
+kafka,schema_registries,4,Как ще мигрираш съществуващ Kafka поток към „Schema Registries“ без да нарушиш договора с producer-и и consumer-и?
+kafka,schema_registries,5,"В продукция възниква инцидент свързан с „Schema Registries“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,schema_registries,5,Как ще въведеш нова схема или конфигурация за „Schema Registries“ с паралелна работа и безопасен rollback?
+kafka,schema_registries,5,При голямо натоварване „Schema Registries“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,schema_registries,5,"Как ще проектираш „Schema Registries“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,schema_registries,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Schema Registries“ запазва гаранциите си?"
+kafka,schema_compatibility,1,Каква е основната роля на „Schema Compatibility“ в Kafka? Дай кратък пример.
+kafka,schema_compatibility,1,Кои два Kafka термина трябва да различаваш при „Schema Compatibility“?
+kafka,schema_compatibility,1,Как изглежда най-простият работещ пример с „Schema Compatibility“ в Kafka поток?
+kafka,schema_compatibility,1,Коя е честа грешка при използване на „Schema Compatibility“ и как я избягваш?
+kafka,schema_compatibility,1,Какво ограничение на „Schema Compatibility“ трябва да знаеш преди да го използваш в продукция?
+kafka,schema_compatibility,2,В система за събития трябва да приложиш „Schema Compatibility“. Какви настройки и проверки ще направиш първо?
+kafka,schema_compatibility,2,Дай практичен сценарий за „Schema Compatibility“ и обясни как ще провериш резултата.
+kafka,schema_compatibility,2,"Как ще обработиш нормалния неуспешен случай при „Schema Compatibility“, без да загубиш информация за събитието?"
+kafka,schema_compatibility,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Schema Compatibility“?"
+kafka,schema_compatibility,2,Как ще измериш дали „Schema Compatibility“ изпълнява очакваната гаранция за потока?
+kafka,schema_compatibility,3,Kafka поток около „Schema Compatibility“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,schema_compatibility,3,След промяна в „Schema Compatibility“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,schema_compatibility,3,Какъв граничен случай при „Schema Compatibility“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,schema_compatibility,3,"Две конфигурации за „Schema Compatibility“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,schema_compatibility,3,"Потребител получава неочакван резултат при „Schema Compatibility“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,schema_compatibility,4,"Проектираш продукционен Kafka поток с „Schema Compatibility“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,schema_compatibility,4,"Как ще проектираш „Schema Compatibility“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,schema_compatibility,4,"Сравни два подхода за „Schema Compatibility“ по коректност, оперативна сложност и възстановяване."
+kafka,schema_compatibility,4,"Какви инварианти, метрики и аларми ще заложиш около „Schema Compatibility“?"
+kafka,schema_compatibility,4,Как ще мигрираш съществуващ Kafka поток към „Schema Compatibility“ без да нарушиш договора с producer-и и consumer-и?
+kafka,schema_compatibility,5,"В продукция възниква инцидент свързан с „Schema Compatibility“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,schema_compatibility,5,Как ще въведеш нова схема или конфигурация за „Schema Compatibility“ с паралелна работа и безопасен rollback?
+kafka,schema_compatibility,5,При голямо натоварване „Schema Compatibility“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,schema_compatibility,5,"Как ще проектираш „Schema Compatibility“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,schema_compatibility,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Schema Compatibility“ запазва гаранциите си?"
+kafka,consumer_groups,1,Каква е основната роля на „Consumer Groups“ в Kafka? Дай кратък пример.
+kafka,consumer_groups,1,Кои два Kafka термина трябва да различаваш при „Consumer Groups“?
+kafka,consumer_groups,1,Как изглежда най-простият работещ пример с „Consumer Groups“ в Kafka поток?
+kafka,consumer_groups,1,Коя е честа грешка при използване на „Consumer Groups“ и как я избягваш?
+kafka,consumer_groups,1,Какво ограничение на „Consumer Groups“ трябва да знаеш преди да го използваш в продукция?
+kafka,consumer_groups,2,В система за събития трябва да приложиш „Consumer Groups“. Какви настройки и проверки ще направиш първо?
+kafka,consumer_groups,2,Дай практичен сценарий за „Consumer Groups“ и обясни как ще провериш резултата.
+kafka,consumer_groups,2,"Как ще обработиш нормалния неуспешен случай при „Consumer Groups“, без да загубиш информация за събитието?"
+kafka,consumer_groups,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Consumer Groups“?"
+kafka,consumer_groups,2,Как ще измериш дали „Consumer Groups“ изпълнява очакваната гаранция за потока?
+kafka,consumer_groups,3,Kafka поток около „Consumer Groups“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,consumer_groups,3,След промяна в „Consumer Groups“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,consumer_groups,3,Какъв граничен случай при „Consumer Groups“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,consumer_groups,3,"Две конфигурации за „Consumer Groups“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,consumer_groups,3,"Потребител получава неочакван резултат при „Consumer Groups“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,consumer_groups,4,"Проектираш продукционен Kafka поток с „Consumer Groups“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,consumer_groups,4,"Как ще проектираш „Consumer Groups“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,consumer_groups,4,"Сравни два подхода за „Consumer Groups“ по коректност, оперативна сложност и възстановяване."
+kafka,consumer_groups,4,"Какви инварианти, метрики и аларми ще заложиш около „Consumer Groups“?"
+kafka,consumer_groups,4,Как ще мигрираш съществуващ Kafka поток към „Consumer Groups“ без да нарушиш договора с producer-и и consumer-и?
+kafka,consumer_groups,5,"В продукция възниква инцидент свързан с „Consumer Groups“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,consumer_groups,5,Как ще въведеш нова схема или конфигурация за „Consumer Groups“ с паралелна работа и безопасен rollback?
+kafka,consumer_groups,5,При голямо натоварване „Consumer Groups“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,consumer_groups,5,"Как ще проектираш „Consumer Groups“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,consumer_groups,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Consumer Groups“ запазва гаранциите си?"
+kafka,partition_assignment,1,Каква е основната роля на „Partition Assignment“ в Kafka? Дай кратък пример.
+kafka,partition_assignment,1,Кои два Kafka термина трябва да различаваш при „Partition Assignment“?
+kafka,partition_assignment,1,Как изглежда най-простият работещ пример с „Partition Assignment“ в Kafka поток?
+kafka,partition_assignment,1,Коя е честа грешка при използване на „Partition Assignment“ и как я избягваш?
+kafka,partition_assignment,1,Какво ограничение на „Partition Assignment“ трябва да знаеш преди да го използваш в продукция?
+kafka,partition_assignment,2,В система за събития трябва да приложиш „Partition Assignment“. Какви настройки и проверки ще направиш първо?
+kafka,partition_assignment,2,Дай практичен сценарий за „Partition Assignment“ и обясни как ще провериш резултата.
+kafka,partition_assignment,2,"Как ще обработиш нормалния неуспешен случай при „Partition Assignment“, без да загубиш информация за събитието?"
+kafka,partition_assignment,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Partition Assignment“?"
+kafka,partition_assignment,2,Как ще измериш дали „Partition Assignment“ изпълнява очакваната гаранция за потока?
+kafka,partition_assignment,3,Kafka поток около „Partition Assignment“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,partition_assignment,3,След промяна в „Partition Assignment“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,partition_assignment,3,Какъв граничен случай при „Partition Assignment“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,partition_assignment,3,"Две конфигурации за „Partition Assignment“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,partition_assignment,3,"Потребител получава неочакван резултат при „Partition Assignment“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,partition_assignment,4,"Проектираш продукционен Kafka поток с „Partition Assignment“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,partition_assignment,4,"Как ще проектираш „Partition Assignment“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,partition_assignment,4,"Сравни два подхода за „Partition Assignment“ по коректност, оперативна сложност и възстановяване."
+kafka,partition_assignment,4,"Какви инварианти, метрики и аларми ще заложиш около „Partition Assignment“?"
+kafka,partition_assignment,4,Как ще мигрираш съществуващ Kafka поток към „Partition Assignment“ без да нарушиш договора с producer-и и consumer-и?
+kafka,partition_assignment,5,"В продукция възниква инцидент свързан с „Partition Assignment“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,partition_assignment,5,Как ще въведеш нова схема или конфигурация за „Partition Assignment“ с паралелна работа и безопасен rollback?
+kafka,partition_assignment,5,При голямо натоварване „Partition Assignment“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,partition_assignment,5,"Как ще проектираш „Partition Assignment“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,partition_assignment,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Partition Assignment“ запазва гаранциите си?"
+kafka,rebalancing,1,Каква е основната роля на „Rebalancing“ в Kafka? Дай кратък пример.
+kafka,rebalancing,1,Кои два Kafka термина трябва да различаваш при „Rebalancing“?
+kafka,rebalancing,1,Как изглежда най-простият работещ пример с „Rebalancing“ в Kafka поток?
+kafka,rebalancing,1,Коя е честа грешка при използване на „Rebalancing“ и как я избягваш?
+kafka,rebalancing,1,Какво ограничение на „Rebalancing“ трябва да знаеш преди да го използваш в продукция?
+kafka,rebalancing,2,В система за събития трябва да приложиш „Rebalancing“. Какви настройки и проверки ще направиш първо?
+kafka,rebalancing,2,Дай практичен сценарий за „Rebalancing“ и обясни как ще провериш резултата.
+kafka,rebalancing,2,"Как ще обработиш нормалния неуспешен случай при „Rebalancing“, без да загубиш информация за събитието?"
+kafka,rebalancing,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Rebalancing“?"
+kafka,rebalancing,2,Как ще измериш дали „Rebalancing“ изпълнява очакваната гаранция за потока?
+kafka,rebalancing,3,Kafka поток около „Rebalancing“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,rebalancing,3,След промяна в „Rebalancing“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,rebalancing,3,Какъв граничен случай при „Rebalancing“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,rebalancing,3,"Две конфигурации за „Rebalancing“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,rebalancing,3,"Потребител получава неочакван резултат при „Rebalancing“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,rebalancing,4,"Проектираш продукционен Kafka поток с „Rebalancing“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,rebalancing,4,"Как ще проектираш „Rebalancing“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,rebalancing,4,"Сравни два подхода за „Rebalancing“ по коректност, оперативна сложност и възстановяване."
+kafka,rebalancing,4,"Какви инварианти, метрики и аларми ще заложиш около „Rebalancing“?"
+kafka,rebalancing,4,Как ще мигрираш съществуващ Kafka поток към „Rebalancing“ без да нарушиш договора с producer-и и consumer-и?
+kafka,rebalancing,5,"В продукция възниква инцидент свързан с „Rebalancing“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,rebalancing,5,Как ще въведеш нова схема или конфигурация за „Rebalancing“ с паралелна работа и безопасен rollback?
+kafka,rebalancing,5,При голямо натоварване „Rebalancing“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,rebalancing,5,"Как ще проектираш „Rebalancing“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,rebalancing,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Rebalancing“ запазва гаранциите си?"
+kafka,offset_management,1,Каква е основната роля на „Offset Management“ в Kafka? Дай кратък пример.
+kafka,offset_management,1,Кои два Kafka термина трябва да различаваш при „Offset Management“?
+kafka,offset_management,1,Как изглежда най-простият работещ пример с „Offset Management“ в Kafka поток?
+kafka,offset_management,1,Коя е честа грешка при използване на „Offset Management“ и как я избягваш?
+kafka,offset_management,1,Какво ограничение на „Offset Management“ трябва да знаеш преди да го използваш в продукция?
+kafka,offset_management,2,В система за събития трябва да приложиш „Offset Management“. Какви настройки и проверки ще направиш първо?
+kafka,offset_management,2,Дай практичен сценарий за „Offset Management“ и обясни как ще провериш резултата.
+kafka,offset_management,2,"Как ще обработиш нормалния неуспешен случай при „Offset Management“, без да загубиш информация за събитието?"
+kafka,offset_management,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Offset Management“?"
+kafka,offset_management,2,Как ще измериш дали „Offset Management“ изпълнява очакваната гаранция за потока?
+kafka,offset_management,3,Kafka поток около „Offset Management“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,offset_management,3,След промяна в „Offset Management“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,offset_management,3,Какъв граничен случай при „Offset Management“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,offset_management,3,"Две конфигурации за „Offset Management“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,offset_management,3,"Потребител получава неочакван резултат при „Offset Management“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,offset_management,4,"Проектираш продукционен Kafka поток с „Offset Management“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,offset_management,4,"Как ще проектираш „Offset Management“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,offset_management,4,"Сравни два подхода за „Offset Management“ по коректност, оперативна сложност и възстановяване."
+kafka,offset_management,4,"Какви инварианти, метрики и аларми ще заложиш около „Offset Management“?"
+kafka,offset_management,4,Как ще мигрираш съществуващ Kafka поток към „Offset Management“ без да нарушиш договора с producer-и и consumer-и?
+kafka,offset_management,5,"В продукция възниква инцидент свързан с „Offset Management“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,offset_management,5,Как ще въведеш нова схема или конфигурация за „Offset Management“ с паралелна работа и безопасен rollback?
+kafka,offset_management,5,При голямо натоварване „Offset Management“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,offset_management,5,"Как ще проектираш „Offset Management“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,offset_management,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Offset Management“ запазва гаранциите си?"
+kafka,consumer_lag,1,Каква е основната роля на „Consumer Lag“ в Kafka? Дай кратък пример.
+kafka,consumer_lag,1,Кои два Kafka термина трябва да различаваш при „Consumer Lag“?
+kafka,consumer_lag,1,Как изглежда най-простият работещ пример с „Consumer Lag“ в Kafka поток?
+kafka,consumer_lag,1,Коя е честа грешка при използване на „Consumer Lag“ и как я избягваш?
+kafka,consumer_lag,1,Какво ограничение на „Consumer Lag“ трябва да знаеш преди да го използваш в продукция?
+kafka,consumer_lag,2,В система за събития трябва да приложиш „Consumer Lag“. Какви настройки и проверки ще направиш първо?
+kafka,consumer_lag,2,Дай практичен сценарий за „Consumer Lag“ и обясни как ще провериш резултата.
+kafka,consumer_lag,2,"Как ще обработиш нормалния неуспешен случай при „Consumer Lag“, без да загубиш информация за събитието?"
+kafka,consumer_lag,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Consumer Lag“?"
+kafka,consumer_lag,2,Как ще измериш дали „Consumer Lag“ изпълнява очакваната гаранция за потока?
+kafka,consumer_lag,3,Kafka поток около „Consumer Lag“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,consumer_lag,3,След промяна в „Consumer Lag“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,consumer_lag,3,Какъв граничен случай при „Consumer Lag“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,consumer_lag,3,"Две конфигурации за „Consumer Lag“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,consumer_lag,3,"Потребител получава неочакван резултат при „Consumer Lag“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,consumer_lag,4,"Проектираш продукционен Kafka поток с „Consumer Lag“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,consumer_lag,4,"Как ще проектираш „Consumer Lag“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,consumer_lag,4,"Сравни два подхода за „Consumer Lag“ по коректност, оперативна сложност и възстановяване."
+kafka,consumer_lag,4,"Какви инварианти, метрики и аларми ще заложиш около „Consumer Lag“?"
+kafka,consumer_lag,4,Как ще мигрираш съществуващ Kafka поток към „Consumer Lag“ без да нарушиш договора с producer-и и consumer-и?
+kafka,consumer_lag,5,"В продукция възниква инцидент свързан с „Consumer Lag“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,consumer_lag,5,Как ще въведеш нова схема или конфигурация за „Consumer Lag“ с паралелна работа и безопасен rollback?
+kafka,consumer_lag,5,При голямо натоварване „Consumer Lag“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,consumer_lag,5,"Как ще проектираш „Consumer Lag“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,consumer_lag,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Consumer Lag“ запазва гаранциите си?"
+kafka,backpressure,1,Каква е основната роля на „Backpressure“ в Kafka? Дай кратък пример.
+kafka,backpressure,1,Кои два Kafka термина трябва да различаваш при „Backpressure“?
+kafka,backpressure,1,Как изглежда най-простият работещ пример с „Backpressure“ в Kafka поток?
+kafka,backpressure,1,Коя е честа грешка при използване на „Backpressure“ и как я избягваш?
+kafka,backpressure,1,Какво ограничение на „Backpressure“ трябва да знаеш преди да го използваш в продукция?
+kafka,backpressure,2,В система за събития трябва да приложиш „Backpressure“. Какви настройки и проверки ще направиш първо?
+kafka,backpressure,2,Дай практичен сценарий за „Backpressure“ и обясни как ще провериш резултата.
+kafka,backpressure,2,"Как ще обработиш нормалния неуспешен случай при „Backpressure“, без да загубиш информация за събитието?"
+kafka,backpressure,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Backpressure“?"
+kafka,backpressure,2,Как ще измериш дали „Backpressure“ изпълнява очакваната гаранция за потока?
+kafka,backpressure,3,Kafka поток около „Backpressure“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,backpressure,3,След промяна в „Backpressure“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,backpressure,3,Какъв граничен случай при „Backpressure“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,backpressure,3,"Две конфигурации за „Backpressure“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,backpressure,3,"Потребител получава неочакван резултат при „Backpressure“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,backpressure,4,"Проектираш продукционен Kafka поток с „Backpressure“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,backpressure,4,"Как ще проектираш „Backpressure“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,backpressure,4,"Сравни два подхода за „Backpressure“ по коректност, оперативна сложност и възстановяване."
+kafka,backpressure,4,"Какви инварианти, метрики и аларми ще заложиш около „Backpressure“?"
+kafka,backpressure,4,Как ще мигрираш съществуващ Kafka поток към „Backpressure“ без да нарушиш договора с producer-и и consumer-и?
+kafka,backpressure,5,"В продукция възниква инцидент свързан с „Backpressure“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,backpressure,5,Как ще въведеш нова схема или конфигурация за „Backpressure“ с паралелна работа и безопасен rollback?
+kafka,backpressure,5,При голямо натоварване „Backpressure“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,backpressure,5,"Как ще проектираш „Backpressure“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,backpressure,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Backpressure“ запазва гаранциите си?"
+kafka,consumer_concurrency,1,Каква е основната роля на „Consumer Concurrency“ в Kafka? Дай кратък пример.
+kafka,consumer_concurrency,1,Кои два Kafka термина трябва да различаваш при „Consumer Concurrency“?
+kafka,consumer_concurrency,1,Как изглежда най-простият работещ пример с „Consumer Concurrency“ в Kafka поток?
+kafka,consumer_concurrency,1,Коя е честа грешка при използване на „Consumer Concurrency“ и как я избягваш?
+kafka,consumer_concurrency,1,Какво ограничение на „Consumer Concurrency“ трябва да знаеш преди да го използваш в продукция?
+kafka,consumer_concurrency,2,В система за събития трябва да приложиш „Consumer Concurrency“. Какви настройки и проверки ще направиш първо?
+kafka,consumer_concurrency,2,Дай практичен сценарий за „Consumer Concurrency“ и обясни как ще провериш резултата.
+kafka,consumer_concurrency,2,"Как ще обработиш нормалния неуспешен случай при „Consumer Concurrency“, без да загубиш информация за събитието?"
+kafka,consumer_concurrency,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Consumer Concurrency“?"
+kafka,consumer_concurrency,2,Как ще измериш дали „Consumer Concurrency“ изпълнява очакваната гаранция за потока?
+kafka,consumer_concurrency,3,Kafka поток около „Consumer Concurrency“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,consumer_concurrency,3,След промяна в „Consumer Concurrency“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,consumer_concurrency,3,Какъв граничен случай при „Consumer Concurrency“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,consumer_concurrency,3,"Две конфигурации за „Consumer Concurrency“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,consumer_concurrency,3,"Потребител получава неочакван резултат при „Consumer Concurrency“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,consumer_concurrency,4,"Проектираш продукционен Kafka поток с „Consumer Concurrency“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,consumer_concurrency,4,"Как ще проектираш „Consumer Concurrency“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,consumer_concurrency,4,"Сравни два подхода за „Consumer Concurrency“ по коректност, оперативна сложност и възстановяване."
+kafka,consumer_concurrency,4,"Какви инварианти, метрики и аларми ще заложиш около „Consumer Concurrency“?"
+kafka,consumer_concurrency,4,Как ще мигрираш съществуващ Kafka поток към „Consumer Concurrency“ без да нарушиш договора с producer-и и consumer-и?
+kafka,consumer_concurrency,5,"В продукция възниква инцидент свързан с „Consumer Concurrency“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,consumer_concurrency,5,Как ще въведеш нова схема или конфигурация за „Consumer Concurrency“ с паралелна работа и безопасен rollback?
+kafka,consumer_concurrency,5,При голямо натоварване „Consumer Concurrency“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,consumer_concurrency,5,"Как ще проектираш „Consumer Concurrency“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,consumer_concurrency,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Consumer Concurrency“ запазва гаранциите си?"
+kafka,poison_messages,1,Каква е основната роля на „Poison Messages“ в Kafka? Дай кратък пример.
+kafka,poison_messages,1,Кои два Kafka термина трябва да различаваш при „Poison Messages“?
+kafka,poison_messages,1,Как изглежда най-простият работещ пример с „Poison Messages“ в Kafka поток?
+kafka,poison_messages,1,Коя е честа грешка при използване на „Poison Messages“ и как я избягваш?
+kafka,poison_messages,1,Какво ограничение на „Poison Messages“ трябва да знаеш преди да го използваш в продукция?
+kafka,poison_messages,2,В система за събития трябва да приложиш „Poison Messages“. Какви настройки и проверки ще направиш първо?
+kafka,poison_messages,2,Дай практичен сценарий за „Poison Messages“ и обясни как ще провериш резултата.
+kafka,poison_messages,2,"Как ще обработиш нормалния неуспешен случай при „Poison Messages“, без да загубиш информация за събитието?"
+kafka,poison_messages,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Poison Messages“?"
+kafka,poison_messages,2,Как ще измериш дали „Poison Messages“ изпълнява очакваната гаранция за потока?
+kafka,poison_messages,3,Kafka поток около „Poison Messages“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,poison_messages,3,След промяна в „Poison Messages“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,poison_messages,3,Какъв граничен случай при „Poison Messages“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,poison_messages,3,"Две конфигурации за „Poison Messages“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,poison_messages,3,"Потребител получава неочакван резултат при „Poison Messages“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,poison_messages,4,"Проектираш продукционен Kafka поток с „Poison Messages“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,poison_messages,4,"Как ще проектираш „Poison Messages“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,poison_messages,4,"Сравни два подхода за „Poison Messages“ по коректност, оперативна сложност и възстановяване."
+kafka,poison_messages,4,"Какви инварианти, метрики и аларми ще заложиш около „Poison Messages“?"
+kafka,poison_messages,4,Как ще мигрираш съществуващ Kafka поток към „Poison Messages“ без да нарушиш договора с producer-и и consumer-и?
+kafka,poison_messages,5,"В продукция възниква инцидент свързан с „Poison Messages“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,poison_messages,5,Как ще въведеш нова схема или конфигурация за „Poison Messages“ с паралелна работа и безопасен rollback?
+kafka,poison_messages,5,При голямо натоварване „Poison Messages“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,poison_messages,5,"Как ще проектираш „Poison Messages“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,poison_messages,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Poison Messages“ запазва гаранциите си?"
+kafka,retry_topics,1,Каква е основната роля на „Retry Topics“ в Kafka? Дай кратък пример.
+kafka,retry_topics,1,Кои два Kafka термина трябва да различаваш при „Retry Topics“?
+kafka,retry_topics,1,Как изглежда най-простият работещ пример с „Retry Topics“ в Kafka поток?
+kafka,retry_topics,1,Коя е честа грешка при използване на „Retry Topics“ и как я избягваш?
+kafka,retry_topics,1,Какво ограничение на „Retry Topics“ трябва да знаеш преди да го използваш в продукция?
+kafka,retry_topics,2,В система за събития трябва да приложиш „Retry Topics“. Какви настройки и проверки ще направиш първо?
+kafka,retry_topics,2,Дай практичен сценарий за „Retry Topics“ и обясни как ще провериш резултата.
+kafka,retry_topics,2,"Как ще обработиш нормалния неуспешен случай при „Retry Topics“, без да загубиш информация за събитието?"
+kafka,retry_topics,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Retry Topics“?"
+kafka,retry_topics,2,Как ще измериш дали „Retry Topics“ изпълнява очакваната гаранция за потока?
+kafka,retry_topics,3,Kafka поток около „Retry Topics“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,retry_topics,3,След промяна в „Retry Topics“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,retry_topics,3,Какъв граничен случай при „Retry Topics“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,retry_topics,3,"Две конфигурации за „Retry Topics“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,retry_topics,3,"Потребител получава неочакван резултат при „Retry Topics“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,retry_topics,4,"Проектираш продукционен Kafka поток с „Retry Topics“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,retry_topics,4,"Как ще проектираш „Retry Topics“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,retry_topics,4,"Сравни два подхода за „Retry Topics“ по коректност, оперативна сложност и възстановяване."
+kafka,retry_topics,4,"Какви инварианти, метрики и аларми ще заложиш около „Retry Topics“?"
+kafka,retry_topics,4,Как ще мигрираш съществуващ Kafka поток към „Retry Topics“ без да нарушиш договора с producer-и и consumer-и?
+kafka,retry_topics,5,"В продукция възниква инцидент свързан с „Retry Topics“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,retry_topics,5,Как ще въведеш нова схема или конфигурация за „Retry Topics“ с паралелна работа и безопасен rollback?
+kafka,retry_topics,5,При голямо натоварване „Retry Topics“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,retry_topics,5,"Как ще проектираш „Retry Topics“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,retry_topics,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Retry Topics“ запазва гаранциите си?"
+kafka,dead_letter_topics,1,Каква е основната роля на „Dead Letter Topics“ в Kafka? Дай кратък пример.
+kafka,dead_letter_topics,1,Кои два Kafka термина трябва да различаваш при „Dead Letter Topics“?
+kafka,dead_letter_topics,1,Как изглежда най-простият работещ пример с „Dead Letter Topics“ в Kafka поток?
+kafka,dead_letter_topics,1,Коя е честа грешка при използване на „Dead Letter Topics“ и как я избягваш?
+kafka,dead_letter_topics,1,Какво ограничение на „Dead Letter Topics“ трябва да знаеш преди да го използваш в продукция?
+kafka,dead_letter_topics,2,В система за събития трябва да приложиш „Dead Letter Topics“. Какви настройки и проверки ще направиш първо?
+kafka,dead_letter_topics,2,Дай практичен сценарий за „Dead Letter Topics“ и обясни как ще провериш резултата.
+kafka,dead_letter_topics,2,"Как ще обработиш нормалния неуспешен случай при „Dead Letter Topics“, без да загубиш информация за събитието?"
+kafka,dead_letter_topics,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Dead Letter Topics“?"
+kafka,dead_letter_topics,2,Как ще измериш дали „Dead Letter Topics“ изпълнява очакваната гаранция за потока?
+kafka,dead_letter_topics,3,Kafka поток около „Dead Letter Topics“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,dead_letter_topics,3,След промяна в „Dead Letter Topics“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,dead_letter_topics,3,Какъв граничен случай при „Dead Letter Topics“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,dead_letter_topics,3,"Две конфигурации за „Dead Letter Topics“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,dead_letter_topics,3,"Потребител получава неочакван резултат при „Dead Letter Topics“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,dead_letter_topics,4,"Проектираш продукционен Kafka поток с „Dead Letter Topics“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,dead_letter_topics,4,"Как ще проектираш „Dead Letter Topics“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,dead_letter_topics,4,"Сравни два подхода за „Dead Letter Topics“ по коректност, оперативна сложност и възстановяване."
+kafka,dead_letter_topics,4,"Какви инварианти, метрики и аларми ще заложиш около „Dead Letter Topics“?"
+kafka,dead_letter_topics,4,Как ще мигрираш съществуващ Kafka поток към „Dead Letter Topics“ без да нарушиш договора с producer-и и consumer-и?
+kafka,dead_letter_topics,5,"В продукция възниква инцидент свързан с „Dead Letter Topics“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,dead_letter_topics,5,Как ще въведеш нова схема или конфигурация за „Dead Letter Topics“ с паралелна работа и безопасен rollback?
+kafka,dead_letter_topics,5,При голямо натоварване „Dead Letter Topics“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,dead_letter_topics,5,"Как ще проектираш „Dead Letter Topics“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,dead_letter_topics,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Dead Letter Topics“ запазва гаранциите си?"
+kafka,replay,1,Каква е основната роля на „Replay“ в Kafka? Дай кратък пример.
+kafka,replay,1,Кои два Kafka термина трябва да различаваш при „Replay“?
+kafka,replay,1,Как изглежда най-простият работещ пример с „Replay“ в Kafka поток?
+kafka,replay,1,Коя е честа грешка при използване на „Replay“ и как я избягваш?
+kafka,replay,1,Какво ограничение на „Replay“ трябва да знаеш преди да го използваш в продукция?
+kafka,replay,2,В система за събития трябва да приложиш „Replay“. Какви настройки и проверки ще направиш първо?
+kafka,replay,2,Дай практичен сценарий за „Replay“ и обясни как ще провериш резултата.
+kafka,replay,2,"Как ще обработиш нормалния неуспешен случай при „Replay“, без да загубиш информация за събитието?"
+kafka,replay,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Replay“?"
+kafka,replay,2,Как ще измериш дали „Replay“ изпълнява очакваната гаранция за потока?
+kafka,replay,3,Kafka поток около „Replay“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,replay,3,След промяна в „Replay“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,replay,3,Какъв граничен случай при „Replay“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,replay,3,"Две конфигурации за „Replay“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,replay,3,"Потребител получава неочакван резултат при „Replay“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,replay,4,"Проектираш продукционен Kafka поток с „Replay“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,replay,4,"Как ще проектираш „Replay“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,replay,4,"Сравни два подхода за „Replay“ по коректност, оперативна сложност и възстановяване."
+kafka,replay,4,"Какви инварианти, метрики и аларми ще заложиш около „Replay“?"
+kafka,replay,4,Как ще мигрираш съществуващ Kafka поток към „Replay“ без да нарушиш договора с producer-и и consumer-и?
+kafka,replay,5,"В продукция възниква инцидент свързан с „Replay“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,replay,5,Как ще въведеш нова схема или конфигурация за „Replay“ с паралелна работа и безопасен rollback?
+kafka,replay,5,При голямо натоварване „Replay“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,replay,5,"Как ще проектираш „Replay“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,replay,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Replay“ запазва гаранциите си?"
+kafka,log_retention,1,Каква е основната роля на „Log Retention“ в Kafka? Дай кратък пример.
+kafka,log_retention,1,Кои два Kafka термина трябва да различаваш при „Log Retention“?
+kafka,log_retention,1,Как изглежда най-простият работещ пример с „Log Retention“ в Kafka поток?
+kafka,log_retention,1,Коя е честа грешка при използване на „Log Retention“ и как я избягваш?
+kafka,log_retention,1,Какво ограничение на „Log Retention“ трябва да знаеш преди да го използваш в продукция?
+kafka,log_retention,2,В система за събития трябва да приложиш „Log Retention“. Какви настройки и проверки ще направиш първо?
+kafka,log_retention,2,Дай практичен сценарий за „Log Retention“ и обясни как ще провериш резултата.
+kafka,log_retention,2,"Как ще обработиш нормалния неуспешен случай при „Log Retention“, без да загубиш информация за събитието?"
+kafka,log_retention,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Log Retention“?"
+kafka,log_retention,2,Как ще измериш дали „Log Retention“ изпълнява очакваната гаранция за потока?
+kafka,log_retention,3,Kafka поток около „Log Retention“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,log_retention,3,След промяна в „Log Retention“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,log_retention,3,Какъв граничен случай при „Log Retention“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,log_retention,3,"Две конфигурации за „Log Retention“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,log_retention,3,"Потребител получава неочакван резултат при „Log Retention“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,log_retention,4,"Проектираш продукционен Kafka поток с „Log Retention“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,log_retention,4,"Как ще проектираш „Log Retention“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,log_retention,4,"Сравни два подхода за „Log Retention“ по коректност, оперативна сложност и възстановяване."
+kafka,log_retention,4,"Какви инварианти, метрики и аларми ще заложиш около „Log Retention“?"
+kafka,log_retention,4,Как ще мигрираш съществуващ Kafka поток към „Log Retention“ без да нарушиш договора с producer-и и consumer-и?
+kafka,log_retention,5,"В продукция възниква инцидент свързан с „Log Retention“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,log_retention,5,Как ще въведеш нова схема или конфигурация за „Log Retention“ с паралелна работа и безопасен rollback?
+kafka,log_retention,5,При голямо натоварване „Log Retention“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,log_retention,5,"Как ще проектираш „Log Retention“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,log_retention,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Log Retention“ запазва гаранциите си?"
+kafka,log_compaction,1,Каква е основната роля на „Log Compaction“ в Kafka? Дай кратък пример.
+kafka,log_compaction,1,Кои два Kafka термина трябва да различаваш при „Log Compaction“?
+kafka,log_compaction,1,Как изглежда най-простият работещ пример с „Log Compaction“ в Kafka поток?
+kafka,log_compaction,1,Коя е честа грешка при използване на „Log Compaction“ и как я избягваш?
+kafka,log_compaction,1,Какво ограничение на „Log Compaction“ трябва да знаеш преди да го използваш в продукция?
+kafka,log_compaction,2,В система за събития трябва да приложиш „Log Compaction“. Какви настройки и проверки ще направиш първо?
+kafka,log_compaction,2,Дай практичен сценарий за „Log Compaction“ и обясни как ще провериш резултата.
+kafka,log_compaction,2,"Как ще обработиш нормалния неуспешен случай при „Log Compaction“, без да загубиш информация за събитието?"
+kafka,log_compaction,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Log Compaction“?"
+kafka,log_compaction,2,Как ще измериш дали „Log Compaction“ изпълнява очакваната гаранция за потока?
+kafka,log_compaction,3,Kafka поток около „Log Compaction“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,log_compaction,3,След промяна в „Log Compaction“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,log_compaction,3,Какъв граничен случай при „Log Compaction“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,log_compaction,3,"Две конфигурации за „Log Compaction“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,log_compaction,3,"Потребител получава неочакван резултат при „Log Compaction“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,log_compaction,4,"Проектираш продукционен Kafka поток с „Log Compaction“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,log_compaction,4,"Как ще проектираш „Log Compaction“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,log_compaction,4,"Сравни два подхода за „Log Compaction“ по коректност, оперативна сложност и възстановяване."
+kafka,log_compaction,4,"Какви инварианти, метрики и аларми ще заложиш около „Log Compaction“?"
+kafka,log_compaction,4,Как ще мигрираш съществуващ Kafka поток към „Log Compaction“ без да нарушиш договора с producer-и и consumer-и?
+kafka,log_compaction,5,"В продукция възниква инцидент свързан с „Log Compaction“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,log_compaction,5,Как ще въведеш нова схема или конфигурация за „Log Compaction“ с паралелна работа и безопасен rollback?
+kafka,log_compaction,5,При голямо натоварване „Log Compaction“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,log_compaction,5,"Как ще проектираш „Log Compaction“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,log_compaction,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Log Compaction“ запазва гаранциите си?"
+kafka,tombstones,1,Каква е основната роля на „Tombstones“ в Kafka? Дай кратък пример.
+kafka,tombstones,1,Кои два Kafka термина трябва да различаваш при „Tombstones“?
+kafka,tombstones,1,Как изглежда най-простият работещ пример с „Tombstones“ в Kafka поток?
+kafka,tombstones,1,Коя е честа грешка при използване на „Tombstones“ и как я избягваш?
+kafka,tombstones,1,Какво ограничение на „Tombstones“ трябва да знаеш преди да го използваш в продукция?
+kafka,tombstones,2,В система за събития трябва да приложиш „Tombstones“. Какви настройки и проверки ще направиш първо?
+kafka,tombstones,2,Дай практичен сценарий за „Tombstones“ и обясни как ще провериш резултата.
+kafka,tombstones,2,"Как ще обработиш нормалния неуспешен случай при „Tombstones“, без да загубиш информация за събитието?"
+kafka,tombstones,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Tombstones“?"
+kafka,tombstones,2,Как ще измериш дали „Tombstones“ изпълнява очакваната гаранция за потока?
+kafka,tombstones,3,Kafka поток около „Tombstones“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,tombstones,3,След промяна в „Tombstones“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,tombstones,3,Какъв граничен случай при „Tombstones“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,tombstones,3,"Две конфигурации за „Tombstones“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,tombstones,3,"Потребител получава неочакван резултат при „Tombstones“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,tombstones,4,"Проектираш продукционен Kafka поток с „Tombstones“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,tombstones,4,"Как ще проектираш „Tombstones“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,tombstones,4,"Сравни два подхода за „Tombstones“ по коректност, оперативна сложност и възстановяване."
+kafka,tombstones,4,"Какви инварианти, метрики и аларми ще заложиш около „Tombstones“?"
+kafka,tombstones,4,Как ще мигрираш съществуващ Kafka поток към „Tombstones“ без да нарушиш договора с producer-и и consumer-и?
+kafka,tombstones,5,"В продукция възниква инцидент свързан с „Tombstones“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,tombstones,5,Как ще въведеш нова схема или конфигурация за „Tombstones“ с паралелна работа и безопасен rollback?
+kafka,tombstones,5,При голямо натоварване „Tombstones“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,tombstones,5,"Как ще проектираш „Tombstones“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,tombstones,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Tombstones“ запазва гаранциите си?"
+kafka,large_messages,1,Каква е основната роля на „Large Messages“ в Kafka? Дай кратък пример.
+kafka,large_messages,1,Кои два Kafka термина трябва да различаваш при „Large Messages“?
+kafka,large_messages,1,Как изглежда най-простият работещ пример с „Large Messages“ в Kafka поток?
+kafka,large_messages,1,Коя е честа грешка при използване на „Large Messages“ и как я избягваш?
+kafka,large_messages,1,Какво ограничение на „Large Messages“ трябва да знаеш преди да го използваш в продукция?
+kafka,large_messages,2,В система за събития трябва да приложиш „Large Messages“. Какви настройки и проверки ще направиш първо?
+kafka,large_messages,2,Дай практичен сценарий за „Large Messages“ и обясни как ще провериш резултата.
+kafka,large_messages,2,"Как ще обработиш нормалния неуспешен случай при „Large Messages“, без да загубиш информация за събитието?"
+kafka,large_messages,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Large Messages“?"
+kafka,large_messages,2,Как ще измериш дали „Large Messages“ изпълнява очакваната гаранция за потока?
+kafka,large_messages,3,Kafka поток около „Large Messages“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,large_messages,3,След промяна в „Large Messages“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,large_messages,3,Какъв граничен случай при „Large Messages“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,large_messages,3,"Две конфигурации за „Large Messages“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,large_messages,3,"Потребител получава неочакван резултат при „Large Messages“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,large_messages,4,"Проектираш продукционен Kafka поток с „Large Messages“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,large_messages,4,"Как ще проектираш „Large Messages“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,large_messages,4,"Сравни два подхода за „Large Messages“ по коректност, оперативна сложност и възстановяване."
+kafka,large_messages,4,"Какви инварианти, метрики и аларми ще заложиш около „Large Messages“?"
+kafka,large_messages,4,Как ще мигрираш съществуващ Kafka поток към „Large Messages“ без да нарушиш договора с producer-и и consumer-и?
+kafka,large_messages,5,"В продукция възниква инцидент свързан с „Large Messages“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,large_messages,5,Как ще въведеш нова схема или конфигурация за „Large Messages“ с паралелна работа и безопасен rollback?
+kafka,large_messages,5,При голямо натоварване „Large Messages“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,large_messages,5,"Как ще проектираш „Large Messages“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,large_messages,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Large Messages“ запазва гаранциите си?"
+kafka,kafka_connect,1,Каква е основната роля на „Kafka Connect“ в Kafka? Дай кратък пример.
+kafka,kafka_connect,1,Кои два Kafka термина трябва да различаваш при „Kafka Connect“?
+kafka,kafka_connect,1,Как изглежда най-простият работещ пример с „Kafka Connect“ в Kafka поток?
+kafka,kafka_connect,1,Коя е честа грешка при използване на „Kafka Connect“ и как я избягваш?
+kafka,kafka_connect,1,Какво ограничение на „Kafka Connect“ трябва да знаеш преди да го използваш в продукция?
+kafka,kafka_connect,2,В система за събития трябва да приложиш „Kafka Connect“. Какви настройки и проверки ще направиш първо?
+kafka,kafka_connect,2,Дай практичен сценарий за „Kafka Connect“ и обясни как ще провериш резултата.
+kafka,kafka_connect,2,"Как ще обработиш нормалния неуспешен случай при „Kafka Connect“, без да загубиш информация за събитието?"
+kafka,kafka_connect,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Kafka Connect“?"
+kafka,kafka_connect,2,Как ще измериш дали „Kafka Connect“ изпълнява очакваната гаранция за потока?
+kafka,kafka_connect,3,Kafka поток около „Kafka Connect“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,kafka_connect,3,След промяна в „Kafka Connect“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,kafka_connect,3,Какъв граничен случай при „Kafka Connect“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,kafka_connect,3,"Две конфигурации за „Kafka Connect“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,kafka_connect,3,"Потребител получава неочакван резултат при „Kafka Connect“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,kafka_connect,4,"Проектираш продукционен Kafka поток с „Kafka Connect“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,kafka_connect,4,"Как ще проектираш „Kafka Connect“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,kafka_connect,4,"Сравни два подхода за „Kafka Connect“ по коректност, оперативна сложност и възстановяване."
+kafka,kafka_connect,4,"Какви инварианти, метрики и аларми ще заложиш около „Kafka Connect“?"
+kafka,kafka_connect,4,Как ще мигрираш съществуващ Kafka поток към „Kafka Connect“ без да нарушиш договора с producer-и и consumer-и?
+kafka,kafka_connect,5,"В продукция възниква инцидент свързан с „Kafka Connect“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,kafka_connect,5,Как ще въведеш нова схема или конфигурация за „Kafka Connect“ с паралелна работа и безопасен rollback?
+kafka,kafka_connect,5,При голямо натоварване „Kafka Connect“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,kafka_connect,5,"Как ще проектираш „Kafka Connect“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,kafka_connect,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Kafka Connect“ запазва гаранциите си?"
+kafka,source_connectors,1,Каква е основната роля на „Source Connectors“ в Kafka? Дай кратък пример.
+kafka,source_connectors,1,Кои два Kafka термина трябва да различаваш при „Source Connectors“?
+kafka,source_connectors,1,Как изглежда най-простият работещ пример с „Source Connectors“ в Kafka поток?
+kafka,source_connectors,1,Коя е честа грешка при използване на „Source Connectors“ и как я избягваш?
+kafka,source_connectors,1,Какво ограничение на „Source Connectors“ трябва да знаеш преди да го използваш в продукция?
+kafka,source_connectors,2,В система за събития трябва да приложиш „Source Connectors“. Какви настройки и проверки ще направиш първо?
+kafka,source_connectors,2,Дай практичен сценарий за „Source Connectors“ и обясни как ще провериш резултата.
+kafka,source_connectors,2,"Как ще обработиш нормалния неуспешен случай при „Source Connectors“, без да загубиш информация за събитието?"
+kafka,source_connectors,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Source Connectors“?"
+kafka,source_connectors,2,Как ще измериш дали „Source Connectors“ изпълнява очакваната гаранция за потока?
+kafka,source_connectors,3,Kafka поток около „Source Connectors“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,source_connectors,3,След промяна в „Source Connectors“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,source_connectors,3,Какъв граничен случай при „Source Connectors“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,source_connectors,3,"Две конфигурации за „Source Connectors“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,source_connectors,3,"Потребител получава неочакван резултат при „Source Connectors“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,source_connectors,4,"Проектираш продукционен Kafka поток с „Source Connectors“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,source_connectors,4,"Как ще проектираш „Source Connectors“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,source_connectors,4,"Сравни два подхода за „Source Connectors“ по коректност, оперативна сложност и възстановяване."
+kafka,source_connectors,4,"Какви инварианти, метрики и аларми ще заложиш около „Source Connectors“?"
+kafka,source_connectors,4,Как ще мигрираш съществуващ Kafka поток към „Source Connectors“ без да нарушиш договора с producer-и и consumer-и?
+kafka,source_connectors,5,"В продукция възниква инцидент свързан с „Source Connectors“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,source_connectors,5,Как ще въведеш нова схема или конфигурация за „Source Connectors“ с паралелна работа и безопасен rollback?
+kafka,source_connectors,5,При голямо натоварване „Source Connectors“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,source_connectors,5,"Как ще проектираш „Source Connectors“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,source_connectors,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Source Connectors“ запазва гаранциите си?"
+kafka,sink_connectors,1,Каква е основната роля на „Sink Connectors“ в Kafka? Дай кратък пример.
+kafka,sink_connectors,1,Кои два Kafka термина трябва да различаваш при „Sink Connectors“?
+kafka,sink_connectors,1,Как изглежда най-простият работещ пример с „Sink Connectors“ в Kafka поток?
+kafka,sink_connectors,1,Коя е честа грешка при използване на „Sink Connectors“ и как я избягваш?
+kafka,sink_connectors,1,Какво ограничение на „Sink Connectors“ трябва да знаеш преди да го използваш в продукция?
+kafka,sink_connectors,2,В система за събития трябва да приложиш „Sink Connectors“. Какви настройки и проверки ще направиш първо?
+kafka,sink_connectors,2,Дай практичен сценарий за „Sink Connectors“ и обясни как ще провериш резултата.
+kafka,sink_connectors,2,"Как ще обработиш нормалния неуспешен случай при „Sink Connectors“, без да загубиш информация за събитието?"
+kafka,sink_connectors,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Sink Connectors“?"
+kafka,sink_connectors,2,Как ще измериш дали „Sink Connectors“ изпълнява очакваната гаранция за потока?
+kafka,sink_connectors,3,Kafka поток около „Sink Connectors“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,sink_connectors,3,След промяна в „Sink Connectors“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,sink_connectors,3,Какъв граничен случай при „Sink Connectors“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,sink_connectors,3,"Две конфигурации за „Sink Connectors“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,sink_connectors,3,"Потребител получава неочакван резултат при „Sink Connectors“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,sink_connectors,4,"Проектираш продукционен Kafka поток с „Sink Connectors“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,sink_connectors,4,"Как ще проектираш „Sink Connectors“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,sink_connectors,4,"Сравни два подхода за „Sink Connectors“ по коректност, оперативна сложност и възстановяване."
+kafka,sink_connectors,4,"Какви инварианти, метрики и аларми ще заложиш около „Sink Connectors“?"
+kafka,sink_connectors,4,Как ще мигрираш съществуващ Kafka поток към „Sink Connectors“ без да нарушиш договора с producer-и и consumer-и?
+kafka,sink_connectors,5,"В продукция възниква инцидент свързан с „Sink Connectors“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,sink_connectors,5,Как ще въведеш нова схема или конфигурация за „Sink Connectors“ с паралелна работа и безопасен rollback?
+kafka,sink_connectors,5,При голямо натоварване „Sink Connectors“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,sink_connectors,5,"Как ще проектираш „Sink Connectors“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,sink_connectors,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Sink Connectors“ запазва гаранциите си?"
+kafka,change_data_capture,1,Каква е основната роля на „Change Data Capture“ в Kafka? Дай кратък пример.
+kafka,change_data_capture,1,Кои два Kafka термина трябва да различаваш при „Change Data Capture“?
+kafka,change_data_capture,1,Как изглежда най-простият работещ пример с „Change Data Capture“ в Kafka поток?
+kafka,change_data_capture,1,Коя е честа грешка при използване на „Change Data Capture“ и как я избягваш?
+kafka,change_data_capture,1,Какво ограничение на „Change Data Capture“ трябва да знаеш преди да го използваш в продукция?
+kafka,change_data_capture,2,В система за събития трябва да приложиш „Change Data Capture“. Какви настройки и проверки ще направиш първо?
+kafka,change_data_capture,2,Дай практичен сценарий за „Change Data Capture“ и обясни как ще провериш резултата.
+kafka,change_data_capture,2,"Как ще обработиш нормалния неуспешен случай при „Change Data Capture“, без да загубиш информация за събитието?"
+kafka,change_data_capture,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Change Data Capture“?"
+kafka,change_data_capture,2,Как ще измериш дали „Change Data Capture“ изпълнява очакваната гаранция за потока?
+kafka,change_data_capture,3,Kafka поток около „Change Data Capture“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,change_data_capture,3,След промяна в „Change Data Capture“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,change_data_capture,3,Какъв граничен случай при „Change Data Capture“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,change_data_capture,3,"Две конфигурации за „Change Data Capture“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,change_data_capture,3,"Потребител получава неочакван резултат при „Change Data Capture“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,change_data_capture,4,"Проектираш продукционен Kafka поток с „Change Data Capture“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,change_data_capture,4,"Как ще проектираш „Change Data Capture“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,change_data_capture,4,"Сравни два подхода за „Change Data Capture“ по коректност, оперативна сложност и възстановяване."
+kafka,change_data_capture,4,"Какви инварианти, метрики и аларми ще заложиш около „Change Data Capture“?"
+kafka,change_data_capture,4,Как ще мигрираш съществуващ Kafka поток към „Change Data Capture“ без да нарушиш договора с producer-и и consumer-и?
+kafka,change_data_capture,5,"В продукция възниква инцидент свързан с „Change Data Capture“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,change_data_capture,5,Как ще въведеш нова схема или конфигурация за „Change Data Capture“ с паралелна работа и безопасен rollback?
+kafka,change_data_capture,5,При голямо натоварване „Change Data Capture“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,change_data_capture,5,"Как ще проектираш „Change Data Capture“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,change_data_capture,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Change Data Capture“ запазва гаранциите си?"
+kafka,kafka_streams,1,Каква е основната роля на „Kafka Streams“ в Kafka? Дай кратък пример.
+kafka,kafka_streams,1,Кои два Kafka термина трябва да различаваш при „Kafka Streams“?
+kafka,kafka_streams,1,Как изглежда най-простият работещ пример с „Kafka Streams“ в Kafka поток?
+kafka,kafka_streams,1,Коя е честа грешка при използване на „Kafka Streams“ и как я избягваш?
+kafka,kafka_streams,1,Какво ограничение на „Kafka Streams“ трябва да знаеш преди да го използваш в продукция?
+kafka,kafka_streams,2,В система за събития трябва да приложиш „Kafka Streams“. Какви настройки и проверки ще направиш първо?
+kafka,kafka_streams,2,Дай практичен сценарий за „Kafka Streams“ и обясни как ще провериш резултата.
+kafka,kafka_streams,2,"Как ще обработиш нормалния неуспешен случай при „Kafka Streams“, без да загубиш информация за събитието?"
+kafka,kafka_streams,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Kafka Streams“?"
+kafka,kafka_streams,2,Как ще измериш дали „Kafka Streams“ изпълнява очакваната гаранция за потока?
+kafka,kafka_streams,3,Kafka поток около „Kafka Streams“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,kafka_streams,3,След промяна в „Kafka Streams“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,kafka_streams,3,Какъв граничен случай при „Kafka Streams“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,kafka_streams,3,"Две конфигурации за „Kafka Streams“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,kafka_streams,3,"Потребител получава неочакван резултат при „Kafka Streams“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,kafka_streams,4,"Проектираш продукционен Kafka поток с „Kafka Streams“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,kafka_streams,4,"Как ще проектираш „Kafka Streams“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,kafka_streams,4,"Сравни два подхода за „Kafka Streams“ по коректност, оперативна сложност и възстановяване."
+kafka,kafka_streams,4,"Какви инварианти, метрики и аларми ще заложиш около „Kafka Streams“?"
+kafka,kafka_streams,4,Как ще мигрираш съществуващ Kafka поток към „Kafka Streams“ без да нарушиш договора с producer-и и consumer-и?
+kafka,kafka_streams,5,"В продукция възниква инцидент свързан с „Kafka Streams“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,kafka_streams,5,Как ще въведеш нова схема или конфигурация за „Kafka Streams“ с паралелна работа и безопасен rollback?
+kafka,kafka_streams,5,При голямо натоварване „Kafka Streams“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,kafka_streams,5,"Как ще проектираш „Kafka Streams“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,kafka_streams,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Kafka Streams“ запазва гаранциите си?"
+kafka,stream_tables,1,Каква е основната роля на „Stream Tables“ в Kafka? Дай кратък пример.
+kafka,stream_tables,1,Кои два Kafka термина трябва да различаваш при „Stream Tables“?
+kafka,stream_tables,1,Как изглежда най-простият работещ пример с „Stream Tables“ в Kafka поток?
+kafka,stream_tables,1,Коя е честа грешка при използване на „Stream Tables“ и как я избягваш?
+kafka,stream_tables,1,Какво ограничение на „Stream Tables“ трябва да знаеш преди да го използваш в продукция?
+kafka,stream_tables,2,В система за събития трябва да приложиш „Stream Tables“. Какви настройки и проверки ще направиш първо?
+kafka,stream_tables,2,Дай практичен сценарий за „Stream Tables“ и обясни как ще провериш резултата.
+kafka,stream_tables,2,"Как ще обработиш нормалния неуспешен случай при „Stream Tables“, без да загубиш информация за събитието?"
+kafka,stream_tables,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Stream Tables“?"
+kafka,stream_tables,2,Как ще измериш дали „Stream Tables“ изпълнява очакваната гаранция за потока?
+kafka,stream_tables,3,Kafka поток около „Stream Tables“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,stream_tables,3,След промяна в „Stream Tables“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,stream_tables,3,Какъв граничен случай при „Stream Tables“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,stream_tables,3,"Две конфигурации за „Stream Tables“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,stream_tables,3,"Потребител получава неочакван резултат при „Stream Tables“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,stream_tables,4,"Проектираш продукционен Kafka поток с „Stream Tables“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,stream_tables,4,"Как ще проектираш „Stream Tables“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,stream_tables,4,"Сравни два подхода за „Stream Tables“ по коректност, оперативна сложност и възстановяване."
+kafka,stream_tables,4,"Какви инварианти, метрики и аларми ще заложиш около „Stream Tables“?"
+kafka,stream_tables,4,Как ще мигрираш съществуващ Kafka поток към „Stream Tables“ без да нарушиш договора с producer-и и consumer-и?
+kafka,stream_tables,5,"В продукция възниква инцидент свързан с „Stream Tables“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,stream_tables,5,Как ще въведеш нова схема или конфигурация за „Stream Tables“ с паралелна работа и безопасен rollback?
+kafka,stream_tables,5,При голямо натоварване „Stream Tables“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,stream_tables,5,"Как ще проектираш „Stream Tables“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,stream_tables,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Stream Tables“ запазва гаранциите си?"
+kafka,windowed_processing,1,Каква е основната роля на „Windowed Processing“ в Kafka? Дай кратък пример.
+kafka,windowed_processing,1,Кои два Kafka термина трябва да различаваш при „Windowed Processing“?
+kafka,windowed_processing,1,Как изглежда най-простият работещ пример с „Windowed Processing“ в Kafka поток?
+kafka,windowed_processing,1,Коя е честа грешка при използване на „Windowed Processing“ и как я избягваш?
+kafka,windowed_processing,1,Какво ограничение на „Windowed Processing“ трябва да знаеш преди да го използваш в продукция?
+kafka,windowed_processing,2,В система за събития трябва да приложиш „Windowed Processing“. Какви настройки и проверки ще направиш първо?
+kafka,windowed_processing,2,Дай практичен сценарий за „Windowed Processing“ и обясни как ще провериш резултата.
+kafka,windowed_processing,2,"Как ще обработиш нормалния неуспешен случай при „Windowed Processing“, без да загубиш информация за събитието?"
+kafka,windowed_processing,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Windowed Processing“?"
+kafka,windowed_processing,2,Как ще измериш дали „Windowed Processing“ изпълнява очакваната гаранция за потока?
+kafka,windowed_processing,3,Kafka поток около „Windowed Processing“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,windowed_processing,3,След промяна в „Windowed Processing“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,windowed_processing,3,Какъв граничен случай при „Windowed Processing“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,windowed_processing,3,"Две конфигурации за „Windowed Processing“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,windowed_processing,3,"Потребител получава неочакван резултат при „Windowed Processing“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,windowed_processing,4,"Проектираш продукционен Kafka поток с „Windowed Processing“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,windowed_processing,4,"Как ще проектираш „Windowed Processing“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,windowed_processing,4,"Сравни два подхода за „Windowed Processing“ по коректност, оперативна сложност и възстановяване."
+kafka,windowed_processing,4,"Какви инварианти, метрики и аларми ще заложиш около „Windowed Processing“?"
+kafka,windowed_processing,4,Как ще мигрираш съществуващ Kafka поток към „Windowed Processing“ без да нарушиш договора с producer-и и consumer-и?
+kafka,windowed_processing,5,"В продукция възниква инцидент свързан с „Windowed Processing“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,windowed_processing,5,Как ще въведеш нова схема или конфигурация за „Windowed Processing“ с паралелна работа и безопасен rollback?
+kafka,windowed_processing,5,При голямо натоварване „Windowed Processing“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,windowed_processing,5,"Как ще проектираш „Windowed Processing“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,windowed_processing,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Windowed Processing“ запазва гаранциите си?"
+kafka,state_stores,1,Каква е основната роля на „State Stores“ в Kafka? Дай кратък пример.
+kafka,state_stores,1,Кои два Kafka термина трябва да различаваш при „State Stores“?
+kafka,state_stores,1,Как изглежда най-простият работещ пример с „State Stores“ в Kafka поток?
+kafka,state_stores,1,Коя е честа грешка при използване на „State Stores“ и как я избягваш?
+kafka,state_stores,1,Какво ограничение на „State Stores“ трябва да знаеш преди да го използваш в продукция?
+kafka,state_stores,2,В система за събития трябва да приложиш „State Stores“. Какви настройки и проверки ще направиш първо?
+kafka,state_stores,2,Дай практичен сценарий за „State Stores“ и обясни как ще провериш резултата.
+kafka,state_stores,2,"Как ще обработиш нормалния неуспешен случай при „State Stores“, без да загубиш информация за събитието?"
+kafka,state_stores,2,"Как ще избереш topic, partition и consumer поведение когато използваш „State Stores“?"
+kafka,state_stores,2,Как ще измериш дали „State Stores“ изпълнява очакваната гаранция за потока?
+kafka,state_stores,3,Kafka поток около „State Stores“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,state_stores,3,След промяна в „State Stores“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,state_stores,3,Какъв граничен случай при „State Stores“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,state_stores,3,"Две конфигурации за „State Stores“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,state_stores,3,"Потребител получава неочакван резултат при „State Stores“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,state_stores,4,"Проектираш продукционен Kafka поток с „State Stores“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,state_stores,4,"Как ще проектираш „State Stores“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,state_stores,4,"Сравни два подхода за „State Stores“ по коректност, оперативна сложност и възстановяване."
+kafka,state_stores,4,"Какви инварианти, метрики и аларми ще заложиш около „State Stores“?"
+kafka,state_stores,4,Как ще мигрираш съществуващ Kafka поток към „State Stores“ без да нарушиш договора с producer-и и consumer-и?
+kafka,state_stores,5,"В продукция възниква инцидент свързан с „State Stores“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,state_stores,5,Как ще въведеш нова схема или конфигурация за „State Stores“ с паралелна работа и безопасен rollback?
+kafka,state_stores,5,При голямо натоварване „State Stores“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,state_stores,5,"Как ще проектираш „State Stores“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,state_stores,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „State Stores“ запазва гаранциите си?"
+kafka,event_time,1,Каква е основната роля на „Event Time“ в Kafka? Дай кратък пример.
+kafka,event_time,1,Кои два Kafka термина трябва да различаваш при „Event Time“?
+kafka,event_time,1,Как изглежда най-простият работещ пример с „Event Time“ в Kafka поток?
+kafka,event_time,1,Коя е честа грешка при използване на „Event Time“ и как я избягваш?
+kafka,event_time,1,Какво ограничение на „Event Time“ трябва да знаеш преди да го използваш в продукция?
+kafka,event_time,2,В система за събития трябва да приложиш „Event Time“. Какви настройки и проверки ще направиш първо?
+kafka,event_time,2,Дай практичен сценарий за „Event Time“ и обясни как ще провериш резултата.
+kafka,event_time,2,"Как ще обработиш нормалния неуспешен случай при „Event Time“, без да загубиш информация за събитието?"
+kafka,event_time,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Event Time“?"
+kafka,event_time,2,Как ще измериш дали „Event Time“ изпълнява очакваната гаранция за потока?
+kafka,event_time,3,Kafka поток около „Event Time“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,event_time,3,След промяна в „Event Time“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,event_time,3,Какъв граничен случай при „Event Time“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,event_time,3,"Две конфигурации за „Event Time“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,event_time,3,"Потребител получава неочакван резултат при „Event Time“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,event_time,4,"Проектираш продукционен Kafka поток с „Event Time“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,event_time,4,"Как ще проектираш „Event Time“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,event_time,4,"Сравни два подхода за „Event Time“ по коректност, оперативна сложност и възстановяване."
+kafka,event_time,4,"Какви инварианти, метрики и аларми ще заложиш около „Event Time“?"
+kafka,event_time,4,Как ще мигрираш съществуващ Kafka поток към „Event Time“ без да нарушиш договора с producer-и и consumer-и?
+kafka,event_time,5,"В продукция възниква инцидент свързан с „Event Time“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,event_time,5,Как ще въведеш нова схема или конфигурация за „Event Time“ с паралелна работа и безопасен rollback?
+kafka,event_time,5,При голямо натоварване „Event Time“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,event_time,5,"Как ще проектираш „Event Time“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,event_time,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Event Time“ запазва гаранциите си?"
+kafka,cross_cluster_replication,1,Каква е основната роля на „Cross Cluster Replication“ в Kafka? Дай кратък пример.
+kafka,cross_cluster_replication,1,Кои два Kafka термина трябва да различаваш при „Cross Cluster Replication“?
+kafka,cross_cluster_replication,1,Как изглежда най-простият работещ пример с „Cross Cluster Replication“ в Kafka поток?
+kafka,cross_cluster_replication,1,Коя е честа грешка при използване на „Cross Cluster Replication“ и как я избягваш?
+kafka,cross_cluster_replication,1,Какво ограничение на „Cross Cluster Replication“ трябва да знаеш преди да го използваш в продукция?
+kafka,cross_cluster_replication,2,В система за събития трябва да приложиш „Cross Cluster Replication“. Какви настройки и проверки ще направиш първо?
+kafka,cross_cluster_replication,2,Дай практичен сценарий за „Cross Cluster Replication“ и обясни как ще провериш резултата.
+kafka,cross_cluster_replication,2,"Как ще обработиш нормалния неуспешен случай при „Cross Cluster Replication“, без да загубиш информация за събитието?"
+kafka,cross_cluster_replication,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Cross Cluster Replication“?"
+kafka,cross_cluster_replication,2,Как ще измериш дали „Cross Cluster Replication“ изпълнява очакваната гаранция за потока?
+kafka,cross_cluster_replication,3,Kafka поток около „Cross Cluster Replication“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,cross_cluster_replication,3,След промяна в „Cross Cluster Replication“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,cross_cluster_replication,3,Какъв граничен случай при „Cross Cluster Replication“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,cross_cluster_replication,3,"Две конфигурации за „Cross Cluster Replication“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,cross_cluster_replication,3,"Потребител получава неочакван резултат при „Cross Cluster Replication“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,cross_cluster_replication,4,"Проектираш продукционен Kafka поток с „Cross Cluster Replication“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,cross_cluster_replication,4,"Как ще проектираш „Cross Cluster Replication“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,cross_cluster_replication,4,"Сравни два подхода за „Cross Cluster Replication“ по коректност, оперативна сложност и възстановяване."
+kafka,cross_cluster_replication,4,"Какви инварианти, метрики и аларми ще заложиш около „Cross Cluster Replication“?"
+kafka,cross_cluster_replication,4,Как ще мигрираш съществуващ Kafka поток към „Cross Cluster Replication“ без да нарушиш договора с producer-и и consumer-и?
+kafka,cross_cluster_replication,5,"В продукция възниква инцидент свързан с „Cross Cluster Replication“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,cross_cluster_replication,5,Как ще въведеш нова схема или конфигурация за „Cross Cluster Replication“ с паралелна работа и безопасен rollback?
+kafka,cross_cluster_replication,5,При голямо натоварване „Cross Cluster Replication“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,cross_cluster_replication,5,"Как ще проектираш „Cross Cluster Replication“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,cross_cluster_replication,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Cross Cluster Replication“ запазва гаранциите си?"
+kafka,authentication,1,Каква е основната роля на „Authentication“ в Kafka? Дай кратък пример.
+kafka,authentication,1,Кои два Kafka термина трябва да различаваш при „Authentication“?
+kafka,authentication,1,Как изглежда най-простият работещ пример с „Authentication“ в Kafka поток?
+kafka,authentication,1,Коя е честа грешка при използване на „Authentication“ и как я избягваш?
+kafka,authentication,1,Какво ограничение на „Authentication“ трябва да знаеш преди да го използваш в продукция?
+kafka,authentication,2,В система за събития трябва да приложиш „Authentication“. Какви настройки и проверки ще направиш първо?
+kafka,authentication,2,Дай практичен сценарий за „Authentication“ и обясни как ще провериш резултата.
+kafka,authentication,2,"Как ще обработиш нормалния неуспешен случай при „Authentication“, без да загубиш информация за събитието?"
+kafka,authentication,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Authentication“?"
+kafka,authentication,2,Как ще измериш дали „Authentication“ изпълнява очакваната гаранция за потока?
+kafka,authentication,3,Kafka поток около „Authentication“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,authentication,3,След промяна в „Authentication“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,authentication,3,Какъв граничен случай при „Authentication“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,authentication,3,"Две конфигурации за „Authentication“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,authentication,3,"Потребител получава неочакван резултат при „Authentication“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,authentication,4,"Проектираш продукционен Kafka поток с „Authentication“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,authentication,4,"Как ще проектираш „Authentication“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,authentication,4,"Сравни два подхода за „Authentication“ по коректност, оперативна сложност и възстановяване."
+kafka,authentication,4,"Какви инварианти, метрики и аларми ще заложиш около „Authentication“?"
+kafka,authentication,4,Как ще мигрираш съществуващ Kafka поток към „Authentication“ без да нарушиш договора с producer-и и consumer-и?
+kafka,authentication,5,"В продукция възниква инцидент свързан с „Authentication“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,authentication,5,Как ще въведеш нова схема или конфигурация за „Authentication“ с паралелна работа и безопасен rollback?
+kafka,authentication,5,При голямо натоварване „Authentication“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,authentication,5,"Как ще проектираш „Authentication“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,authentication,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Authentication“ запазва гаранциите си?"
+kafka,authorization,1,Каква е основната роля на „Authorization“ в Kafka? Дай кратък пример.
+kafka,authorization,1,Кои два Kafka термина трябва да различаваш при „Authorization“?
+kafka,authorization,1,Как изглежда най-простият работещ пример с „Authorization“ в Kafka поток?
+kafka,authorization,1,Коя е честа грешка при използване на „Authorization“ и как я избягваш?
+kafka,authorization,1,Какво ограничение на „Authorization“ трябва да знаеш преди да го използваш в продукция?
+kafka,authorization,2,В система за събития трябва да приложиш „Authorization“. Какви настройки и проверки ще направиш първо?
+kafka,authorization,2,Дай практичен сценарий за „Authorization“ и обясни как ще провериш резултата.
+kafka,authorization,2,"Как ще обработиш нормалния неуспешен случай при „Authorization“, без да загубиш информация за събитието?"
+kafka,authorization,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Authorization“?"
+kafka,authorization,2,Как ще измериш дали „Authorization“ изпълнява очакваната гаранция за потока?
+kafka,authorization,3,Kafka поток около „Authorization“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,authorization,3,След промяна в „Authorization“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,authorization,3,Какъв граничен случай при „Authorization“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,authorization,3,"Две конфигурации за „Authorization“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,authorization,3,"Потребител получава неочакван резултат при „Authorization“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,authorization,4,"Проектираш продукционен Kafka поток с „Authorization“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,authorization,4,"Как ще проектираш „Authorization“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,authorization,4,"Сравни два подхода за „Authorization“ по коректност, оперативна сложност и възстановяване."
+kafka,authorization,4,"Какви инварианти, метрики и аларми ще заложиш около „Authorization“?"
+kafka,authorization,4,Как ще мигрираш съществуващ Kafka поток към „Authorization“ без да нарушиш договора с producer-и и consumer-и?
+kafka,authorization,5,"В продукция възниква инцидент свързан с „Authorization“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,authorization,5,Как ще въведеш нова схема или конфигурация за „Authorization“ с паралелна работа и безопасен rollback?
+kafka,authorization,5,При голямо натоварване „Authorization“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,authorization,5,"Как ще проектираш „Authorization“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,authorization,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Authorization“ запазва гаранциите си?"
+kafka,encryption,1,Каква е основната роля на „Encryption“ в Kafka? Дай кратък пример.
+kafka,encryption,1,Кои два Kafka термина трябва да различаваш при „Encryption“?
+kafka,encryption,1,Как изглежда най-простият работещ пример с „Encryption“ в Kafka поток?
+kafka,encryption,1,Коя е честа грешка при използване на „Encryption“ и как я избягваш?
+kafka,encryption,1,Какво ограничение на „Encryption“ трябва да знаеш преди да го използваш в продукция?
+kafka,encryption,2,В система за събития трябва да приложиш „Encryption“. Какви настройки и проверки ще направиш първо?
+kafka,encryption,2,Дай практичен сценарий за „Encryption“ и обясни как ще провериш резултата.
+kafka,encryption,2,"Как ще обработиш нормалния неуспешен случай при „Encryption“, без да загубиш информация за събитието?"
+kafka,encryption,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Encryption“?"
+kafka,encryption,2,Как ще измериш дали „Encryption“ изпълнява очакваната гаранция за потока?
+kafka,encryption,3,Kafka поток около „Encryption“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,encryption,3,След промяна в „Encryption“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,encryption,3,Какъв граничен случай при „Encryption“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,encryption,3,"Две конфигурации за „Encryption“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,encryption,3,"Потребител получава неочакван резултат при „Encryption“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,encryption,4,"Проектираш продукционен Kafka поток с „Encryption“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,encryption,4,"Как ще проектираш „Encryption“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,encryption,4,"Сравни два подхода за „Encryption“ по коректност, оперативна сложност и възстановяване."
+kafka,encryption,4,"Какви инварианти, метрики и аларми ще заложиш около „Encryption“?"
+kafka,encryption,4,Как ще мигрираш съществуващ Kafka поток към „Encryption“ без да нарушиш договора с producer-и и consumer-и?
+kafka,encryption,5,"В продукция възниква инцидент свързан с „Encryption“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,encryption,5,Как ще въведеш нова схема или конфигурация за „Encryption“ с паралелна работа и безопасен rollback?
+kafka,encryption,5,При голямо натоварване „Encryption“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,encryption,5,"Как ще проектираш „Encryption“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,encryption,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Encryption“ запазва гаранциите си?"
+kafka,quotas,1,Каква е основната роля на „Quotas“ в Kafka? Дай кратък пример.
+kafka,quotas,1,Кои два Kafka термина трябва да различаваш при „Quotas“?
+kafka,quotas,1,Как изглежда най-простият работещ пример с „Quotas“ в Kafka поток?
+kafka,quotas,1,Коя е честа грешка при използване на „Quotas“ и как я избягваш?
+kafka,quotas,1,Какво ограничение на „Quotas“ трябва да знаеш преди да го използваш в продукция?
+kafka,quotas,2,В система за събития трябва да приложиш „Quotas“. Какви настройки и проверки ще направиш първо?
+kafka,quotas,2,Дай практичен сценарий за „Quotas“ и обясни как ще провериш резултата.
+kafka,quotas,2,"Как ще обработиш нормалния неуспешен случай при „Quotas“, без да загубиш информация за събитието?"
+kafka,quotas,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Quotas“?"
+kafka,quotas,2,Как ще измериш дали „Quotas“ изпълнява очакваната гаранция за потока?
+kafka,quotas,3,Kafka поток около „Quotas“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,quotas,3,След промяна в „Quotas“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,quotas,3,Какъв граничен случай при „Quotas“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,quotas,3,"Две конфигурации за „Quotas“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,quotas,3,"Потребител получава неочакван резултат при „Quotas“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,quotas,4,"Проектираш продукционен Kafka поток с „Quotas“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,quotas,4,"Как ще проектираш „Quotas“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,quotas,4,"Сравни два подхода за „Quotas“ по коректност, оперативна сложност и възстановяване."
+kafka,quotas,4,"Какви инварианти, метрики и аларми ще заложиш около „Quotas“?"
+kafka,quotas,4,Как ще мигрираш съществуващ Kafka поток към „Quotas“ без да нарушиш договора с producer-и и consumer-и?
+kafka,quotas,5,"В продукция възниква инцидент свързан с „Quotas“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,quotas,5,Как ще въведеш нова схема или конфигурация за „Quotas“ с паралелна работа и безопасен rollback?
+kafka,quotas,5,При голямо натоварване „Quotas“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,quotas,5,"Как ще проектираш „Quotas“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,quotas,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Quotas“ запазва гаранциите си?"
+kafka,monitoring,1,Каква е основната роля на „Monitoring“ в Kafka? Дай кратък пример.
+kafka,monitoring,1,Кои два Kafka термина трябва да различаваш при „Monitoring“?
+kafka,monitoring,1,Как изглежда най-простият работещ пример с „Monitoring“ в Kafka поток?
+kafka,monitoring,1,Коя е честа грешка при използване на „Monitoring“ и как я избягваш?
+kafka,monitoring,1,Какво ограничение на „Monitoring“ трябва да знаеш преди да го използваш в продукция?
+kafka,monitoring,2,В система за събития трябва да приложиш „Monitoring“. Какви настройки и проверки ще направиш първо?
+kafka,monitoring,2,Дай практичен сценарий за „Monitoring“ и обясни как ще провериш резултата.
+kafka,monitoring,2,"Как ще обработиш нормалния неуспешен случай при „Monitoring“, без да загубиш информация за събитието?"
+kafka,monitoring,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Monitoring“?"
+kafka,monitoring,2,Как ще измериш дали „Monitoring“ изпълнява очакваната гаранция за потока?
+kafka,monitoring,3,Kafka поток около „Monitoring“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,monitoring,3,След промяна в „Monitoring“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,monitoring,3,Какъв граничен случай при „Monitoring“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,monitoring,3,"Две конфигурации за „Monitoring“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,monitoring,3,"Потребител получава неочакван резултат при „Monitoring“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,monitoring,4,"Проектираш продукционен Kafka поток с „Monitoring“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,monitoring,4,"Как ще проектираш „Monitoring“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,monitoring,4,"Сравни два подхода за „Monitoring“ по коректност, оперативна сложност и възстановяване."
+kafka,monitoring,4,"Какви инварианти, метрики и аларми ще заложиш около „Monitoring“?"
+kafka,monitoring,4,Как ще мигрираш съществуващ Kafka поток към „Monitoring“ без да нарушиш договора с producer-и и consumer-и?
+kafka,monitoring,5,"В продукция възниква инцидент свързан с „Monitoring“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,monitoring,5,Как ще въведеш нова схема или конфигурация за „Monitoring“ с паралелна работа и безопасен rollback?
+kafka,monitoring,5,При голямо натоварване „Monitoring“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,monitoring,5,"Как ще проектираш „Monitoring“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,monitoring,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Monitoring“ запазва гаранциите си?"
+kafka,capacity_planning,1,Каква е основната роля на „Capacity Planning“ в Kafka? Дай кратък пример.
+kafka,capacity_planning,1,Кои два Kafka термина трябва да различаваш при „Capacity Planning“?
+kafka,capacity_planning,1,Как изглежда най-простият работещ пример с „Capacity Planning“ в Kafka поток?
+kafka,capacity_planning,1,Коя е честа грешка при използване на „Capacity Planning“ и как я избягваш?
+kafka,capacity_planning,1,Какво ограничение на „Capacity Planning“ трябва да знаеш преди да го използваш в продукция?
+kafka,capacity_planning,2,В система за събития трябва да приложиш „Capacity Planning“. Какви настройки и проверки ще направиш първо?
+kafka,capacity_planning,2,Дай практичен сценарий за „Capacity Planning“ и обясни как ще провериш резултата.
+kafka,capacity_planning,2,"Как ще обработиш нормалния неуспешен случай при „Capacity Planning“, без да загубиш информация за събитието?"
+kafka,capacity_planning,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Capacity Planning“?"
+kafka,capacity_planning,2,Как ще измериш дали „Capacity Planning“ изпълнява очакваната гаранция за потока?
+kafka,capacity_planning,3,Kafka поток около „Capacity Planning“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,capacity_planning,3,След промяна в „Capacity Planning“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,capacity_planning,3,Какъв граничен случай при „Capacity Planning“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,capacity_planning,3,"Две конфигурации за „Capacity Planning“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,capacity_planning,3,"Потребител получава неочакван резултат при „Capacity Planning“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,capacity_planning,4,"Проектираш продукционен Kafka поток с „Capacity Planning“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,capacity_planning,4,"Как ще проектираш „Capacity Planning“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,capacity_planning,4,"Сравни два подхода за „Capacity Planning“ по коректност, оперативна сложност и възстановяване."
+kafka,capacity_planning,4,"Какви инварианти, метрики и аларми ще заложиш около „Capacity Planning“?"
+kafka,capacity_planning,4,Как ще мигрираш съществуващ Kafka поток към „Capacity Planning“ без да нарушиш договора с producer-и и consumer-и?
+kafka,capacity_planning,5,"В продукция възниква инцидент свързан с „Capacity Planning“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,capacity_planning,5,Как ще въведеш нова схема или конфигурация за „Capacity Planning“ с паралелна работа и безопасен rollback?
+kafka,capacity_planning,5,При голямо натоварване „Capacity Planning“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,capacity_planning,5,"Как ще проектираш „Capacity Planning“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,capacity_planning,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Capacity Planning“ запазва гаранциите си?"
+kafka,partition_reassignment,1,Каква е основната роля на „Partition Reassignment“ в Kafka? Дай кратък пример.
+kafka,partition_reassignment,1,Кои два Kafka термина трябва да различаваш при „Partition Reassignment“?
+kafka,partition_reassignment,1,Как изглежда най-простият работещ пример с „Partition Reassignment“ в Kafka поток?
+kafka,partition_reassignment,1,Коя е честа грешка при използване на „Partition Reassignment“ и как я избягваш?
+kafka,partition_reassignment,1,Какво ограничение на „Partition Reassignment“ трябва да знаеш преди да го използваш в продукция?
+kafka,partition_reassignment,2,В система за събития трябва да приложиш „Partition Reassignment“. Какви настройки и проверки ще направиш първо?
+kafka,partition_reassignment,2,Дай практичен сценарий за „Partition Reassignment“ и обясни как ще провериш резултата.
+kafka,partition_reassignment,2,"Как ще обработиш нормалния неуспешен случай при „Partition Reassignment“, без да загубиш информация за събитието?"
+kafka,partition_reassignment,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Partition Reassignment“?"
+kafka,partition_reassignment,2,Как ще измериш дали „Partition Reassignment“ изпълнява очакваната гаранция за потока?
+kafka,partition_reassignment,3,Kafka поток около „Partition Reassignment“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,partition_reassignment,3,След промяна в „Partition Reassignment“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,partition_reassignment,3,Какъв граничен случай при „Partition Reassignment“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,partition_reassignment,3,"Две конфигурации за „Partition Reassignment“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,partition_reassignment,3,"Потребител получава неочакван резултат при „Partition Reassignment“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,partition_reassignment,4,"Проектираш продукционен Kafka поток с „Partition Reassignment“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,partition_reassignment,4,"Как ще проектираш „Partition Reassignment“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,partition_reassignment,4,"Сравни два подхода за „Partition Reassignment“ по коректност, оперативна сложност и възстановяване."
+kafka,partition_reassignment,4,"Какви инварианти, метрики и аларми ще заложиш около „Partition Reassignment“?"
+kafka,partition_reassignment,4,Как ще мигрираш съществуващ Kafka поток към „Partition Reassignment“ без да нарушиш договора с producer-и и consumer-и?
+kafka,partition_reassignment,5,"В продукция възниква инцидент свързан с „Partition Reassignment“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,partition_reassignment,5,Как ще въведеш нова схема или конфигурация за „Partition Reassignment“ с паралелна работа и безопасен rollback?
+kafka,partition_reassignment,5,При голямо натоварване „Partition Reassignment“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,partition_reassignment,5,"Как ще проектираш „Partition Reassignment“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,partition_reassignment,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Partition Reassignment“ запазва гаранциите си?"
+kafka,rolling_upgrades,1,Каква е основната роля на „Rolling Upgrades“ в Kafka? Дай кратък пример.
+kafka,rolling_upgrades,1,Кои два Kafka термина трябва да различаваш при „Rolling Upgrades“?
+kafka,rolling_upgrades,1,Как изглежда най-простият работещ пример с „Rolling Upgrades“ в Kafka поток?
+kafka,rolling_upgrades,1,Коя е честа грешка при използване на „Rolling Upgrades“ и как я избягваш?
+kafka,rolling_upgrades,1,Какво ограничение на „Rolling Upgrades“ трябва да знаеш преди да го използваш в продукция?
+kafka,rolling_upgrades,2,В система за събития трябва да приложиш „Rolling Upgrades“. Какви настройки и проверки ще направиш първо?
+kafka,rolling_upgrades,2,Дай практичен сценарий за „Rolling Upgrades“ и обясни как ще провериш резултата.
+kafka,rolling_upgrades,2,"Как ще обработиш нормалния неуспешен случай при „Rolling Upgrades“, без да загубиш информация за събитието?"
+kafka,rolling_upgrades,2,"Как ще избереш topic, partition и consumer поведение когато използваш „Rolling Upgrades“?"
+kafka,rolling_upgrades,2,Как ще измериш дали „Rolling Upgrades“ изпълнява очакваната гаранция за потока?
+kafka,rolling_upgrades,3,Kafka поток около „Rolling Upgrades“ работи при малък товар но се проваля при конкуренция. Как ще възпроизведеш и разследваш проблема?
+kafka,rolling_upgrades,3,След промяна в „Rolling Upgrades“ latency или consumer lag се влошава. Какви метрики ще сравниш?
+kafka,rolling_upgrades,3,Какъв граничен случай при „Rolling Upgrades“ може да доведе до дублиране или загуба на събитие и как ще го тестваш?
+kafka,rolling_upgrades,3,"Две конфигурации за „Rolling Upgrades“ изглеждат еквивалентни. Как ще сравниш ordering, throughput и поведение при отказ?"
+kafka,rolling_upgrades,3,"Потребител получава неочакван резултат при „Rolling Upgrades“. Как ще провериш producer, broker, consumer и offset състоянието?"
+kafka,rolling_upgrades,4,"Проектираш продукционен Kafka поток с „Rolling Upgrades“. Какви компромиси между ordering, throughput, latency и надеждност ще обсъдиш?"
+kafka,rolling_upgrades,4,"Как ще проектираш „Rolling Upgrades“ при рестарт на broker, мрежова грешка и повторно доставяне?"
+kafka,rolling_upgrades,4,"Сравни два подхода за „Rolling Upgrades“ по коректност, оперативна сложност и възстановяване."
+kafka,rolling_upgrades,4,"Какви инварианти, метрики и аларми ще заложиш около „Rolling Upgrades“?"
+kafka,rolling_upgrades,4,Как ще мигрираш съществуващ Kafka поток към „Rolling Upgrades“ без да нарушиш договора с producer-и и consumer-и?
+kafka,rolling_upgrades,5,"В продукция възниква инцидент свързан с „Rolling Upgrades“. Как ще ограничиш ефекта, докажеш причината и предотвратиш повторение?"
+kafka,rolling_upgrades,5,Как ще въведеш нова схема или конфигурация за „Rolling Upgrades“ с паралелна работа и безопасен rollback?
+kafka,rolling_upgrades,5,При голямо натоварване „Rolling Upgrades“ има tail latency или растящ lag. Как ще намериш тесния участък и ще избереш корекция?
+kafka,rolling_upgrades,5,"Как ще проектираш „Rolling Upgrades“ при отказ на broker, непълна репликация и възстановяване на потока?"
+kafka,rolling_upgrades,5,"Как ще докажеш с тестове и наблюдение, че критичен Kafka компонент с „Rolling Upgrades“ запазва гаранциите си?"
