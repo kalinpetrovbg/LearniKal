@@ -8,6 +8,7 @@ from pathlib import Path
 CSV_PATHS = [
     Path(__file__).resolve().parents[1] / "docs" / "python-questions.csv",
     Path(__file__).resolve().parents[1] / "docs" / "python-questions-extra.csv",
+    Path(__file__).resolve().parents[1] / "docs" / "python-questions-additional.csv",
 ]
 CATALOG_PATH = Path(__file__).resolve().parents[1] / "docs" / "subtopics-catalog.csv"
 DSN = os.getenv("LEARNIKAL_DATABASE_URL", "dbname=learnikal user=postgres")
@@ -26,8 +27,10 @@ def load_bank():
                     if row["topic_slug"] == "python"}
     expected_pairs = {(slug, difficulty) for slug in expected for difficulty in range(1, 6)}
     pairs = [(row["subtopic_slug"], int(row["difficulty"])) for row in rows]
-    if len(pairs) != len(expected_pairs) or set(pairs) != expected_pairs:
-        raise ValueError("Bank must contain one question per difficulty for every Python subtopic")
+    from collections import Counter
+    counts = Counter(pairs)
+    if set(counts) != expected_pairs or any(counts[pair] != 5 for pair in expected_pairs):
+        raise ValueError("Bank must contain five questions per difficulty for every Python subtopic")
     seen_texts = set()
     for row in rows:
         if not row["text"].strip():
