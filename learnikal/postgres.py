@@ -318,15 +318,52 @@ class PostgresStore:
                 user_id = self._user_id(conn, username=username)
                 rows = conn.execute(
                     """SELECT s.id, s.topic_id, t.slug AS topic_slug, t.name AS topic_name,
-                              s.slug, s.name, s.is_active, s.created_at, s.updated_at
+                              s.slug, s.name, s.is_active, s.created_at, s.updated_at,
+                              EXISTS (
+                                  SELECT 1 FROM questions candidate
+                                  WHERE candidate.subtopic_id = s.id
+                                    AND candidate.is_active = true AND candidate.difficulty = 2
+                                    AND NOT EXISTS (
+                                        SELECT 1 FROM answers previous
+                                        WHERE previous.question_id = candidate.id AND previous.user_id = %s
+                                    )
+                              ) AS has_unanswered
                        FROM user_topic_subscriptions uts
                        JOIN topics t ON t.id = uts.topic_id
                        JOIN subtopics s ON s.topic_id = t.id
                        WHERE uts.user_id = %s AND t.is_active = true AND s.is_active = true
+                         AND EXISTS (
+                             SELECT 1 FROM questions q
+                             WHERE q.subtopic_id = s.id AND q.is_active = true AND q.difficulty = 2
+                         )
                        ORDER BY t.id, s.id""",
-                    (user_id,),
+                    (user_id, user_id),
                 ).fetchall()
+                unanswered = [row for row in rows if row["has_unanswered"]]
+                if unanswered:
+                    rows = unanswered
                 return [self._subtopic(row) for row in rows]
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
+    def select_question(self, username: str | None, subtopic_id: int, difficulty: int) -> Question | None:
+        try:
+            with self._connect() as conn:
+                user_id = self._user_id(conn, username=username)
+                row = conn.execute(
+                    """SELECT q.id FROM questions q
+                       JOIN subtopics s ON s.id = q.subtopic_id AND s.is_active = true
+                       JOIN topics t ON t.id = q.topic_id AND t.is_active = true
+                       JOIN user_topic_subscriptions uts
+                         ON uts.topic_id = t.id AND uts.user_id = %s
+                       LEFT JOIN answers a ON a.question_id = q.id AND a.user_id = %s
+                       WHERE q.subtopic_id = %s AND q.difficulty = %s AND q.is_active = true
+                       GROUP BY q.id
+                       ORDER BY MAX(a.created_at) ASC NULLS FIRST, random()
+                       LIMIT 1""",
+                    (user_id, user_id, subtopic_id, difficulty),
+                ).fetchone()
+                return self._get_question(conn, row["id"]) if row else None
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
 

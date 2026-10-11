@@ -145,11 +145,27 @@ class FakeStore:
 
     def list_active_topic_subtopics(self, username=None):
         username = username or "kalin"
-        return [
+        eligible = [
             subtopic for subtopic in self.subtopics.values()
             if subtopic.is_active and self.topics[subtopic.topic_id].is_active
             and subtopic.topic_id in self.subscription_ids.get(username, set())
+            and any(question.subtopic_id == subtopic.id and question.is_active
+                    and question.difficulty == 2 for question in self.questions.values())
         ]
+        user_id = next((user.id for user in self.users.values() if user.username == username), 1)
+        unanswered = [subtopic for subtopic in eligible if any(
+            question.subtopic_id == subtopic.id and question.is_active and question.difficulty == 2
+            and not any(answer.user_id == user_id and answer.question_id == question.id
+                        for answer in self.answers.values())
+            for question in self.questions.values()
+        )]
+        return unanswered or eligible
+
+    def select_question(self, username, subtopic_id, difficulty):
+        username = username or "kalin"
+        return next((question for question in self.questions.values()
+                     if question.subtopic_id == subtopic_id and question.difficulty == difficulty
+                     and question.is_active and question.topic_id in self.subscription_ids.get(username, set())), None)
 
     def update_subtopic(self, subtopic_id, subtopic):
         old = self.subtopics.get(subtopic_id)
@@ -418,6 +434,10 @@ class ApiTests(unittest.TestCase):
             json={"topic_id": active_topic["id"], "slug": "indexes", "name": "Indexes"},
             headers=self.headers,
         ).json()
+        question = self.client.post("/questions", json={
+            "topic_id": active_topic["id"], "subtopic_id": eligible["id"],
+            "text": "How do indexes work?", "difficulty": 2,
+        }, headers=self.headers).json()
 
         self.store.subscription_ids["kalin"].add(active_topic["id"])
 
@@ -425,6 +445,8 @@ class ApiTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {
+            "question_id": question["id"],
+            "text": "How do indexes work?",
             "topic_id": active_topic["id"],
             "topic_name": "PostgreSQL",
             "subtopic_id": eligible["id"],
@@ -438,7 +460,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 409)
         self.assertEqual(
             response.json(),
-            {"detail": "No subscribed topics with active subtopics are available"},
+            {"detail": "No active questions are available for subscribed topics"},
         )
 
     def test_martin_only_sees_and_selects_subscribed_python(self):
@@ -449,8 +471,12 @@ class ApiTests(unittest.TestCase):
         python = self.client.post("/topics", json={"slug": "python", "name": "Python"}, headers=self.headers).json()
         kafka = self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers).json()
         for topic in (python, kafka):
-            self.client.post("/subtopics", json={
+            subtopic = self.client.post("/subtopics", json={
                 "topic_id": topic["id"], "slug": "basics", "name": "Basics",
+            }, headers=self.headers).json()
+            self.client.post("/questions", json={
+                "topic_id": topic["id"], "subtopic_id": subtopic["id"],
+                "text": f"Explain {topic['name']} basics", "difficulty": 2,
             }, headers=self.headers)
 
         self.assertEqual(self.client.get("/start?username=martin", headers=self.headers).json(),
@@ -464,8 +490,10 @@ class ApiTests(unittest.TestCase):
                 "topic_id": python["id"], "topic_name": "Python",
             }],
         })
-        self.assertEqual(self.client.post("/questions/next?username=martin", headers=self.headers)
-                         .json()["topic_id"], python["id"])
+        selected = self.client.post("/questions/next?username=martin", headers=self.headers).json()
+        self.assertEqual(selected["topic_id"], python["id"])
+        self.assertEqual(selected["text"], "Explain Python basics")
+        self.assertIsInstance(selected["question_id"], int)
         self.assertEqual(self.client.delete(
             f"/users/{martin['id']}/subscriptions/{python['id']}", headers=self.headers,
         ).status_code, 204)

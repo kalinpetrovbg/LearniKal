@@ -189,6 +189,8 @@ class Question(QuestionInput):
 
 
 class NextQuestionContext(BaseModel):
+    question_id: int
+    text: str
     topic_id: int
     topic_name: str
     subtopic_id: int

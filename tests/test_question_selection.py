@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 from learnikal.models import Subtopic
 from learnikal.question_selection import QuestionSelectionService
@@ -11,6 +12,9 @@ class Store:
 
     def list_active_topic_subtopics(self, username=None):
         return self.subtopics
+
+    def select_question(self, username, subtopic_id, difficulty):
+        return SimpleNamespace(id=1000 + subtopic_id, text=f"Question {subtopic_id}")
 
 
 def subtopic(topic_id, subtopic_id):
@@ -44,6 +48,7 @@ class QuestionSelectionTests(unittest.TestCase):
         self.assertEqual(populations[0], (1, 2))
         self.assertEqual([item.id for item in populations[1]], [21])
         self.assertEqual((selected.topic_id, selected.subtopic_id, selected.difficulty), (2, 21, 2))
+        self.assertEqual((selected.question_id, selected.text), (1021, "Question 21"))
 
     def test_rejects_invalid_initial_difficulty(self):
         with self.assertRaises(ValueError):

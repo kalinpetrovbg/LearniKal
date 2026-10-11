@@ -76,9 +76,13 @@ The flow from `/start` through random question selection, generation and evaluat
 
 Each question belongs to a topic and one of that topic's subtopics, has a difficulty from 1 to 5, and can be enabled or disabled with `is_active`. The list endpoint can filter by `topic_id`, `subtopic_id`, and `is_active`. Question text must be unique within a subtopic, ignoring letter case.
 
-`POST /questions/next?username=kalin` first selects one of that user's subscribed active topics uniformly, then selects one of its active subtopics uniformly. The username is optional and falls back to `LEARNIKAL_USERNAME`. It returns the selected IDs, names, and initial difficulty `2`. This keeps eligible topics equally likely even if they have different subtopic counts. It returns `409 Conflict` when the user has no subscribed topic with an active subtopic, or `404` when the username does not exist. The endpoint selects context only; it does not yet generate or persist question text.
+`POST /questions/next?username=kalin` selects one of that user's subscribed active topics with an active difficulty-2 question uniformly, then one of its eligible subtopics uniformly. It considers only subtopics with unanswered questions while any remain; after the bank is exhausted it picks the least recently answered question within the selected subtopic. The username is optional and falls back to `LEARNIKAL_USERNAME`. It returns `question_id`, `text`, topic/subtopic IDs and names, and difficulty `2`. It returns `409 Conflict` when no eligible question exists, or `404` when the username does not exist. It does not generate questions at request time.
+
+The initial [Python question bank](docs/python-questions.csv) has one curated difficulty-2 question for each of the 55 Python subtopics. The deployment workflow imports missing entries idempotently. Validate the CSV with `python deploy/import-python-questions.py --validate`; run without flags to preview a database import, or with `--apply` to insert missing questions. Existing questions and answer history are preserved.
 
 Answers can reference a question with `question_id`. When the question is valid and `subtopic_id` is omitted from the answer, the API takes the subtopic from the question. Deleting a question keeps its historical answers and clears their `question_id` reference.
+
+For the initial learning flow, Codex reviews the learner's reply in the chat and the resulting numeric ratings are submitted to the existing `POST /answers` endpoint with the selected `question_id` and Martin's `user_id`. Answer text is not stored. Automatic AI evaluation is not part of this version.
 
 ### Users
 

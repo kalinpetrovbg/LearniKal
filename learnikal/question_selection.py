@@ -40,7 +40,16 @@ class QuestionSelectionService:
         # regardless of how many subtopics it contains.
         topic_id = self.choice(tuple(sorted(by_topic)))
         subtopic = self.choice(tuple(by_topic[topic_id]))
+        question = self.store.select_question(
+            username=username,
+            subtopic_id=subtopic.id,
+            difficulty=self.initial_difficulty,
+        )
+        if question is None:
+            raise EmptyQuestionCatalogError
         return NextQuestionContext(
+            question_id=question.id,
+            text=question.text,
             topic_id=subtopic.topic_id,
             topic_name=subtopic.topic_name,
             subtopic_id=subtopic.id,
