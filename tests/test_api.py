@@ -177,23 +177,62 @@ class FakeStore:
     def list_subtopics(self):
         return list(self.subtopics.values())
 
-    def list_active_topic_subtopics(self, username=None):
+    def topic_rating_stats(self, username=None):
         username = username or "kalin"
+        user_id = next((user.id for user in self.users.values() if user.username == username), 1)
+        stats = {}
+        for topic in self.topics.values():
+            if not topic.is_active or topic.id not in self.subscription_ids.get(username, set()):
+                continue
+            latest = {}
+            for answer in self.answers.values():
+                question = self.questions.get(answer.question_id)
+                if (answer.user_id == user_id and question is not None and question.is_active
+                        and question.topic_id == topic.id):
+                    latest[question.id] = answer
+            stats[topic.id] = (
+                len(latest), sum(answer.score for answer in latest.values()) / len(latest) if latest else None
+            )
+        return stats
+
+    def list_active_topic_subtopics(self, username=None, difficulty_ranges=None):
+        username = username or "kalin"
+        difficulty_ranges = difficulty_ranges or {}
         eligible = [
             subtopic for subtopic in self.subtopics.values()
             if subtopic.is_active and self.topics[subtopic.topic_id].is_active
             and subtopic.topic_id in self.subscription_ids.get(username, set())
             and any(question.subtopic_id == subtopic.id and question.is_active
-                    and question.difficulty == 2 for question in self.questions.values())
+                    and (subtopic.topic_id in difficulty_ranges
+                         and difficulty_ranges[subtopic.topic_id][0] <= question.difficulty
+                         <= difficulty_ranges[subtopic.topic_id][1])
+                    for question in self.questions.values())
         ]
         user_id = next((user.id for user in self.users.values() if user.username == username), 1)
         unanswered = [subtopic for subtopic in eligible if any(
-            question.subtopic_id == subtopic.id and question.is_active and question.difficulty == 2
+            question.subtopic_id == subtopic.id and question.is_active
+            and difficulty_ranges[subtopic.topic_id][0] <= question.difficulty
+            <= difficulty_ranges[subtopic.topic_id][1]
             and not any(answer.user_id == user_id and answer.question_id == question.id
                         for answer in self.answers.values())
             for question in self.questions.values()
         )]
         return unanswered or eligible
+
+    def available_difficulties(self, username, subtopic_id, minimum, maximum):
+        username = username or "kalin"
+        subtopic = self.subtopics[subtopic_id]
+        if subtopic.topic_id not in self.subscription_ids.get(username, set()):
+            return []
+        user_id = next((user.id for user in self.users.values() if user.username == username), 1)
+        candidates = [question for question in self.questions.values()
+                      if question.subtopic_id == subtopic_id and question.is_active
+                      and minimum <= question.difficulty <= maximum]
+        unanswered = [question for question in candidates if not any(
+            answer.user_id == user_id and answer.question_id == question.id
+            for answer in self.answers.values()
+        )]
+        return sorted({question.difficulty for question in (unanswered or candidates)})
 
     def select_question(self, username, subtopic_id, difficulty):
         username = username or "kalin"
@@ -542,7 +581,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 409)
         self.assertEqual(
             response.json(),
-            {"detail": "No active questions are available for subscribed topics"},
+            {"detail": "No active questions are available at the allowed difficulty for subscribed topics"},
         )
 
     def test_martin_only_sees_and_selects_subscribed_python(self):

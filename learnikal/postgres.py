@@ -313,17 +313,61 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
 
-    def list_active_topic_subtopics(self, username: str | None = None) -> list[Subtopic]:
+    def topic_rating_stats(self, username: str | None = None) -> dict[int, tuple[int, float | None]]:
         try:
             with self._connect() as conn:
                 user_id = self._user_id(conn, username=username)
                 rows = conn.execute(
-                    """SELECT s.id, s.topic_id, t.slug AS topic_slug, t.name AS topic_name,
+                    """WITH latest AS (
+                           SELECT DISTINCT ON (a.question_id)
+                                  q.topic_id, a.question_id, a.score
+                           FROM answers a
+                           JOIN questions q ON q.id = a.question_id AND q.is_active = true
+                           WHERE a.user_id = %s
+                           ORDER BY a.question_id, a.created_at DESC, a.id DESC
+                       )
+                       SELECT t.id AS topic_id, COUNT(latest.question_id) AS rated_questions,
+                              AVG(latest.score) AS average_score
+                       FROM user_topic_subscriptions uts
+                       JOIN topics t ON t.id = uts.topic_id AND t.is_active = true
+                       LEFT JOIN latest ON latest.topic_id = t.id
+                       WHERE uts.user_id = %s
+                       GROUP BY t.id""",
+                    (user_id, user_id),
+                ).fetchall()
+                return {
+                    row["topic_id"]: (row["rated_questions"], row["average_score"])
+                    for row in rows
+                }
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
+    def list_active_topic_subtopics(
+        self, username: str | None = None,
+        difficulty_ranges: dict[int, tuple[int, int]] | None = None,
+    ) -> list[Subtopic]:
+        try:
+            with self._connect() as conn:
+                user_id = self._user_id(conn, username=username)
+                if not difficulty_ranges:
+                    return []
+                allowed_values = ", ".join("(%s, %s, %s)" for _ in difficulty_ranges)
+                params = [
+                    value for topic_id, (minimum, maximum) in sorted(difficulty_ranges.items())
+                    for value in (topic_id, minimum, maximum)
+                ]
+                rows = conn.execute(
+                    f"""WITH allowed(topic_id, min_difficulty, max_difficulty) AS (
+                           VALUES {allowed_values}
+                       )
+                       SELECT s.id, s.topic_id, t.slug AS topic_slug, t.name AS topic_name,
                               s.slug, s.name, s.is_active, s.created_at, s.updated_at,
                               EXISTS (
                                   SELECT 1 FROM questions candidate
                                   WHERE candidate.subtopic_id = s.id
-                                    AND candidate.is_active = true AND candidate.difficulty = 2
+                                    AND candidate.is_active = true
+                                    AND candidate.difficulty BETWEEN allowed.min_difficulty
+                                        AND allowed.max_difficulty
                                     AND NOT EXISTS (
                                         SELECT 1 FROM answers previous
                                         WHERE previous.question_id = candidate.id AND previous.user_id = %s
@@ -331,19 +375,47 @@ class PostgresStore:
                               ) AS has_unanswered
                        FROM user_topic_subscriptions uts
                        JOIN topics t ON t.id = uts.topic_id
+                       JOIN allowed ON allowed.topic_id = t.id
                        JOIN subtopics s ON s.topic_id = t.id
                        WHERE uts.user_id = %s AND t.is_active = true AND s.is_active = true
                          AND EXISTS (
                              SELECT 1 FROM questions q
-                             WHERE q.subtopic_id = s.id AND q.is_active = true AND q.difficulty = 2
+                             WHERE q.subtopic_id = s.id AND q.is_active = true
+                               AND q.difficulty BETWEEN allowed.min_difficulty
+                                   AND allowed.max_difficulty
                          )
                        ORDER BY t.id, s.id""",
-                    (user_id, user_id),
+                    (*params, user_id, user_id),
                 ).fetchall()
                 unanswered = [row for row in rows if row["has_unanswered"]]
                 if unanswered:
                     rows = unanswered
                 return [self._subtopic(row) for row in rows]
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
+    def available_difficulties(
+        self, username: str | None, subtopic_id: int, minimum: int, maximum: int
+    ) -> list[int]:
+        try:
+            with self._connect() as conn:
+                user_id = self._user_id(conn, username=username)
+                rows = conn.execute(
+                    """SELECT q.difficulty, BOOL_OR(a.id IS NULL) AS has_unanswered
+                       FROM questions q
+                       JOIN subtopics s ON s.id = q.subtopic_id AND s.is_active = true
+                       JOIN topics t ON t.id = q.topic_id AND t.is_active = true
+                       JOIN user_topic_subscriptions uts
+                         ON uts.topic_id = t.id AND uts.user_id = %s
+                       LEFT JOIN answers a ON a.question_id = q.id AND a.user_id = %s
+                       WHERE q.subtopic_id = %s AND q.is_active = true
+                         AND q.difficulty BETWEEN %s AND %s
+                       GROUP BY q.difficulty
+                       ORDER BY q.difficulty""",
+                    (user_id, user_id, subtopic_id, minimum, maximum),
+                ).fetchall()
+                unanswered = [row["difficulty"] for row in rows if row["has_unanswered"]]
+                return unanswered or [row["difficulty"] for row in rows]
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
 

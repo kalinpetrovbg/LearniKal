@@ -90,7 +90,7 @@ async def storage_error_handler(_request, _exc):
 async def empty_question_catalog_handler(_request, _exc):
     return JSONResponse(
         status_code=409,
-        content={"detail": "No active questions are available for subscribed topics"},
+        content={"detail": "No active questions are available at the allowed difficulty for subscribed topics"},
     )
 
 
