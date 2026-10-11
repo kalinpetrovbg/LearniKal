@@ -70,9 +70,12 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL connection failed") from exc
 
-    def _user_id(self, conn):
-        row = conn.execute("SELECT id FROM users WHERE username = %s", (self.username,)).fetchone()
+    def _user_id(self, conn, username: str | None = None):
+        requested_username = username or self.username
+        row = conn.execute("SELECT id FROM users WHERE username = %s", (requested_username,)).fetchone()
         if row is None:
+            if username is not None:
+                raise NotFoundError
             raise StorageError("Learning user is not initialized")
         return row["id"]
 
@@ -684,10 +687,10 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
 
-    def start(self) -> StartContext:
+    def start(self, username: str | None = None) -> StartContext:
         try:
             with self._connect() as conn:
-                user_id = self._user_id(conn)
+                user_id = self._user_id(conn, username=username)
                 instruction_rows = conn.execute(
                     '''SELECT text FROM instructions WHERE "type" = 'behavior' AND is_active = true
                        ORDER BY position, id'''

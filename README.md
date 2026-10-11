@@ -29,7 +29,7 @@ Production values are stored in `/etc/learnikal/learnikal.env` on EC2 and must n
 ### Health and learning context
 
 - `GET /health` checks the PostgreSQL connection.
-- `GET /start` returns active `behavior` instructions, the `knowledge` summary, and per-topic progress. It does not choose the next question; clients call `POST /questions/next` afterwards.
+- `GET /start?username=kalin` returns active `behavior` instructions, the `knowledge` summary, and per-topic progress for that user. The query parameter is optional for backward compatibility and falls back to `LEARNIKAL_USERNAME`. It does not choose the next question; clients call `POST /questions/next` afterwards.
 
 ### Answers
 

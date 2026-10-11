@@ -20,7 +20,8 @@ class FakeStore:
         self.users = {}
         self.instructions = {}
 
-    def start(self):
+    def start(self, username=None):
+        self.started_username = username
         return StartContext(
             instructions="Обучение на български.\nБез код по подразбиране.",
             knowledge_summary="Kafka е начална тема.",
@@ -354,6 +355,9 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Обучение на български", response.json()["instructions"])
         self.assertNotIn("suggested_technology", response.json())
+        named_response = self.client.get("/start?username=Martin", headers=self.headers)
+        self.assertEqual(named_response.status_code, 200)
+        self.assertEqual(self.store.started_username, "martin")
 
     def test_non_ascii_wrong_key_is_unauthorized(self):
         with self.assertRaises(Exception) as caught:

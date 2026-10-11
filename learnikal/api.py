@@ -94,8 +94,13 @@ def health(store: PostgresStore = Depends(get_store)) -> dict[str, str]:
 
 
 @app.get("/start", response_model=StartContext, dependencies=[Depends(require_api_key)])
-def start(store: PostgresStore = Depends(get_store)) -> StartContext:
-    return store.start()
+def start(
+    username: Annotated[str | None, Query(
+        min_length=3, max_length=40, pattern=r"^[A-Za-z][A-Za-z0-9_-]{2,39}$"
+    )] = None,
+    store: PostgresStore = Depends(get_store),
+) -> StartContext:
+    return store.start(username=username.lower() if username is not None else None)
 
 
 @app.post("/answers", response_model=Answer, status_code=status.HTTP_201_CREATED,
