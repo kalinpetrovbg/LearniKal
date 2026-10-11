@@ -749,6 +749,25 @@ class PostgresStore:
         except psycopg.Error as exc:
             raise StorageError("PostgreSQL read failed") from exc
 
+    def question_for_review(self, question_id: int, username: str | None = None) -> tuple[int, Question]:
+        try:
+            with self._connect() as conn:
+                user_id = self._user_id(conn, username=username)
+                subscribed = conn.execute(
+                    """SELECT 1 FROM questions q
+                       JOIN topics t ON t.id = q.topic_id AND t.is_active = true
+                       JOIN subtopics s ON s.id = q.subtopic_id AND s.is_active = true
+                       JOIN user_topic_subscriptions uts
+                         ON uts.topic_id = q.topic_id AND uts.user_id = %s
+                       WHERE q.id = %s AND q.is_active = true""",
+                    (user_id, question_id),
+                ).fetchone()
+                if subscribed is None:
+                    raise NotFoundError
+                return user_id, self._get_question(conn, question_id)
+        except psycopg.Error as exc:
+            raise StorageError("PostgreSQL read failed") from exc
+
     def subscribe_topic(self, user_id: int, topic_id: int) -> TopicSubscription:
         try:
             with self._connect() as conn:

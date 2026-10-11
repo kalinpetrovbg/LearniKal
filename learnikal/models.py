@@ -198,6 +198,23 @@ class NextQuestionContext(BaseModel):
     difficulty: int = Field(ge=1, le=5)
 
 
+class LearnerResponseInput(BaseModel):
+    text: str = Field(min_length=1, max_length=20000)
+    used_hint: bool = False
+
+    @field_validator("text")
+    @classmethod
+    def normalize_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Must contain non-whitespace text")
+        return value
+
+
+class ReviewRequest(BaseModel):
+    review_text: str
+
+
 InstructionType = Literal["behavior", "plan", "knowledge", "handoff", "history", "patterns"]
 
 

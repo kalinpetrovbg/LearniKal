@@ -13,6 +13,7 @@ from learnikal.postgres import (
 
 class FakeStore:
     def __init__(self):
+        self.username = "kalin"
         self.answers = {}
         self.topics = {}
         self.subtopics = {}
@@ -166,6 +167,19 @@ class FakeStore:
         return next((question for question in self.questions.values()
                      if question.subtopic_id == subtopic_id and question.difficulty == difficulty
                      and question.is_active and question.topic_id in self.subscription_ids.get(username, set())), None)
+
+    def question_for_review(self, question_id, username=None):
+        from learnikal.postgres import UserNotFoundError
+
+        username = username or self.username
+        user = next((item for item in self.users.values() if item.username == username), None)
+        if user is None:
+            raise UserNotFoundError
+        question = self.questions.get(question_id)
+        if (question is None or not question.is_active
+                or question.topic_id not in self.subscription_ids.get(username, set())):
+            raise NotFoundError
+        return user.id, question
 
     def update_subtopic(self, subtopic_id, subtopic):
         old = self.subtopics.get(subtopic_id)
@@ -499,6 +513,31 @@ class ApiTests(unittest.TestCase):
         ).status_code, 204)
         self.assertEqual(self.client.post("/questions/next?username=martin", headers=self.headers)
                          .status_code, 409)
+
+    def test_response_prepares_review_without_saving_answer(self):
+        martin = self.client.post("/users", json={
+            "username": "martin", "first_name": "Martin", "last_name": "Ivanov",
+            "email": "martin@example.com", "password": "test password",
+        }, headers=self.headers).json()
+        topic = self.client.post("/topics", json={"slug": "python", "name": "Python"},
+                                 headers=self.headers).json()
+        subtopic = self.client.post("/subtopics", json={
+            "topic_id": topic["id"], "slug": "decorators", "name": "Decorators",
+        }, headers=self.headers).json()
+        question = self.client.post("/questions", json={
+            "topic_id": topic["id"], "subtopic_id": subtopic["id"],
+            "text": "How do decorators preserve names?", "difficulty": 2,
+        }, headers=self.headers).json()
+        url = f"/questions/{question['id']}/response?username=martin"
+        payload = {"text": "Use functools.wraps and *args, **kwargs"}
+        self.assertEqual(self.client.post(url, json=payload, headers=self.headers).status_code, 404)
+        self.client.put(f"/users/{martin['id']}/subscriptions/{topic['id']}", headers=self.headers)
+        self.assertEqual(self.client.post(url, json=payload).status_code, 401)
+        response = self.client.post(url, json=payload, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(payload["text"], response.json()["review_text"])
+        self.assertIn(f"user_id={martin['id']}", response.json()["review_text"])
+        self.assertEqual(self.store.answers, {})
 
     def test_create_read_list_and_idempotent_retry(self):
         topic = self.client.post("/topics", json={"slug": "kafka", "name": "Kafka"}, headers=self.headers).json()

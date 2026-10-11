@@ -7,7 +7,8 @@ from fastapi.responses import JSONResponse
 
 from .models import (
     Answer, AnswerInput, AnswerPage, Instruction, InstructionInput, InstructionType,
-    InstructionUpdate, NextQuestionContext, Question, QuestionInput, QuestionUpdate, StartContext,
+    InstructionUpdate, LearnerResponseInput, NextQuestionContext, Question, QuestionInput,
+    QuestionUpdate, ReviewRequest, StartContext,
     Subtopic, SubtopicInput, SubtopicUpdate, Topic, TopicInput, TopicSubscription,
     TopicUpdate, User,
     UserInput, UserUpdate,
@@ -192,6 +193,29 @@ def next_question(
     store: PostgresStore = Depends(get_store),
 ) -> NextQuestionContext:
     return QuestionSelectionService(store).select(username=username.lower() if username else None)
+
+
+@app.post("/questions/{question_id}/response", response_model=ReviewRequest,
+          tags=["Questions"], dependencies=[Depends(require_api_key)])
+def prepare_response_for_review(
+    question_id: Annotated[int, Path(ge=1)],
+    payload: LearnerResponseInput,
+    username: Annotated[str | None, Query(
+        min_length=3, max_length=40, pattern=r"^[A-Za-z][A-Za-z0-9_-]{2,39}$"
+    )] = None,
+    store: PostgresStore = Depends(get_store),
+) -> ReviewRequest:
+    normalized_username = username.lower() if username else store.username
+    user_id, question = store.question_for_review(question_id, normalized_username)
+    return ReviewRequest(review_text=(
+        f"Оцени отговора на {normalized_username} за question_id={question.id} "
+        f"(user_id={user_id}, topic_id={question.topic_id}, "
+        f"subtopic_id={question.subtopic_id}, difficulty={question.difficulty}).\n"
+        f"Въпрос: {question.text}\n"
+        f"Отговор: {payload.text}\n"
+        f"Ползвана подсказка: {'да' if payload.used_hint else 'не'}.\n"
+        "Върни числовите оценки за POST /answers; не записвай текста на отговора."
+    ))
 
 
 @app.get("/questions/list", response_model=list[Question], tags=["Questions"],

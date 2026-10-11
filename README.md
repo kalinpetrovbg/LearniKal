@@ -70,6 +70,7 @@ The flow from `/start` through random question selection, generation and evaluat
 
 - `POST /questions`
 - `POST /questions/next`
+- `POST /questions/{question_id}/response`
 - `GET /questions/list`
 - `PATCH /questions/{question_id}`
 - `DELETE /questions/{question_id}`
@@ -82,7 +83,7 @@ The initial [Python question bank](docs/python-questions.csv) has one curated di
 
 Answers can reference a question with `question_id`. When the question is valid and `subtopic_id` is omitted from the answer, the API takes the subtopic from the question. Deleting a question keeps its historical answers and clears their `question_id` reference.
 
-For the initial learning flow, Codex reviews the learner's reply in the chat and the resulting numeric ratings are submitted to the existing `POST /answers` endpoint with the selected `question_id` and Martin's `user_id`. Answer text is not stored. Automatic AI evaluation is not part of this version.
+For the initial learning flow, the learner submits `{"text":"...","used_hint":false}` to `POST /questions/{question_id}/response?username=martin`. The endpoint checks the active question and topic subscription, then returns `review_text` to copy into this Codex chat. It does not persist the response or ratings. Codex reviews the pasted answer here and determines all numeric ratings; only those ratings are sent to the existing `POST /answers` endpoint with the selected `question_id` and Martin's `user_id`. Automatic evaluation inside the API is not part of this version.
 
 ### Users
 
