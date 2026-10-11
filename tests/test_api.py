@@ -550,7 +550,7 @@ class ApiTests(unittest.TestCase):
             "id": answer_id, "topic_id": topic["id"], "subtopic_id": subtopic["id"],
             "difficulty": 5, "score": 4,
             "independence_score": 4, "clarity_score": 5,
-            "completeness_score": 4, "confidence_score": 3,
+            "completeness_score": 4,
         }
         created = self.client.post("/answers", json=payload, headers=self.headers)
         self.assertEqual(created.status_code, 201)
@@ -573,7 +573,7 @@ class ApiTests(unittest.TestCase):
         payload = {
             "topic_id": topic["id"], "score": 5, "difficulty": 2,
             "independence_score": 5, "clarity_score": 4,
-            "completeness_score": 4, "confidence_score": 3,
+            "completeness_score": 4,
         }
         created = self.client.post("/answers", json=payload, headers=self.headers)
         self.assertEqual(created.status_code, 201)
@@ -660,7 +660,7 @@ class ApiTests(unittest.TestCase):
             json={
                 "topic_id": used["id"], "score": 3, "difficulty": 2,
                 "independence_score": 3, "clarity_score": 3,
-                "completeness_score": 3, "confidence_score": 3,
+                "completeness_score": 3,
             },
             headers=self.headers,
         )
@@ -787,7 +787,7 @@ class ApiTests(unittest.TestCase):
             json={
                 "topic_id": topic["id"], "question_id": question["id"],
                 "score": 4, "difficulty": 4, "independence_score": 4,
-                "clarity_score": 4, "completeness_score": 4, "confidence_score": 3,
+                "clarity_score": 4, "completeness_score": 4,
             },
             headers=self.headers,
         )
@@ -900,11 +900,10 @@ class ApiTests(unittest.TestCase):
         payload = {
             "topic_id": 1, "score": 4, "difficulty": 3,
             "independence_score": 4, "clarity_score": 4,
-            "completeness_score": 4, "confidence_score": 4,
+            "completeness_score": 4,
         }
         self.assertEqual(self.client.post("/answers", json={**payload, "score": 6}, headers=self.headers).status_code, 422)
         self.assertEqual(self.client.post("/answers", json={**payload, "difficulty": 6}, headers=self.headers).status_code, 422)
-        self.assertEqual(self.client.post("/answers", json={**payload, "confidence_score": 0}, headers=self.headers).status_code, 422)
         self.assertEqual(self.client.get("/answers/999", headers=self.headers).status_code, 404)
 
 

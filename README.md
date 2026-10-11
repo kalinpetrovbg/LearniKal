@@ -41,7 +41,7 @@ If the supplied username does not exist, the endpoint returns `404` with `{"deta
 - `GET /answers/list` lists answers for the configured learning user. Results can be filtered by `topic_id` and `subtopic_id` and paginated with `limit` and `cursor`.
 - `GET /answers/{answer_id}` returns one answer belonging to the configured learning user.
 
-An answer records its topic and optional subtopic and question, plus score, difficulty, independence, clarity, completeness, and confidence values. Supplying an existing answer `id` with identical data is treated as an idempotent retry; different data returns `409 Conflict`.
+An answer records its topic and optional subtopic and question, plus score, difficulty, independence, clarity, and completeness values. Supplying an existing answer `id` with identical data is treated as an idempotent retry; different data returns `409 Conflict`.
 
 ### Topics and subtopics
 

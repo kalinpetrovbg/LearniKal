@@ -144,9 +144,9 @@ def migrate(conn, documents, entries, username):
         conn.execute(
             """INSERT INTO answers
                (user_id, topic_id, question_id, score, difficulty, independence_score,
-                clarity_score, completeness_score, confidence_score, created_at)
-               VALUES (%s, %s, NULL, %s, %s, %s, %s, %s, %s, %s)""",
-            (user_id, topic_ids[entry.technology], score, difficulty, metric, metric, metric, metric, entry.created_at),
+                clarity_score, completeness_score, created_at)
+               VALUES (%s, %s, NULL, %s, %s, %s, %s, %s, %s)""",
+            (user_id, topic_ids[entry.technology], score, difficulty, metric, metric, metric, entry.created_at),
         )
 
     for name, content in documents.items():

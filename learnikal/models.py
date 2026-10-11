@@ -15,7 +15,6 @@ class AnswerInput(BaseModel):
     independence_score: int = Field(ge=1, le=5)
     clarity_score: int = Field(ge=1, le=5)
     completeness_score: int = Field(ge=1, le=5)
-    confidence_score: int = Field(ge=1, le=5)
 
 
 class Answer(AnswerInput):

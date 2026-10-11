@@ -122,7 +122,6 @@ CREATE TABLE IF NOT EXISTS answers (
     independence_score smallint NOT NULL CHECK (independence_score BETWEEN 1 AND 5),
     clarity_score smallint NOT NULL CHECK (clarity_score BETWEEN 1 AND 5),
     completeness_score smallint NOT NULL CHECK (completeness_score BETWEEN 1 AND 5),
-    confidence_score smallint NOT NULL CHECK (confidence_score BETWEEN 1 AND 5),
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
     CHECK (subtopic_id IS NULL OR topic_id IS NOT NULL)

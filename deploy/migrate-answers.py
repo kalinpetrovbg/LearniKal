@@ -76,7 +76,6 @@ def main() -> None:
                    independence_score smallint NOT NULL CHECK (independence_score BETWEEN 1 AND 5),
                    clarity_score smallint NOT NULL CHECK (clarity_score BETWEEN 1 AND 5),
                    completeness_score smallint NOT NULL CHECK (completeness_score BETWEEN 1 AND 5),
-                   confidence_score smallint NOT NULL CHECK (confidence_score BETWEEN 1 AND 5),
                    created_at timestamptz NOT NULL DEFAULT now(),
                    updated_at timestamptz NOT NULL DEFAULT now()
                )"""
@@ -84,6 +83,7 @@ def main() -> None:
 
         if table_exists(conn, "answers"):
             conn.execute("LOCK TABLE answers IN ACCESS EXCLUSIVE MODE")
+            conn.execute("ALTER TABLE answers DROP COLUMN IF EXISTS confidence_score")
 
         conn.execute(
             """DO $$
@@ -109,7 +109,6 @@ def main() -> None:
             "ALTER TABLE answers ADD COLUMN IF NOT EXISTS independence_score smallint",
             "ALTER TABLE answers ADD COLUMN IF NOT EXISTS clarity_score smallint",
             "ALTER TABLE answers ADD COLUMN IF NOT EXISTS completeness_score smallint",
-            "ALTER TABLE answers ADD COLUMN IF NOT EXISTS confidence_score smallint",
         ]:
             conn.execute(ddl)
 
@@ -137,33 +136,29 @@ def main() -> None:
             """UPDATE answers SET
                    independence_score = COALESCE(independence_score, GREATEST(1, LEAST(5, COALESCE(NULLIF(score, 0), 3)))),
                    clarity_score = COALESCE(clarity_score, GREATEST(1, LEAST(5, COALESCE(NULLIF(score, 0), 3)))),
-                   completeness_score = COALESCE(completeness_score, GREATEST(1, LEAST(5, COALESCE(NULLIF(score, 0), 3)))),
-                   confidence_score = COALESCE(confidence_score, GREATEST(1, LEAST(5, COALESCE(NULLIF(score, 0), 3))))"""
+                   completeness_score = COALESCE(completeness_score, GREATEST(1, LEAST(5, COALESCE(NULLIF(score, 0), 3))))"""
         )
         conn.execute(
             """UPDATE answers SET
                    independence_score = 3,
                    clarity_score = 3,
-                   completeness_score = 3,
-                   confidence_score = 3
+                   completeness_score = 3
                WHERE question_id IS NULL
                  AND subtopic_id IS NULL
                  AND score = 0
                  AND independence_score = 5
                  AND clarity_score = 5
-                 AND completeness_score = 5
-                 AND confidence_score = 5"""
+                 AND completeness_score = 5"""
         )
         conn.execute(
             """UPDATE answers SET
                    independence_score = COALESCE(independence_score, 3),
                    clarity_score = COALESCE(clarity_score, 3),
-                   completeness_score = COALESCE(completeness_score, 3),
-                   confidence_score = COALESCE(confidence_score, 3)"""
+                   completeness_score = COALESCE(completeness_score, 3)"""
         )
         conn.execute("UPDATE answers SET updated_at = COALESCE(updated_at, created_at, now())")
 
-        for column in ["score", "difficulty", "independence_score", "clarity_score", "completeness_score", "confidence_score", "updated_at"]:
+        for column in ["score", "difficulty", "independence_score", "clarity_score", "completeness_score", "updated_at"]:
             conn.execute(f"ALTER TABLE answers ALTER COLUMN {column} SET NOT NULL")
 
         for column in ["question", "answer", "evaluation", "next_question"]:
@@ -176,7 +171,6 @@ def main() -> None:
         ensure_constraint(conn, "answers_independence_score_check", "ALTER TABLE answers ADD CONSTRAINT answers_independence_score_check CHECK (independence_score BETWEEN 1 AND 5)")
         ensure_constraint(conn, "answers_clarity_score_check", "ALTER TABLE answers ADD CONSTRAINT answers_clarity_score_check CHECK (clarity_score BETWEEN 1 AND 5)")
         ensure_constraint(conn, "answers_completeness_score_check", "ALTER TABLE answers ADD CONSTRAINT answers_completeness_score_check CHECK (completeness_score BETWEEN 1 AND 5)")
-        ensure_constraint(conn, "answers_confidence_score_check", "ALTER TABLE answers ADD CONSTRAINT answers_confidence_score_check CHECK (confidence_score BETWEEN 1 AND 5)")
         ensure_constraint(conn, "answers_subtopic_id_fkey", "ALTER TABLE answers ADD CONSTRAINT answers_subtopic_id_fkey FOREIGN KEY (subtopic_id) REFERENCES subtopics(id) ON DELETE SET NULL")
 
         conn.execute("DROP INDEX IF EXISTS learning_entries_user_topic_recent")

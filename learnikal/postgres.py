@@ -88,7 +88,7 @@ class PostgresStore:
             subtopic_id=row["subtopic_id"], question_id=row["question_id"],
             score=row["score"], difficulty=row["difficulty"],
             independence_score=row["independence_score"], clarity_score=row["clarity_score"],
-            completeness_score=row["completeness_score"], confidence_score=row["confidence_score"],
+            completeness_score=row["completeness_score"],
             created_at=row["created_at"], updated_at=row["updated_at"],
         )
 
@@ -178,14 +178,14 @@ class PostgresStore:
                 values = (
                     user_id, topic_id, subtopic_id, answer.question_id,
                     answer.score, answer.difficulty, answer.independence_score,
-                    answer.clarity_score, answer.completeness_score, answer.confidence_score,
+                    answer.clarity_score, answer.completeness_score,
                 )
                 if answer.id:
                     inserted = conn.execute(
                         """INSERT INTO answers
                            (id, user_id, topic_id, subtopic_id, question_id, score, difficulty,
-                            independence_score, clarity_score, completeness_score, confidence_score)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            independence_score, clarity_score, completeness_score)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                            ON CONFLICT (id) DO NOTHING RETURNING id""",
                         (answer.id, *values),
                     ).fetchone()
@@ -193,8 +193,8 @@ class PostgresStore:
                     inserted = conn.execute(
                         """INSERT INTO answers
                            (user_id, topic_id, subtopic_id, question_id, score, difficulty,
-                            independence_score, clarity_score, completeness_score, confidence_score)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            independence_score, clarity_score, completeness_score)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                            RETURNING id""",
                         values,
                     ).fetchone()
@@ -686,7 +686,7 @@ class PostgresStore:
     def _get_answer(self, conn, user_id, answer_id):
         row = conn.execute(
             """SELECT id, user_id, topic_id, subtopic_id, question_id, score, difficulty,
-                      independence_score, clarity_score, completeness_score, confidence_score,
+                      independence_score, clarity_score, completeness_score,
                       created_at, updated_at
                FROM answers WHERE id = %s AND user_id = %s""",
             (answer_id, user_id),
@@ -716,7 +716,7 @@ class PostgresStore:
                 params.extend([limit + 1, cursor])
                 rows = conn.execute(
                     f"""SELECT id, user_id, topic_id, subtopic_id, question_id, score, difficulty,
-                               independence_score, clarity_score, completeness_score, confidence_score,
+                               independence_score, clarity_score, completeness_score,
                                created_at, updated_at
                         FROM answers
                         WHERE {' AND '.join(filters)}
