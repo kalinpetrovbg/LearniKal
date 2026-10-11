@@ -1,4 +1,4 @@
-"""Import the reviewed Python question bank without replacing existing questions."""
+"""Import the reviewed Python bank and retire its exact obsolete template rows."""
 
 import argparse
 import csv
@@ -11,6 +11,7 @@ CSV_PATHS = [
     Path(__file__).resolve().parents[1] / "docs" / "python-questions-additional.csv",
 ]
 CATALOG_PATH = Path(__file__).resolve().parents[1] / "docs" / "subtopics-catalog.csv"
+OBSOLETE_PATH = Path(__file__).resolve().parents[1] / "docs" / "python-questions-obsolete.csv"
 DSN = os.getenv("LEARNIKAL_DATABASE_URL", "dbname=learnikal user=postgres")
 
 
@@ -42,7 +43,18 @@ def load_bank():
     return rows
 
 
-def import_bank(conn, rows, *, apply=False):
+def load_obsolete(rows):
+    with OBSOLETE_PATH.open(encoding="utf-8-sig", newline="") as source:
+        obsolete = list(csv.DictReader(source))
+    if len(obsolete) != 1100:
+        raise ValueError("Expected the 1100 exact obsolete Python template questions")
+    current = {(row["subtopic_slug"], row["text"]) for row in rows}
+    if any((row["subtopic_slug"], row["text"]) in current for row in obsolete):
+        raise ValueError("Obsolete list overlaps the current Python bank")
+    return obsolete
+
+
+def import_bank(conn, rows, obsolete, *, apply=False):
     conn.execute("SET ROLE learnikal")
     topic = conn.execute("SELECT id FROM topics WHERE slug = 'python' AND is_active = true").fetchone()
     if topic is None:
@@ -55,6 +67,25 @@ def import_bank(conn, rows, *, apply=False):
     missing = {row["subtopic_slug"] for row in rows} - subtopics.keys()
     if missing:
         raise ValueError(f"Active Python subtopics missing: {', '.join(sorted(missing))}")
+
+    retired = 0
+    for row in obsolete:
+        subtopic_id = subtopics[row["subtopic_slug"]]
+        if apply:
+            result = conn.execute(
+                """UPDATE questions SET is_active = false
+                   WHERE topic_id = %s AND subtopic_id = %s
+                   AND text = %s AND is_active = true""",
+                (topic_id, subtopic_id, row["text"]),
+            )
+            retired += result.rowcount
+        else:
+            retired += conn.execute(
+                """SELECT count(*) FROM questions
+                   WHERE topic_id = %s AND subtopic_id = %s
+                   AND text = %s AND is_active = true""",
+                (topic_id, subtopic_id, row["text"]),
+            ).fetchone()[0]
 
     inserted = 0
     for row in rows:
@@ -79,7 +110,7 @@ def import_bank(conn, rows, *, apply=False):
             )
     if not apply:
         conn.rollback()
-    return inserted
+    return inserted, retired
 
 
 def main():
@@ -88,15 +119,17 @@ def main():
     parser.add_argument("--validate", action="store_true", help="Validate CSV without a database")
     args = parser.parse_args()
     rows = load_bank()
+    obsolete = load_obsolete(rows)
     if args.validate:
-        print(f"Validated {len(rows)} Python questions")
+        print(f"Validated {len(rows)} Python questions and {len(obsolete)} obsolete template rows")
         return
     import psycopg
 
     with psycopg.connect(DSN) as conn:
-        count = import_bank(conn, rows, apply=args.apply)
+        count, retired = import_bank(conn, rows, obsolete, apply=args.apply)
     action = "Inserted" if args.apply else "Would insert"
-    print(f"{action} {count} of {len(rows)} Python questions")
+    retired_action = "Retired" if args.apply else "Would retire"
+    print(f"{retired_action} {retired} obsolete questions; {action.lower()} {count} of {len(rows)} Python questions")
 
 
 if __name__ == "__main__":
