@@ -38,6 +38,7 @@ jobs:
             sudo -u postgres .venv/bin/python deploy/migrate-questions.py
             sudo -u postgres .venv/bin/python deploy/migrate-user-topic-subscriptions.py
             sudo -u postgres .venv/bin/python deploy/import-python-questions.py --apply
+            sudo -u postgres .venv/bin/python deploy/import-topic-questions.py --apply
             sudo systemctl restart learnikal
             sudo systemctl status learnikal --no-pager
             healthy=0
